@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from "react";
-import { Send, Smile, Paperclip, Video, Phone, MoreVertical, ArrowLeft, Image, X } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Send, Smile, Paperclip, Video, Phone, MoreVertical, ArrowLeft, Image, X, FileText } from "lucide-react";
+import Picker from "@emoji-mart/react";
+import data from "@emoji-mart/data";
 import { useAuth } from "../../context/AuthContext";
 import { getSocket } from "../../lib/socket";
 import {
@@ -9,6 +11,7 @@ import {
 } from "../../hooks/useMessages";
 import Avatar from "../ui/Avatar";
 
+/* ─── Single message bubble ──────────────────────────────────────────────── */
 function MessageBubble({ msg, isMine }) {
   const timeStr = new Date(msg.createdAt || Date.now()).toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -25,14 +28,15 @@ function MessageBubble({ msg, isMine }) {
         />
       )}
       <div
-        className={`max-w-[70%] rounded-2xl text-sm leading-relaxed ${isMine
+        className={`max-w-[70%] rounded-2xl text-sm leading-relaxed ${
+          isMine
             ? "bg-primary text-white rounded-br-sm"
-            : "bg-white border border-surface-border text-gray-800 rounded-bl-sm shadow-card"
-          }`}
+            : "bg-white border border-surface-border text-gray-800 rounded-bl-sm shadow-sm"
+        }`}
       >
         {/* Attachment image */}
         {msg.attachment?.url && (
-          <div className={`${msg.content ? "" : ""}`}>
+          <div>
             <img
               src={msg.attachment.url}
               alt="Attachment"
@@ -52,33 +56,78 @@ function MessageBubble({ msg, isMine }) {
         {/* Timestamp + read receipt */}
         <div className={`px-4 pb-2 ${!msg.content && msg.attachment?.url ? "pt-1" : ""} text-[10px] ${isMine ? "text-white/60 text-right" : "text-gray-400"}`}>
           {timeStr}
-          {isMine && <span className="ml-1">{msg.read ? "✓✓" : "✓"}</span>}
+          {isMine && (
+            <span className="ml-1">
+              {msg.read ? "✓✓" : "✓"}
+            </span>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
+/* ─── Animated typing indicator ──────────────────────────────────────────── */
+function TypingIndicator({ participant }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Avatar
+        src={participant?.profilePic}
+        name={participant?.name}
+        size="xs"
+      />
+      <div className="bg-white border border-surface-border rounded-2xl rounded-bl-sm px-4 py-2.5 shadow-sm">
+        <div className="flex gap-1 items-center h-4">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: `${i * 0.15}s` }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main ChatWindow ────────────────────────────────────────────────────── */
 export default function ChatWindow({ conversation, onBack }) {
   const { user, onlineUsers } = useAuth();
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const bottomRef = useRef(null);
   const typingTimer = useRef(null);
   const typingDebounce = useRef(null);
   const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const emojiRef = useRef(null);
 
   const recipientId = conversation?.participant?._id;
+  const conversationId = conversation?._id;
   const isOnline = recipientId && onlineUsers.includes(recipientId);
 
-  const { data, isLoading, fetchNextPage, hasNextPage } = useMessageThread(recipientId);
+  const { data: msgData, isLoading, fetchNextPage, hasNextPage } = useMessageThread(recipientId);
   const sendMessage = useSendMessage(recipientId);
   const markRead = useMarkConversationRead(recipientId);
 
   // Flatten pages of messages (oldest first)
-  const allMessages = data?.pages?.flatMap((p) => p.messages) || [];
+  const allMessages = msgData?.pages?.flatMap((p) => p.messages) || [];
+
+  // Join/leave conversation room for efficient socket broadcasting
+  useEffect(() => {
+    if (!conversationId) return;
+    const socket = getSocket();
+    if (!socket) return;
+
+    socket.emit("joinConversation", conversationId);
+    return () => {
+      socket.emit("leaveConversation", conversationId);
+    };
+  }, [conversationId]);
 
   // Mark messages as read when conversation is opened
   useEffect(() => {
@@ -106,16 +155,29 @@ export default function ChatWindow({ conversation, onBack }) {
       }
     };
 
-    socket.on("userTyping", handleTyping);
-    socket.on("userStopTyping", ({ userId }) => {
+    const handleStopTyping = ({ userId }) => {
       if (userId === recipientId) setIsTyping(false);
-    });
+    };
+
+    socket.on("userTyping", handleTyping);
+    socket.on("userStopTyping", handleStopTyping);
 
     return () => {
       socket.off("userTyping", handleTyping);
-      socket.off("userStopTyping");
+      socket.off("userStopTyping", handleStopTyping);
     };
   }, [recipientId]);
+
+  // Close emoji picker on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (emojiRef.current && !emojiRef.current.contains(e.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   // Clean up image preview on unmount or conversation change
   useEffect(() => {
@@ -124,28 +186,39 @@ export default function ChatWindow({ conversation, onBack }) {
     };
   }, [imagePreview]);
 
-  const handleImageSelect = (e) => {
+  const handleFileSelect = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    if (file.type.startsWith("image/")) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(null);
+    }
+  }, []);
+
+  const handleImageSelect = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
-  };
+  }, []);
 
-  const removeImage = () => {
+  const removeFile = useCallback(() => {
     setImageFile(null);
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  }, [imagePreview]);
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed && !imageFile) return;
     if (sendMessage.isPending) return;
 
     if (imageFile) {
-      // Send as FormData for multer
       const formData = new FormData();
       if (trimmed) formData.append("content", trimmed);
       formData.append("image", imageFile);
@@ -155,29 +228,41 @@ export default function ChatWindow({ conversation, onBack }) {
     }
 
     setInput("");
-    removeImage();
+    removeFile();
+    setShowEmojiPicker(false);
 
     // Stop typing indicator
     const socket = getSocket();
     if (socket && recipientId) {
-      socket.emit("stopTyping", { recipientId });
+      socket.emit("stopTyping", { recipientId, conversationId });
     }
-  };
+  }, [input, imageFile, sendMessage, recipientId, conversationId, removeFile]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     setInput(e.target.value);
 
     // Debounced typing indicator
     const socket = getSocket();
     if (socket && recipientId) {
-      socket.emit("typing", { recipientId });
+      socket.emit("typing", { recipientId, conversationId });
       clearTimeout(typingDebounce.current);
       typingDebounce.current = setTimeout(() => {
-        socket.emit("stopTyping", { recipientId });
+        socket.emit("stopTyping", { recipientId, conversationId });
       }, 2000);
     }
+  }, [recipientId, conversationId]);
+
+  const handleEmojiSelect = useCallback((emoji) => {
+    setInput((prev) => prev + emoji.native);
+  }, []);
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  /* ─── Empty state (no conversation selected) ───────────────────── */
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-400">
@@ -201,7 +286,7 @@ export default function ChatWindow({ conversation, onBack }) {
           {onBack && (
             <button
               onClick={onBack}
-              className="lg:hidden p-1.5 -ml-1 rounded-lg text-gray-500 hover:bg-gray-100"
+              className="lg:hidden p-1.5 -ml-1 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
             >
               <ArrowLeft size={18} />
             </button>
@@ -230,13 +315,13 @@ export default function ChatWindow({ conversation, onBack }) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+          <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
             <Video size={18} />
           </button>
-          <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+          <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
             <Phone size={18} />
           </button>
-          <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+          <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
             <MoreVertical size={18} />
           </button>
         </div>
@@ -249,7 +334,7 @@ export default function ChatWindow({ conversation, onBack }) {
           <div className="text-center">
             <button
               onClick={() => fetchNextPage()}
-              className="text-xs text-primary hover:underline"
+              className="text-xs text-primary hover:underline font-medium transition-colors"
             >
               Load older messages
             </button>
@@ -274,82 +359,119 @@ export default function ChatWindow({ conversation, onBack }) {
           return <MessageBubble key={msg._id} msg={msg} isMine={isMine} />;
         })}
 
-        {isTyping && (
-          <div className="flex items-center gap-2">
-            <Avatar
-              src={conversation.participant?.profilePic}
-              name={conversation.participant?.name}
-              size="xs"
-            />
-            <div className="bg-white border border-surface-border rounded-2xl rounded-bl-sm px-4 py-2.5 shadow-card">
-              <div className="flex gap-1 items-center h-4">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: `${i * 0.15}s` }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        {isTyping && <TypingIndicator participant={conversation.participant} />}
 
         <div ref={bottomRef} />
       </div>
 
-      {/* Image preview bar */}
-      {imagePreview && (
-        <div className="border-t border-surface-border bg-white px-4 py-2 flex items-center gap-3">
+      {/* File / image preview bar */}
+      {(imagePreview || (imageFile && !imagePreview)) && (
+        <div className="border-t border-surface-border bg-white px-4 py-2.5 flex items-center gap-3">
           <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-            />
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center">
+                <FileText size={20} className="text-gray-400" />
+              </div>
+            )}
             <button
-              onClick={removeImage}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-700 text-white rounded-full flex items-center justify-center hover:bg-gray-900"
+              onClick={removeFile}
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-700 text-white rounded-full flex items-center justify-center hover:bg-gray-900 transition-colors"
             >
               <X size={12} />
             </button>
           </div>
-          <p className="text-xs text-gray-500">{imageFile?.name}</p>
+          <div className="min-w-0">
+            <p className="text-xs text-gray-700 font-medium truncate">{imageFile?.name}</p>
+            {imageFile?.size && (
+              <p className="text-[10px] text-gray-400 mt-0.5">{formatFileSize(imageFile.size)}</p>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Input */}
+      {/* Message input */}
       <div className="border-t border-surface-border bg-white px-4 py-3">
-        <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
+        <div className="relative">
+          {/* Emoji picker popup */}
+          {showEmojiPicker && (
+            <div ref={emojiRef} className="absolute bottom-full right-0 mb-2 z-50">
+              <Picker
+                data={data}
+                onEmojiSelect={handleEmojiSelect}
+                theme="light"
+                previewPosition="none"
+                skinTonePosition="none"
+                maxFrequentRows={1}
+              />
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
+            <button
+              onClick={() => imageInputRef.current?.click()}
+              className="text-gray-400 hover:text-primary transition-colors flex-shrink-0"
+              title="Send Image"
+            >
+              <Image size={17} />
+            </button>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <input
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              placeholder="Write a message..."
+              className="flex-1 bg-transparent text-sm focus:outline-none placeholder-gray-400"
+            />
+            <button
+              onClick={() => setShowEmojiPicker((p) => !p)}
+              className={`transition-colors flex-shrink-0 ${showEmojiPicker ? "text-primary" : "text-gray-400 hover:text-primary"}`}
+              title="Emoji"
+            >
+              <Smile size={17} />
+            </button>
+            <button
+              onClick={handleSend}
+              disabled={(!input.trim() && !imageFile) || sendMessage.isPending}
+              className="ml-1 w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-950 disabled:opacity-40 transition-colors flex-shrink-0"
+            >
+              <Send size={15} />
+            </button>
+          </div>
+        </div>
+
+        {/* Action buttons row */}
+        <div className="flex items-center gap-2 mt-2 pl-1">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="text-gray-400 hover:text-primary transition-colors"
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary hover:bg-primary-50 px-2.5 py-1.5 rounded-lg transition-colors"
           >
-            <Image size={17} />
+            <Paperclip size={13} />
+            Attach File
           </button>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
-            onChange={handleImageSelect}
+            onChange={handleFileSelect}
             className="hidden"
           />
-          <input
-            value={input}
-            onChange={handleInputChange}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-            placeholder="Write a message..."
-            className="flex-1 bg-transparent text-sm focus:outline-none placeholder-gray-400"
-          />
-          <button className="text-gray-400 hover:text-primary">
-            <Smile size={17} />
-          </button>
           <button
-            onClick={handleSend}
-            disabled={(!input.trim() && !imageFile) || sendMessage.isPending}
-            className="ml-1 w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-950 disabled:opacity-40 transition-colors"
+            onClick={() => imageInputRef.current?.click()}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary hover:bg-primary-50 px-2.5 py-1.5 rounded-lg transition-colors"
           >
-            <Send size={15} />
+            <Image size={13} />
+            Send Image
           </button>
         </div>
       </div>

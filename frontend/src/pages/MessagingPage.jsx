@@ -52,7 +52,7 @@ export default function MessagingPage() {
       <div className="max-w-[1100px] mx-auto -mt-6 -mx-4 lg:-mx-6">
         <div className="flex h-[calc(100vh-60px)] bg-white rounded-card shadow-card border border-surface-border overflow-hidden">
           {/* Conversation panel — hidden on mobile when chat is open */}
-          <div className={`w-full lg:w-[300px] flex-shrink-0 border-r border-surface-border ${showChat ? "hidden lg:block" : "block"}`}>
+          <div className={`w-full lg:w-80 flex-shrink-0 border-r border-surface-border ${showChat ? "hidden lg:block" : "block"}`}>
             <ConversationList
               conversations={filtered}
               activeId={activeConversation?._id}

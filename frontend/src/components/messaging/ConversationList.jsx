@@ -1,4 +1,4 @@
-import { Search, Image } from "lucide-react";
+import { Search, SquarePen } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../ui/Avatar";
 
@@ -44,6 +44,12 @@ export default function ConversationList({
       <div className="p-4 border-b border-surface-border">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold text-gray-900">Messaging</h2>
+          <button
+            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors"
+            title="New message"
+          >
+            <SquarePen size={18} />
+          </button>
         </div>
         <div className="relative">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
