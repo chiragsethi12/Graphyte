@@ -1,3 +1,4 @@
+import asyncHandler from "../utils/asyncHandler.js";
 import Message from "../models/Message.model.js";
 import User from "../models/User.model.js";
 import cloudinary from "../config/cloudinary.js";
@@ -7,21 +8,21 @@ import { getReceiverSocketId, io } from "../socket/socket.js";
  * GET /api/messages/unread-count
  * Total unread messages across all conversations for the current user.
  */
-export const getUnreadCount = async (req, res) => {
+export const getUnreadCount = asyncHandler(async (req, res) => {
     const count = await Message.countDocuments({
         recipient: req.user._id,
         read: false,
         deleted: false,
     });
     res.json({ success: true, count });
-};
+});
 
 /**
  * GET /api/messages/conversations
  * Returns a list of distinct conversations for the authenticated user,
  * with the latest message and participant info for each.
  */
-export const getConversations = async (req, res) => {
+export const getConversations = asyncHandler(async (req, res) => {
     const userId = req.user._id.toString();
 
     // Find all messages where user is sender or recipient
@@ -93,14 +94,14 @@ export const getConversations = async (req, res) => {
     });
 
     res.json({ success: true, conversations });
-};
+});
 
 /**
  * GET /api/messages/:userId
  * Fetch message thread between current user and :userId.
  * Cursor-based pagination (cursor = oldest message _id seen).
  */
-export const getMessages = async (req, res) => {
+export const getMessages = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const limit = parseInt(req.query.limit) || 30;
     const cursor = req.query.cursor || null;
@@ -128,13 +129,13 @@ export const getMessages = async (req, res) => {
     );
 
     res.json({ success: true, messages: messages.reverse(), hasMore, nextCursor });
-};
+});
 
 /**
  * POST /api/messages/:userId
  * Send a message to :userId. Supports optional image attachment via multer.
  */
-export const sendMessage = async (req, res) => {
+export const sendMessage = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const { content } = req.body;
 
@@ -181,13 +182,13 @@ export const sendMessage = async (req, res) => {
     }
 
     res.status(201).json({ success: true, message });
-};
+});
 
 /**
  * PUT /api/messages/:userId/read
  * Mark all messages from :userId as read.
  */
-export const markConversationRead = async (req, res) => {
+export const markConversationRead = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const conversationId = Message.getConversationId(req.user._id, userId);
 
@@ -205,13 +206,13 @@ export const markConversationRead = async (req, res) => {
     }
 
     res.json({ success: true, message: "Marked as read" });
-};
+});
 
 /**
  * DELETE /api/messages/:messageId
  * Soft-delete a message (only sender can delete).
  */
-export const deleteMessage = async (req, res) => {
+export const deleteMessage = asyncHandler(async (req, res) => {
     const { messageId } = req.params;
 
     const message = await Message.findById(messageId);
@@ -226,4 +227,4 @@ export const deleteMessage = async (req, res) => {
     await message.save();
 
     res.json({ success: true, message: "Message deleted" });
-};
+});

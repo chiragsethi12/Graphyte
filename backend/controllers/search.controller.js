@@ -1,3 +1,4 @@
+import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/User.model.js";
 import Post from "../models/Post.model.js";
 import Job from "../models/Job.model.js";
@@ -6,7 +7,7 @@ import Job from "../models/Job.model.js";
  * GET /api/search?q=&type=all|users|jobs|posts&skills=&location=&company=&page=
  * Unified search endpoint — returns mixed results or filtered by type.
  */
-export const search = async (req, res) => {
+export const search = asyncHandler(async (req, res) => {
     const { q, type = "all", skills, location, company } = req.query;
     const page  = parseInt(req.query.page) || 1;
     const limit = 10;
@@ -96,4 +97,4 @@ export const search = async (req, res) => {
     }
 
     res.json({ success: true, ...result, page });
-};
+});

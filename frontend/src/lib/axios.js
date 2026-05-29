@@ -8,7 +8,7 @@ const api = axios.create({
 
 // Attach JWT + handle FormData content-type
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("graphite_token");
+  const token = localStorage.getItem("graphyte_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -23,7 +23,7 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem("graphite_token");
+      localStorage.removeItem("graphyte_token");
       if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }

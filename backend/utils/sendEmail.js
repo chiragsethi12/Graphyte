@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
  */
 export default async function sendEmail({ to, subject, html }) {
     await transporter.sendMail({
-        from: `"Graphite" <${process.env.EMAIL_USER}>`,
+        from: `"Graphyte" <${process.env.EMAIL_USER}>`,
         to,
         subject,
         html,
@@ -36,7 +36,7 @@ export function buildResetEmail(name, resetUrl) {
         <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,#660033 0%,#4d0026 100%);padding:32px 40px;">
-            <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;">Graphite</h1>
+            <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;">Graphyte</h1>
             <p style="margin:4px 0 0;color:rgba(255,255,255,0.7);font-size:13px;">Professional Networking Platform</p>
           </td>
         </tr>
@@ -67,7 +67,7 @@ export function buildResetEmail(name, resetUrl) {
         <!-- Footer -->
         <tr>
           <td style="padding:20px 40px 28px;text-align:center;">
-            <p style="margin:0;color:#d1d5db;font-size:11px;">© ${new Date().getFullYear()} Graphite Professional. All rights reserved.</p>
+            <p style="margin:0;color:#d1d5db;font-size:11px;">© ${new Date().getFullYear()} Graphyte Professional. All rights reserved.</p>
           </td>
         </tr>
       </table>

@@ -1,10 +1,11 @@
+import asyncHandler from "../utils/asyncHandler.js";
 import Connection from "../models/Connection.model.js";
 import User from "../models/User.model.js";
 import Notification from "../models/Notification.model.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 
 // POST /api/connections/request/:recipientId
-export const sendRequest = async (req, res) => {
+export const sendRequest = asyncHandler(async (req, res) => {
     const { recipientId } = req.params;
     if (recipientId === req.user._id.toString())
         return res.status(400).json({ success: false, message: "Cannot connect with yourself" });
@@ -34,10 +35,10 @@ export const sendRequest = async (req, res) => {
     if (socketId) io.to(socketId).emit("newNotification", notification);
 
     res.status(201).json({ success: true, connection });
-};
+});
 
 // PUT /api/connections/respond/:connectionId
-export const respondToRequest = async (req, res) => {
+export const respondToRequest = asyncHandler(async (req, res) => {
     const { connectionId } = req.params;
     const { action } = req.body; // "accept" | "reject"
 
@@ -67,43 +68,43 @@ export const respondToRequest = async (req, res) => {
     }
 
     res.json({ success: true, connection });
-};
+});
 
 // DELETE /api/connections/withdraw/:recipientId  (cancel sent request)
-export const withdrawRequest = async (req, res) => {
+export const withdrawRequest = asyncHandler(async (req, res) => {
     const { recipientId } = req.params;
     const conn = await Connection.findOneAndDelete({
         sender: req.user._id, recipient: recipientId, status: "pending",
     });
     if (!conn) return res.status(404).json({ success: false, message: "Request not found" });
     res.json({ success: true, message: "Request withdrawn" });
-};
+});
 
 // GET /api/connections
-export const getConnections = async (req, res) => {
+export const getConnections = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id)
         .populate("connections", "name username profilePic headline location");
     res.json({ success: true, connections: user.connections });
-};
+});
 
 // GET /api/connections/pending
-export const getPendingRequests = async (req, res) => {
+export const getPendingRequests = asyncHandler(async (req, res) => {
     const requests = await Connection.find({ recipient: req.user._id, status: "pending" })
         .populate("sender", "name username profilePic headline location")
         .sort({ createdAt: -1 });
     res.json({ success: true, requests });
-};
+});
 
 // GET /api/connections/sent
-export const getSentRequests = async (req, res) => {
+export const getSentRequests = asyncHandler(async (req, res) => {
     const requests = await Connection.find({ sender: req.user._id, status: "pending" })
         .populate("recipient", "name username profilePic headline")
         .sort({ createdAt: -1 });
     res.json({ success: true, requests });
-};
+});
 
 // GET /api/connections/status/:userId
-export const getConnectionStatus = async (req, res) => {
+export const getConnectionStatus = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     if (userId === req.user._id.toString())
         return res.json({ success: true, status: "self" });
@@ -126,10 +127,10 @@ export const getConnectionStatus = async (req, res) => {
     else if (conn.status === "rejected") status = "rejected";
 
     res.json({ success: true, status, connectionId: conn._id });
-};
+});
 
 // GET /api/connections/mutual/:userId
-export const getMutualConnections = async (req, res) => {
+export const getMutualConnections = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const [me, other] = await Promise.all([
         User.findById(req.user._id).select("connections"),
@@ -145,10 +146,10 @@ export const getMutualConnections = async (req, res) => {
         .limit(10);
 
     res.json({ success: true, mutuals: mutualUsers, count: mutuals.length });
-};
+});
 
 // DELETE /api/connections/:userId
-export const removeConnection = async (req, res) => {
+export const removeConnection = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     await Connection.findOneAndDelete({
         $or: [
@@ -160,4 +161,4 @@ export const removeConnection = async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, { $pull: { connections: userId } });
     await User.findByIdAndUpdate(userId,        { $pull: { connections: req.user._id } });
     res.json({ success: true, message: "Connection removed" });
-};
+});

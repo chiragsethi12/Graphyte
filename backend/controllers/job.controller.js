@@ -1,8 +1,9 @@
+import asyncHandler from "../utils/asyncHandler.js";
 import Job from "../models/Job.model.js";
 import Application from "../models/Application.model.js";
 
 // POST /api/jobs
-export const createJob = async (req, res) => {
+export const createJob = asyncHandler(async (req, res) => {
     const { title, company, location, type, description, skills, benefits, salary, deadline, experienceLevel } = req.body;
 
     if (!title || !company || !description)
@@ -20,10 +21,10 @@ export const createJob = async (req, res) => {
 
     const job = await Job.create(jobData);
     res.status(201).json({ success: true, job });
-};
+});
 
 // GET /api/jobs
-export const getJobs = async (req, res) => {
+export const getJobs = asyncHandler(async (req, res) => {
     const { search, type, location, experienceLevel, page: pg } = req.query;
     const page  = parseInt(pg) || 1;
     const limit = 12;
@@ -46,18 +47,18 @@ export const getJobs = async (req, res) => {
     ]);
 
     res.json({ success: true, jobs, total, page, pages: Math.ceil(total / limit) });
-};
+});
 
 // GET /api/jobs/:id
-export const getJobById = async (req, res) => {
+export const getJobById = asyncHandler(async (req, res) => {
     const job = await Job.findById(req.params.id)
         .populate("postedBy", "name username profilePic headline");
     if (!job) return res.status(404).json({ success: false, message: "Job not found" });
     res.json({ success: true, job });
-};
+});
 
 // POST /api/jobs/:id/apply
-export const applyForJob = async (req, res) => {
+export const applyForJob = asyncHandler(async (req, res) => {
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ success: false, message: "Job not found" });
     if (!job.isActive) return res.status(400).json({ success: false, message: "Job is no longer active" });
@@ -71,26 +72,26 @@ export const applyForJob = async (req, res) => {
     await Job.findByIdAndUpdate(req.params.id, { $addToSet: { applicants: req.user._id } });
 
     res.status(201).json({ success: true, application });
-};
+});
 
 // GET /api/jobs/my-applications
-export const getMyApplications = async (req, res) => {
+export const getMyApplications = asyncHandler(async (req, res) => {
     const applications = await Application.find({ applicant: req.user._id })
         .populate({ path: "job", populate: { path: "postedBy", select: "name profilePic" } })
         .sort({ createdAt: -1 });
     res.json({ success: true, applications });
-};
+});
 
 // GET /api/jobs/my-listings
-export const getMyListings = async (req, res) => {
+export const getMyListings = asyncHandler(async (req, res) => {
     const jobs = await Job.find({ postedBy: req.user._id })
         .sort({ createdAt: -1 })
         .select("title company location type isActive applicants createdAt deadline");
     res.json({ success: true, jobs });
-};
+});
 
 // PUT /api/jobs/:id/toggle-active
-export const toggleJobActive = async (req, res) => {
+export const toggleJobActive = asyncHandler(async (req, res) => {
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ success: false, message: "Job not found" });
     if (job.postedBy.toString() !== req.user._id.toString())
@@ -99,10 +100,10 @@ export const toggleJobActive = async (req, res) => {
     job.isActive = !job.isActive;
     await job.save();
     res.json({ success: true, job });
-};
+});
 
 // GET /api/jobs/recommended
-export const getRecommendedJobs = async (req, res) => {
+export const getRecommendedJobs = asyncHandler(async (req, res) => {
     const me = await (await import("../models/User.model.js")).default
         .findById(req.user._id).select("skills location");
 
@@ -119,4 +120,4 @@ export const getRecommendedJobs = async (req, res) => {
         .populate("postedBy", "name username profilePic");
 
     res.json({ success: true, jobs });
-};
+});

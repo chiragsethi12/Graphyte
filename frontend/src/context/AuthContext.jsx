@@ -53,7 +53,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const fetchMe = useCallback(async () => {
-    const token = localStorage.getItem("graphite_token");
+    const token = localStorage.getItem("graphyte_token");
     if (!token) {
       setLoading(false);
       return;
@@ -66,7 +66,7 @@ export function AuthProvider({ children }) {
       fetchUnreadCount();
       fetchUnreadMessageCount();
     } catch {
-      localStorage.removeItem("graphite_token");
+      localStorage.removeItem("graphyte_token");
       setUser(null);
     } finally {
       setLoading(false);
@@ -89,7 +89,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const { data } = await api.post("/auth/login", { email, password });
-    localStorage.setItem("graphite_token", data.token);
+    localStorage.setItem("graphyte_token", data.token);
     setUser(data.user);
     connectSocket(data.user._id);
     setupSocketListeners();
@@ -100,7 +100,7 @@ export function AuthProvider({ children }) {
 
   const register = async (name, email, password, username) => {
     const { data } = await api.post("/auth/register", { name, email, password, username });
-    localStorage.setItem("graphite_token", data.token);
+    localStorage.setItem("graphyte_token", data.token);
     setUser(data.user);
     connectSocket(data.user._id);
     setupSocketListeners();
@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("graphite_token");
+    localStorage.removeItem("graphyte_token");
     setUser(null);
     setUnreadNotifications(0);
     setUnreadMessages(0);

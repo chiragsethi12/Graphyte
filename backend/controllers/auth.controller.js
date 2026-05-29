@@ -1,3 +1,4 @@
+import asyncHandler from "../utils/asyncHandler.js";
 import crypto from "crypto";
 import User from "../models/User.model.js";
 import generateToken from "../utils/generateToken.js";
@@ -29,7 +30,7 @@ const generateUsername = async (name) => {
 };
 
 // GET /api/auth/check-username?username=QUERY  (PUBLIC)
-export const checkUsernameAvailability = async (req, res) => {
+export const checkUsernameAvailability = asyncHandler(async (req, res) => {
     const { username } = req.query;
 
     if (!username || username.length < 3)
@@ -47,10 +48,10 @@ export const checkUsernameAvailability = async (req, res) => {
         username: clean,
         message: exists ? "Username is taken" : "Username is available",
     });
-};
+});
 
 // POST /api/auth/register
-export const register = async (req, res) => {
+export const register = asyncHandler(async (req, res) => {
     const { name, email, password, username } = req.body;
 
     if (!name || !email || !password)
@@ -107,10 +108,10 @@ export const register = async (req, res) => {
             headline:   user.headline,
         },
     });
-};
+});
 
 // POST /api/auth/login
-export const login = async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password)
@@ -139,16 +140,16 @@ export const login = async (req, res) => {
             headline:   user.headline,
         },
     });
-};
+});
 
 // GET /api/auth/me
-export const getMe = async (req, res) => {
+export const getMe = asyncHandler(async (req, res) => {
     // req.user is populated by protect middleware (no password)
     res.json({ success: true, user: req.user });
-};
+});
 
 // POST /api/auth/forgot-password
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
     if (!email)
@@ -196,10 +197,10 @@ export const forgotPassword = async (req, res) => {
         success: true,
         message: "If an account with that email exists, a reset link has been sent.",
     });
-};
+});
 
 // POST /api/auth/reset-password/:token
-export const resetPassword = async (req, res) => {
+export const resetPassword = asyncHandler(async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 
@@ -227,4 +228,4 @@ export const resetPassword = async (req, res) => {
     await user.save();
 
     res.json({ success: true, message: "Password reset successful. You can now sign in." });
-};
+});

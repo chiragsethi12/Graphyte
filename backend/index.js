@@ -1,12 +1,15 @@
 import "dotenv/config";  // MUST be first — loads .env before any other import resolves
+import "express-async-errors";
 import express from "express";
 import http from "http";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import compression from "compression";
 
 import connectDB from "./config/db.js";
 import { initSocket } from "./socket/socket.js";
+import { apiLimiter, authLimiter } from "./middleware/rateLimiter.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -28,6 +31,7 @@ initSocket(server);
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(helmet());
 app.use(morgan("dev"));
+app.use(compression());
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 console.log(`[CORS] Allowing requests from: ${CLIENT_URL}`);
@@ -40,7 +44,8 @@ app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
-app.use("/api/auth", authRoutes);
+app.use(apiLimiter);
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/connections", connectionRoutes);
@@ -66,14 +71,23 @@ app.get("/api/health/db", async (req, res) => {
 });
 
 // ─── Global error handler ────────────────────────────────────────────────────
+app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
+
 app.use((err, req, res, next) => {
     console.error("Unhandled Error:", err.stack || err.message);
+
+    if (err.name === 'ValidationError') {
+        return res.status(400).json({ success: false, message: err.message });
+    }
+
     const status = err.statusCode || 500;
+    const message = err.isOperational || process.env.NODE_ENV !== "production" 
+        ? err.message 
+        : "Internal server error";
+
     res.status(status).json({
         success: false,
-        message: process.env.NODE_ENV === "production"
-            ? "Internal server error"
-            : err.message || "Server Error",
+        message: message,
     });
 });
 

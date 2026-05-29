@@ -1,9 +1,10 @@
+import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/User.model.js";
 import Post from "../models/Post.model.js";
 import bcrypt from "bcryptjs";
 
 // ─── GET /api/users/:identifier ─────────────────────────────────────────────
-export const getUserProfile = async (req, res) => {
+export const getUserProfile = asyncHandler(async (req, res) => {
     const { identifier } = req.params;
     const isObjectId = /^[a-f\d]{24}$/i.test(identifier);
     const query = isObjectId ? { _id: identifier } : { username: identifier };
@@ -34,10 +35,10 @@ export const getUserProfile = async (req, res) => {
     }
 
     res.json({ success: true, user });
-};
+});
 
 // ─── GET /api/users/:userId/posts ────────────────────────────────────────────
-export const getUserPosts = async (req, res) => {
+export const getUserPosts = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const page  = parseInt(req.query.page) || 1;
     const limit = 12;
@@ -50,10 +51,10 @@ export const getUserPosts = async (req, res) => {
 
     const total = await Post.countDocuments({ author: userId });
     res.json({ success: true, posts, total, page, pages: Math.ceil(total / limit) });
-};
+});
 
 // ─── GET /api/users/:userId/stats ────────────────────────────────────────────
-export const getUserStats = async (req, res) => {
+export const getUserStats = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const [user, postCount] = await Promise.all([
         User.findById(userId).select("connections profileViews skillScore"),
@@ -70,10 +71,10 @@ export const getUserStats = async (req, res) => {
             postCount,
         },
     });
-};
+});
 
 // ─── GET /api/users/search ────────────────────────────────────────────────────
-export const searchUsers = async (req, res) => {
+export const searchUsers = asyncHandler(async (req, res) => {
     const { q, skills, location, company } = req.query;
     const page  = parseInt(req.query.page) || 1;
     const limit = 12;
@@ -140,10 +141,10 @@ export const searchUsers = async (req, res) => {
     });
 
     res.json({ success: true, users: results, total, page, pages: Math.ceil(total / limit) });
-};
+});
 
 // ─── GET /api/users/suggestions ──────────────────────────────────────────────
-export const getRecommendedUsers = async (req, res) => {
+export const getRecommendedUsers = asyncHandler(async (req, res) => {
     const me = await User.findById(req.user._id).select("connections skills location");
     const myConnIds = me.connections.map((id) => id.toString());
     const excludeIds = [...myConnIds, req.user._id.toString()];
@@ -176,10 +177,10 @@ export const getRecommendedUsers = async (req, res) => {
     const top = scored.slice(0, 8);
     const results = top.map(({ user, mutualCount, sharedSkills }) => ({ ...user.toObject(), mutualCount, sharedSkills }));
     res.json({ success: true, users: results });
-};
+});
 
 // ─── PUT /api/users/update ───────────────────────────────────────────────────
-export const updateProfile = async (req, res) => {
+export const updateProfile = asyncHandler(async (req, res) => {
     const allowed = ["name", "headline", "about", "location", "website", "skills", "interests", "experience", "education", "username"];
     const updateData = {};
 
@@ -215,10 +216,10 @@ export const updateProfile = async (req, res) => {
         .select("-password -resetPasswordToken -resetPasswordExpires");
 
     res.json({ success: true, user });
-};
+});
 
 // ─── PUT /api/users/change-password ─────────────────────────────────────────
-export const changePassword = async (req, res) => {
+export const changePassword = asyncHandler(async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) return res.status(400).json({ success: false, message: "Both fields are required" });
     if (newPassword.length < 6) return res.status(400).json({ success: false, message: "New password must be at least 6 characters" });
@@ -230,10 +231,10 @@ export const changePassword = async (req, res) => {
     user.password = newPassword;
     await user.save();
     res.json({ success: true, message: "Password updated successfully" });
-};
+});
 
 // ─── PUT /api/users/privacy ──────────────────────────────────────────────────
-export const updatePrivacy = async (req, res) => {
+export const updatePrivacy = asyncHandler(async (req, res) => {
     const { isPublic, emailNotifications } = req.body;
     const updates = {};
     if (isPublic !== undefined) updates.isPublic = Boolean(isPublic);
@@ -241,4 +242,4 @@ export const updatePrivacy = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true }).select("-password");
     res.json({ success: true, user });
-};
+});

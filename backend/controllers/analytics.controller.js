@@ -1,3 +1,4 @@
+import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/User.model.js";
 import Post from "../models/Post.model.js";
 import Connection from "../models/Connection.model.js";
@@ -7,7 +8,7 @@ import Notification from "../models/Notification.model.js";
  * GET /api/analytics/me
  * Returns the current user's activity dashboard data.
  */
-export const getMyAnalytics = async (req, res) => {
+export const getMyAnalytics = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const now    = new Date();
     const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
@@ -97,4 +98,4 @@ export const getMyAnalytics = async (req, res) => {
             skillStats,
         },
     });
-};
+});
