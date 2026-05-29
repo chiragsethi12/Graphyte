@@ -181,7 +181,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     try {
         await sendEmail({
             to: user.email,
-            subject: "Reset your Graphite password",
+            subject: "Reset your Graphyte password",
             html: buildResetEmail(user.name, resetUrl),
         });
     } catch (err) {

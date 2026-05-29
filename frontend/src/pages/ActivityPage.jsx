@@ -230,7 +230,7 @@ export default function ActivityPage() {
                   Skill Landscape
                 </h3>
                 <p className="text-xs text-gray-500 mb-4">
-                  How many Graphite professionals share your listed skills
+                  How many Graphyte professionals share your listed skills
                 </p>
                 <div className="space-y-3">
                   {analytics.skillStats.map((s) => (

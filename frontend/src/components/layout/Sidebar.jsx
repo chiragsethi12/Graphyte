@@ -63,7 +63,7 @@ export default function Sidebar() {
         <div className="bg-primary-900 rounded-xl p-3 text-white">
           <div className="flex items-center gap-1.5 mb-1">
             <Star size={12} className="text-amber-300" />
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-200">Graphite Pro</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-200">Graphyte Pro</p>
           </div>
           <p className="font-bold text-sm mb-2">Elite Tier</p>
           <Button size="sm" variant="white" className="w-full text-primary-900">

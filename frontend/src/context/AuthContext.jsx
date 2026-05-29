@@ -27,8 +27,10 @@ export function AuthProvider({ children }) {
     } catch { /* ignore */ }
   }, []);
 
-  // Wire socket event listeners
-  const setupSocketListeners = useCallback(() => {
+  // Wire socket event listeners reactively when user changes
+  useEffect(() => {
+    if (!user) return;
+
     const socket = getSocket();
     if (!socket) return;
 
@@ -40,7 +42,6 @@ export function AuthProvider({ children }) {
       setOnlineUsers(users);
     });
 
-    // Increment unread messages when a new message arrives
     socket.on("newMessage", () => {
       setUnreadMessages((prev) => prev + 1);
     });
@@ -50,7 +51,7 @@ export function AuthProvider({ children }) {
       socket.off("onlineUsers");
       socket.off("newMessage");
     };
-  }, []);
+  }, [user]);
 
   const fetchMe = useCallback(async () => {
     const token = localStorage.getItem("graphyte_token");
@@ -62,7 +63,6 @@ export function AuthProvider({ children }) {
       const { data } = await api.get("/auth/me");
       setUser(data.user);
       connectSocket(data.user._id);
-      setupSocketListeners();
       fetchUnreadCount();
       fetchUnreadMessageCount();
     } catch {
@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [setupSocketListeners, fetchUnreadCount, fetchUnreadMessageCount]);
+  }, [fetchUnreadCount, fetchUnreadMessageCount]);
 
   useEffect(() => {
     fetchMe();
@@ -92,7 +92,6 @@ export function AuthProvider({ children }) {
     localStorage.setItem("graphyte_token", data.token);
     setUser(data.user);
     connectSocket(data.user._id);
-    setupSocketListeners();
     fetchUnreadCount();
     fetchUnreadMessageCount();
     return data.user;
@@ -103,7 +102,6 @@ export function AuthProvider({ children }) {
     localStorage.setItem("graphyte_token", data.token);
     setUser(data.user);
     connectSocket(data.user._id);
-    setupSocketListeners();
     return data.user;
   };
 

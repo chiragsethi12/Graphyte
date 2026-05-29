@@ -1,27 +1,30 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import api from "../../lib/axios";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
+  const [sentEmail, setSentEmail] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({ defaultValues: { email: "" } });
+
+  const onSubmit = async (values) => {
+    setServerError("");
     try {
-      await api.post("/auth/forgot-password", { email });
+      await api.post("/auth/forgot-password", { email: values.email });
+      setSentEmail(values.email);
       setSent(true);
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+      setServerError(err.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -30,7 +33,7 @@ export default function ForgotPasswordPage() {
       {/* Left — Brand panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary-900 flex-col justify-between p-12 text-white">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Graphite</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Graphyte</h1>
           <p className="text-primary-200 text-sm">Professional Networking Platform</p>
         </div>
         <div>
@@ -48,14 +51,14 @@ export default function ForgotPasswordPage() {
             ))}
           </div>
         </div>
-        <p className="text-primary-300 text-xs">© 2024 Graphite Professional. All rights reserved.</p>
+        <p className="text-primary-300 text-xs">© 2024 Graphyte Professional. All rights reserved.</p>
       </div>
 
       {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-surface-muted">
         <div className="w-full max-w-[400px]">
           <div className="lg:hidden mb-8">
-            <h1 className="text-2xl font-extrabold text-primary">Graphite</h1>
+            <h1 className="text-2xl font-extrabold text-primary">Graphyte</h1>
           </div>
           <div className="bg-white rounded-2xl shadow-card-hover border border-surface-border p-8">
             {sent ? (
@@ -66,7 +69,7 @@ export default function ForgotPasswordPage() {
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
                 <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                  If an account exists for <strong className="text-gray-700">{email}</strong>, we've sent a password reset link. Check your inbox and spam folder.
+                  If an account exists for <strong className="text-gray-700">{sentEmail}</strong>, we've sent a password reset link. Check your inbox and spam folder.
                 </p>
                 <p className="text-xs text-gray-400 mb-6">The link expires in 1 hour.</p>
                 <Link
@@ -90,24 +93,28 @@ export default function ForgotPasswordPage() {
                   Enter the email associated with your account and we'll send a reset link.
                 </p>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                  {error && (
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                  {serverError && (
                     <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
-                      {error}
+                      {serverError}
                     </div>
                   )}
                   <Input
                     label="Email address"
-                    name="email"
                     type="email"
                     placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     icon={Mail}
-                    required
+                    error={errors.email?.message}
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                        message: "Please enter a valid email address",
+                      },
+                    })}
                   />
-                  <Button type="submit" fullWidth loading={loading} className="mt-2">
-                    Send Reset Link
+                  <Button type="submit" fullWidth loading={isSubmitting} className="mt-2">
+                    {isSubmitting ? "Sending…" : "Send Reset Link"}
                   </Button>
                 </form>
               </>

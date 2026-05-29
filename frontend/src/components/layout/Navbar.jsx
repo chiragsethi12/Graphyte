@@ -33,7 +33,7 @@ export default function Navbar() {
       <div className="max-w-[1280px] mx-auto h-full px-4 flex items-center gap-4">
         {/* Logo */}
         <Link to="/feed" className="font-extrabold text-xl text-primary tracking-tight mr-2">
-          Graphite
+          Graphyte
         </Link>
 
         {/* Search icon button */}

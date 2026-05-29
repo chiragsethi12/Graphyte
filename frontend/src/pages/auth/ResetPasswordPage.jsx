@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import { Lock, Eye, EyeOff, ArrowLeft, CheckCircle, AlertTriangle } from "lucide-react";
 import api from "../../lib/axios";
 import Button from "../../components/ui/Button";
@@ -9,13 +10,19 @@ export default function ResetPasswordPage() {
   const { token } = useParams();
   const navigate = useNavigate();
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({ defaultValues: { password: "", confirmPassword: "" } });
+
+  const watchedPassword = watch("password");
 
   // Password strength indicator
   const getStrength = (pw) => {
@@ -34,31 +41,17 @@ export default function ResetPasswordPage() {
     return { label: "Very Strong", color: "bg-emerald-600", width: "100%" };
   };
 
-  const strength = getStrength(password);
+  const strength = getStrength(watchedPassword);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    setLoading(true);
+  const onSubmit = async (values) => {
+    setServerError("");
     try {
-      await api.post(`/auth/reset-password/${token}`, { password });
+      await api.post(`/auth/reset-password/${token}`, { password: values.password });
       setSuccess(true);
       toast.success("Password reset successful!");
       setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || "Reset failed. The link may be expired.");
-    } finally {
-      setLoading(false);
+      setServerError(err.response?.data?.message || "Reset failed. The link may be expired.");
     }
   };
 
@@ -67,7 +60,7 @@ export default function ResetPasswordPage() {
       {/* Left — Brand panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary-900 flex-col justify-between p-12 text-white">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Graphite</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Graphyte</h1>
           <p className="text-primary-200 text-sm">Professional Networking Platform</p>
         </div>
         <div>
@@ -90,14 +83,14 @@ export default function ResetPasswordPage() {
             ))}
           </div>
         </div>
-        <p className="text-primary-300 text-xs">© 2024 Graphite Professional. All rights reserved.</p>
+        <p className="text-primary-300 text-xs">© 2024 Graphyte Professional. All rights reserved.</p>
       </div>
 
       {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-surface-muted">
         <div className="w-full max-w-[400px]">
           <div className="lg:hidden mb-8">
-            <h1 className="text-2xl font-extrabold text-primary">Graphite</h1>
+            <h1 className="text-2xl font-extrabold text-primary">Graphyte</h1>
           </div>
           <div className="bg-white rounded-2xl shadow-card-hover border border-surface-border p-8">
             {success ? (
@@ -131,11 +124,11 @@ export default function ResetPasswordPage() {
                   Choose a strong password to secure your account.
                 </p>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                  {error && (
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                  {serverError && (
                     <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-start gap-2">
                       <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
-                      {error}
+                      {serverError}
                     </div>
                   )}
 
@@ -145,13 +138,14 @@ export default function ResetPasswordPage() {
                     <div className="relative">
                       <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
-                        name="password"
                         type={showPass ? "text" : "password"}
                         placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full pl-9 pr-9 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary"
+                        className={`w-full pl-9 pr-9 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary ${errors.password ? "border-red-400" : "border-gray-300"}`}
+                        {...register("password", {
+                          required: "Password is required",
+                          minLength: { value: 6, message: "Password must be at least 6 characters" },
+                          maxLength: { value: 128, message: "Password is too long" },
+                        })}
                       />
                       <button
                         type="button"
@@ -161,8 +155,9 @@ export default function ResetPasswordPage() {
                         {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
+                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
                     {/* Strength bar */}
-                    {password && (
+                    {watchedPassword && (
                       <div className="mt-1.5">
                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                           <div
@@ -183,17 +178,13 @@ export default function ResetPasswordPage() {
                     <div className="relative">
                       <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
-                        name="confirmPassword"
                         type={showConfirm ? "text" : "password"}
                         placeholder="••••••••"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        className={`w-full pl-9 pr-9 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary ${
-                          confirmPassword && confirmPassword !== password
-                            ? "border-red-400"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-full pl-9 pr-9 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary ${errors.confirmPassword ? "border-red-400" : "border-gray-300"}`}
+                        {...register("confirmPassword", {
+                          required: "Please confirm your password",
+                          validate: (value) => value === watchedPassword || "Passwords do not match",
+                        })}
                       />
                       <button
                         type="button"
@@ -203,13 +194,11 @@ export default function ResetPasswordPage() {
                         {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
-                    {confirmPassword && confirmPassword !== password && (
-                      <p className="text-xs text-red-500 mt-0.5">Passwords do not match</p>
-                    )}
+                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>}
                   </div>
 
-                  <Button type="submit" fullWidth loading={loading} className="mt-2">
-                    Reset Password
+                  <Button type="submit" fullWidth loading={isSubmitting} className="mt-2">
+                    {isSubmitting ? "Resetting…" : "Reset Password"}
                   </Button>
                 </form>
               </>

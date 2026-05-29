@@ -364,7 +364,7 @@ export default function SearchPage() {
         {!searchQuery && (
           <Card className="text-center py-16 text-gray-400">
             <Search size={40} className="mx-auto mb-4 text-gray-300" />
-            <p className="font-semibold text-gray-900 text-base">Search the Graphite network</p>
+            <p className="font-semibold text-gray-900 text-base">Search the Graphyte network</p>
             <p className="text-sm mt-1">Find people, jobs, and posts across the platform</p>
           </Card>
         )}

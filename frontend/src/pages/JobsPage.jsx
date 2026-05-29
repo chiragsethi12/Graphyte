@@ -63,7 +63,7 @@ export default function JobsPage() {
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900">Opportunities</h1>
             <p className="text-sm text-gray-500 mt-1">
-              Professional placements curated for the Graphite network.
+              Professional placements curated for the Graphyte network.
             </p>
           </div>
           <Button size="sm" className="flex items-center gap-2" onClick={() => setShowPostModal(true)}>

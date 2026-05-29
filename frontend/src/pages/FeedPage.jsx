@@ -73,7 +73,7 @@ export default function FeedPage() {
               </h3>
               <p className="text-sm text-gray-500 mb-2 max-w-sm mx-auto leading-relaxed">
                 Connect with people to see their posts here. Building your
-                network is the best way to get value from Graphite.
+                network is the best way to get value from Graphyte.
               </p>
               <p className="text-xs text-gray-400 mb-6 flex items-center justify-center gap-1">
                 <Sparkles size={12} />
@@ -122,7 +122,7 @@ export default function FeedPage() {
         {/* Trending posts */}
         {trending.length > 0 && (
           <Card className="p-5">
-            <h3 className="font-bold text-gray-900 text-sm mb-3">🔥 Trending on Graphite</h3>
+            <h3 className="font-bold text-gray-900 text-sm mb-3">🔥 Trending on Graphyte</h3>
             <div className="space-y-3">
               {trending.slice(0, 5).map((post) => (
                 <div key={post._id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">

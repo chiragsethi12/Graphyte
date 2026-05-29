@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import Input from "../../components/ui/Input";
@@ -9,25 +10,23 @@ import toast from "react-hot-toast";
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
   const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
 
-  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({ defaultValues: { email: "", password: "" } });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const onSubmit = async (values) => {
+    setServerError("");
     try {
-      await login(form.email, form.password);
+      await login(values.email, values.password);
       toast.success("Welcome back!");
       navigate("/feed");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials");
-    } finally {
-      setLoading(false);
+      setServerError(err.response?.data?.message || "Invalid credentials");
     }
   };
 
@@ -36,7 +35,7 @@ export default function LoginPage() {
       {/* Left — Brand panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary-900 flex-col justify-between p-12 text-white">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Graphite</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Graphyte</h1>
           <p className="text-primary-200 text-sm">Professional Networking Platform</p>
         </div>
         <div>
@@ -54,34 +53,38 @@ export default function LoginPage() {
             ))}
           </div>
         </div>
-        <p className="text-primary-300 text-xs">© 2024 Graphite Professional. All rights reserved.</p>
+        <p className="text-primary-300 text-xs">© 2024 Graphyte Professional. All rights reserved.</p>
       </div>
 
       {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-surface-muted">
         <div className="w-full max-w-[400px]">
           <div className="lg:hidden mb-8">
-            <h1 className="text-2xl font-extrabold text-primary">Graphite</h1>
+            <h1 className="text-2xl font-extrabold text-primary">Graphyte</h1>
           </div>
           <div className="bg-white rounded-2xl shadow-card-hover border border-surface-border p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
-            <p className="text-sm text-gray-500 mb-6">Sign in to your Graphite account</p>
+            <p className="text-sm text-gray-500 mb-6">Sign in to your Graphyte account</p>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {error && (
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+              {serverError && (
                 <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
-                  {error}
+                  {serverError}
                 </div>
               )}
               <Input
                 label="Email"
-                name="email"
                 type="email"
                 placeholder="you@example.com"
-                value={form.email}
-                onChange={handleChange}
                 icon={Mail}
-                required
+                error={errors.email?.message}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please enter a valid email address",
+                  },
+                })}
               />
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
@@ -91,13 +94,12 @@ export default function LoginPage() {
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
-                    name="password"
                     type={showPass ? "text" : "password"}
                     placeholder="••••••••"
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                    className="w-full pl-9 pr-9 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary"
+                    className={`w-full pl-9 pr-9 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary ${errors.password ? "border-red-400" : "border-gray-300"}`}
+                    {...register("password", {
+                      required: "Password is required",
+                    })}
                   />
                   <button
                     type="button"
@@ -107,16 +109,17 @@ export default function LoginPage() {
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
               </div>
-              <Button type="submit" fullWidth loading={loading} className="mt-2">
-                Sign In
+              <Button type="submit" fullWidth loading={isSubmitting} className="mt-2">
+                {isSubmitting ? "Signing in…" : "Sign In"}
               </Button>
             </form>
 
             <p className="text-center text-sm text-gray-500 mt-6">
               Don't have an account?{" "}
               <Link to="/register" className="text-primary font-semibold hover:underline">
-                Join Graphite
+                Join Graphyte
               </Link>
             </p>
           </div>

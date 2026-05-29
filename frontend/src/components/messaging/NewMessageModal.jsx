@@ -159,7 +159,7 @@ export default function NewMessageModal({ open, onClose, onSelect, existingConve
                     {conn.name}
                   </p>
                   <p className="text-xs text-gray-500 truncate mt-0.5">
-                    {conn.headline || conn.location || "Graphite member"}
+                    {conn.headline || conn.location || "Graphyte member"}
                   </p>
                 </div>
                 {isOnline && (
