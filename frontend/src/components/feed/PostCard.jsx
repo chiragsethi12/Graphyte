@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Heart, MessageCircle, Share2, Trash2, MoreHorizontal,
-  ChevronDown, ChevronUp, Send, X,
+  ChevronDown, ChevronUp, Send, X, Bookmark, Pencil,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../lib/axios";
@@ -10,6 +10,7 @@ import { useAuth } from "../../context/AuthContext";
 import Avatar from "../ui/Avatar";
 import Button from "../ui/Button";
 import ConfirmAction from "../ui/ConfirmDialog";
+import ImageLightbox from "../ui/ImageLightbox";
 import formatRelativeTime from "../../utils/formatRelativeTime";
 import toast from "react-hot-toast";
 
@@ -150,6 +151,71 @@ function ShareModal({ postId, onClose }) {
   );
 }
 
+// ─── Edit Modal ──────────────────────────────────────────────────────────────────
+
+function EditModal({ post, onClose, onSave }) {
+  const [editContent, setEditContent] = useState(post.content || "");
+  const queryClient = useQueryClient();
+
+  const editMutation = useMutation({
+    mutationFn: (content) => api.patch(`/posts/${post._id}`, { content }),
+    onMutate: async (content) => {
+      // Optimistic update
+      onSave(content);
+      return { previousContent: post.content };
+    },
+    onError: (err, _content, context) => {
+      // Rollback
+      if (context?.previousContent !== undefined) {
+        onSave(context.previousContent);
+      }
+      toast.error(err.response?.data?.message || "Failed to edit post");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+      onClose();
+    },
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-card shadow-2xl w-full max-w-md p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-gray-900">Edit Post</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
+            <X size={16} />
+          </button>
+        </div>
+        <textarea
+          value={editContent}
+          onChange={(e) => setEditContent(e.target.value)}
+          rows={4}
+          maxLength={3000}
+          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-300"
+        />
+        <p className={`text-[10px] mt-1 text-right tabular-nums ${
+          3000 - editContent.length < 100 ? "text-red-400" : "text-gray-400"
+        }`}>
+          {(3000 - editContent.length).toLocaleString()} remaining
+        </p>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => editMutation.mutate(editContent.trim())}
+            loading={editMutation.isPending}
+            disabled={!editContent.trim()}
+          >
+            Save Changes
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Post Card ────────────────────────────────────────────────────────────────
 
 export default function PostCard({ post: initialPost }) {
@@ -159,10 +225,14 @@ export default function PostCard({ post: initialPost }) {
   const [post, setPost] = useState(initialPost);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [replyingTo, setReplyingTo] = useState(null); // comment object
+  const [replyingTo, setReplyingTo] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const isOwner = user?._id === post.author?._id;
+  const canEdit = isOwner && (Date.now() - new Date(post.createdAt).getTime() < 10 * 60 * 1000);
 
   // ── Like ─────────────────────────────────────────────────────────────────
   const likeMutation = useMutation({
@@ -199,6 +269,24 @@ export default function PostCard({ post: initialPost }) {
       queryClient.invalidateQueries({ queryKey: ["userPosts"] });
     },
     onError: () => toast.error("Failed to delete post"),
+  });
+
+  // ── Save / Bookmark ──────────────────────────────────────────────────────────
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      isSaved
+        ? api.delete(`/saved/${post._id}`)
+        : api.post(`/saved/${post._id}`),
+    onMutate: () => {
+      setIsSaved((prev) => !prev);
+    },
+    onError: () => {
+      setIsSaved((prev) => !prev);
+      toast.error("Failed to update saved post");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["savedPosts"] });
+    },
   });
 
   // ── Comments ──────────────────────────────────────────────────────────────
@@ -253,22 +341,33 @@ export default function PostCard({ post: initialPost }) {
             </div>
           </Link>
 
-          {isOwner && (
-            <ConfirmAction
-              onConfirm={() => deleteMutation.mutate()}
-              message="Delete this post?"
-              confirmLabel="Delete"
-            >
-              {(requestConfirm) => (
-                <button
-                  onClick={requestConfirm}
-                  className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                >
-                  <Trash2 size={15} />
-                </button>
-              )}
-            </ConfirmAction>
-          )}
+          <div className="flex items-center gap-1">
+            {canEdit && (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary transition-colors"
+                title="Edit post"
+              >
+                <Pencil size={14} />
+              </button>
+            )}
+            {isOwner && (
+              <ConfirmAction
+                onConfirm={() => deleteMutation.mutate()}
+                message="Delete this post?"
+                confirmLabel="Delete"
+              >
+                {(requestConfirm) => (
+                  <button
+                    onClick={requestConfirm}
+                    className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                )}
+              </ConfirmAction>
+            )}
+          </div>
         </div>
 
         {/* Content */}
@@ -293,12 +392,18 @@ export default function PostCard({ post: initialPost }) {
 
         {/* Image */}
         {post.image && (
-          <img
-            src={post.image}
-            alt="Post"
-            className="w-full max-h-[500px] object-cover"
-            loading="lazy"
-          />
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            className="w-full cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-primary-300"
+          >
+            <img
+              src={post.image}
+              alt="Post"
+              className="w-full max-h-[500px] object-cover"
+              loading="lazy"
+            />
+          </button>
         )}
 
         {/* Shared post preview */}
@@ -387,6 +492,23 @@ export default function PostCard({ post: initialPost }) {
             <Share2 size={15} />
             Share
           </button>
+
+          {/* Spacer to push bookmark to the right */}
+          <div className="flex-1" />
+
+          <button
+            onClick={() => saveMutation.mutate()}
+            disabled={saveMutation.isPending}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              isSaved
+                ? "text-primary bg-primary-50"
+                : "text-gray-500 hover:bg-gray-100"
+            }`}
+            title={isSaved ? "Unsave post" : "Save post"}
+          >
+            <Bookmark size={15} className={isSaved ? "fill-primary" : ""} />
+            {isSaved ? "Saved" : "Save"}
+          </button>
         </div>
 
         {/* Comments section */}
@@ -452,6 +574,22 @@ export default function PostCard({ post: initialPost }) {
 
       {showShareModal && (
         <ShareModal postId={post._id} onClose={() => setShowShareModal(false)} />
+      )}
+
+      {showEditModal && (
+        <EditModal
+          post={post}
+          onClose={() => setShowEditModal(false)}
+          onSave={(newContent) => setPost((p) => ({ ...p, content: newContent }))}
+        />
+      )}
+
+      {lightboxOpen && post.image && (
+        <ImageLightbox
+          src={post.image}
+          alt={`Post by ${post.author?.name}`}
+          onClose={() => setLightboxOpen(false)}
+        />
       )}
     </>
   );

@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Briefcase, Plus, X, Edit2 } from 'lucide-react';
+import { Briefcase, Plus, X, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../lib/axios';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import ConfirmAction from '../ui/ConfirmDialog';
 import toast from 'react-hot-toast';
 
-function ExperienceItem({ exp, isLast }) {
+function ExperienceItem({ exp, isLast, isEditing, onDelete, isDeleting }) {
   const duration = [exp.startDate, exp.endDate || 'Present'].join(' – ');
   const isCurrent = !exp.endDate || exp.endDate === 'Present';
 
@@ -34,6 +35,23 @@ function ExperienceItem({ exp, isLast }) {
             <p className="text-sm text-gray-600 mt-0.5">{exp.company} · Full-time</p>
             <p className="text-xs text-gray-400 mt-1">{duration}</p>
           </div>
+          {isEditing && (
+            <ConfirmAction
+              onConfirm={onDelete}
+              message={`Remove "${exp.title} at ${exp.company}"?`}
+              confirmLabel="Remove"
+            >
+              {(requestConfirm) => (
+                <button
+                  onClick={requestConfirm}
+                  disabled={isDeleting}
+                  className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </ConfirmAction>
+          )}
         </div>
         {exp.description && (
           <p className="text-sm text-gray-500 mt-3 leading-relaxed">{exp.description}</p>
@@ -44,7 +62,8 @@ function ExperienceItem({ exp, isLast }) {
 }
 
 export default function ExperienceSection({ experiences = [], isOwner = false, userId }) {
-  const [open, setOpen] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
     title: '',
     company: '',
@@ -54,17 +73,50 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
   });
   const queryClient = useQueryClient();
 
+  const invalidateProfiles = () => {
+    queryClient.invalidateQueries({
+      predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === 'profile',
+    });
+  };
+
   const addMutation = useMutation({
     mutationFn: () => api.put('/users/profile', { experience: [...experiences, form] }),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === 'profile',
-      });
-      setOpen(false);
+      invalidateProfiles();
+      setShowAdd(false);
       setForm({ title: '', company: '', startDate: '', endDate: '', description: '' });
       toast.success('Experience added!');
     },
     onError: () => toast.error('Failed to save'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (index) => {
+      const updated = experiences.filter((_, i) => i !== index);
+      return api.put('/users/profile', { experience: updated });
+    },
+    onMutate: async (index) => {
+      await queryClient.cancelQueries({ queryKey: ['profile'] });
+      const previous = queryClient.getQueriesData({ queryKey: ['profile'] });
+      queryClient.setQueriesData({ queryKey: ['profile'] }, (old) => {
+        if (!old?.user) return old;
+        return {
+          ...old,
+          user: { ...old.user, experience: old.user.experience.filter((_, i) => i !== index) },
+        };
+      });
+      return { previous };
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previous) {
+        for (const [key, data] of context.previous) {
+          queryClient.setQueryData(key, data);
+        }
+      }
+      toast.error('Failed to remove experience');
+    },
+    onSettled: () => invalidateProfiles(),
+    onSuccess: () => toast.success('Experience removed'),
   });
 
   return (
@@ -75,12 +127,17 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
           {isOwner && (
             <>
               <button
-                onClick={() => setOpen((p) => !p)}
+                onClick={() => { setShowAdd((p) => !p); if (isEditing) setIsEditing(false); }}
                 className="p-2 rounded-xl text-gray-400 hover:text-primary hover:bg-primary-50/50 transition-all"
               >
-                {open ? <X size={16} /> : <Plus size={16} />}
+                {showAdd ? <X size={16} /> : <Plus size={16} />}
               </button>
-              <button className="p-2 rounded-xl text-gray-400 hover:text-primary hover:bg-primary-50/50 transition-all">
+              <button
+                onClick={() => { setIsEditing((p) => !p); if (showAdd) setShowAdd(false); }}
+                className={`p-2 rounded-xl transition-all ${
+                  isEditing ? 'text-primary bg-primary-50/50' : 'text-gray-400 hover:text-primary hover:bg-primary-50/50'
+                }`}
+              >
                 <Edit2 size={16} />
               </button>
             </>
@@ -88,7 +145,7 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
         </div>
       </div>
 
-      {open && (
+      {showAdd && (
         <div className="mb-6 p-5 bg-gray-50/80 rounded-xl border border-gray-100 flex flex-col gap-3.5">
           <Input
             label="Title"
@@ -123,7 +180,7 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
             placeholder="Brief description of your role…"
           />
           <div className="flex justify-end gap-2 mt-1">
-            <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={() => setShowAdd(false)}>Cancel</Button>
             <Button size="sm" onClick={() => addMutation.mutate()} loading={addMutation.isPending}>
               Save
             </Button>
@@ -131,9 +188,22 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
         </div>
       )}
 
+      {isEditing && experiences.length > 0 && (
+        <p className="text-xs text-gray-400 mb-4 -mt-2">
+          Click the <Trash2 size={11} className="inline text-gray-400" /> icon to remove an entry.
+        </p>
+      )}
+
       <div className="flex flex-col">
         {experiences.map((exp, i) => (
-          <ExperienceItem key={i} exp={exp} isLast={i === experiences.length - 1} />
+          <ExperienceItem
+            key={i}
+            exp={exp}
+            isLast={i === experiences.length - 1}
+            isEditing={isEditing}
+            onDelete={() => deleteMutation.mutate(i)}
+            isDeleting={deleteMutation.isPending}
+          />
         ))}
         {experiences.length === 0 && (
           <p className="text-sm text-gray-400 italic">

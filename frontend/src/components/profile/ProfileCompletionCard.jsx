@@ -6,13 +6,56 @@ import Card from "../ui/Card";
 const FIELDS = [
   { key: "name",       label: "Full name",       weight: 10, check: (u) => !!u.name?.trim() },
   { key: "headline",   label: "Headline",         weight: 15, check: (u) => !!u.headline?.trim() },
-  { key: "about",      label: "About / Bio",      weight: 15, check: (u) => !!(u.about?.trim() || u.bio?.trim()) },
-  { key: "location",   label: "Location",         weight: 10, check: (u) => !!u.location?.trim() },
+  { key: "about",      label: "About / Bio",      weight: 20, check: (u) => !!(u.about?.trim() || u.bio?.trim()) },
   { key: "profilePic", label: "Profile photo",     weight: 15, check: (u) => !!u.profilePic },
-  { key: "skills",     label: "Skills",            weight: 15, check: (u) => u.skills?.length > 0 },
-  { key: "experience", label: "Experience",        weight: 10, check: (u) => u.experience?.length > 0 },
-  { key: "education",  label: "Education",         weight: 10, check: (u) => u.education?.length > 0 },
+  { key: "bannerPic",  label: "Banner image",      weight: 5,  check: (u) => !!u.bannerPic },
+  { key: "location",   label: "Location",          weight: 5,  check: (u) => !!u.location?.trim() },
+  { key: "skills",     label: "Skills (3+)",       weight: 10, check: (u) => (u.skills?.length || 0) >= 3 },
+  { key: "experience", label: "Experience",        weight: 10, check: (u) => (u.experience?.length || 0) >= 1 },
+  { key: "education",  label: "Education",         weight: 10, check: (u) => (u.education?.length || 0) >= 1 },
 ];
+
+/* ─── SVG Circular Progress Ring ──────────────────────────────── */
+function ProgressRing({ percentage, size = 96, strokeWidth = 7 }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  // Color based on completion
+  const strokeColor =
+    percentage >= 80
+      ? "#22c55e"   // green-500
+      : percentage >= 50
+      ? "#f59e0b"   // amber-500
+      : "#660033";  // primary
+
+  return (
+    <svg width={size} height={size} className="transform -rotate-90">
+      {/* Background track */}
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#f3f4f6"
+        strokeWidth={strokeWidth}
+      />
+      {/* Progress arc */}
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={strokeColor}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        className="transition-all duration-700 ease-out"
+      />
+    </svg>
+  );
+}
 
 export default function ProfileCompletionCard({ profile }) {
   const navigate = useNavigate();
@@ -41,44 +84,32 @@ export default function ProfileCompletionCard({ profile }) {
   // Don't show if profile is 100% complete
   if (percentage === 100) return null;
 
-  // Calculate next milestone
-  const nextMilestone = suggestions.length > 0
-    ? percentage + suggestions[0].weight
-    : 100;
-
-  // Color based on completion
-  const barColor =
-    percentage >= 80
-      ? "bg-green-500"
-      : percentage >= 50
-      ? "bg-amber-500"
-      : "bg-primary";
-
   return (
-    <Card className="p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${barColor}`}>
-          {percentage}%
+    <Card className="p-5">
+      {/* Ring + heading */}
+      <div className="flex items-center gap-4 mb-4">
+        <div className="relative flex-shrink-0">
+          <ProgressRing percentage={percentage} size={80} strokeWidth={6} />
+          {/* Percentage text centered in the ring */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-lg font-extrabold text-gray-800">{percentage}%</span>
+          </div>
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-800">Profile Completion</p>
-          <p className="text-[11px] text-gray-400">
-            {percentage < 50 ? "Let's get started!" : percentage < 80 ? "Looking good!" : "Almost there!"}
+          <p className="text-sm font-bold text-gray-800">Profile Strength</p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {percentage < 50
+              ? "Let's get started!"
+              : percentage < 80
+              ? "Looking good — keep going!"
+              : "Almost there!"}
           </p>
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ease-out ${barColor}`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-
       {/* Suggestions */}
       {suggestions.length > 0 && (
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {suggestions.slice(0, 3).map((field) => (
             <button
               key={field.key}
@@ -96,7 +127,7 @@ export default function ProfileCompletionCard({ profile }) {
         </div>
       )}
 
-      {/* Completed fields (collapsed) */}
+      {/* Completed fields */}
       {completed.length > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="flex flex-wrap gap-1.5">

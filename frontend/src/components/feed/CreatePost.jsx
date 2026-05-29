@@ -19,6 +19,7 @@ export default function CreatePost() {
   const [preview, setPreview] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
   const charCount = content.length;
@@ -53,28 +54,50 @@ export default function CreatePost() {
     },
   });
 
-  const handleFile = (e) => {
-    const file = e.target.files[0];
+  // Shared file validation
+  const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+  const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+
+  const validateAndSetFile = (file) => {
     if (!file) return;
-
-    // Type check
-    const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!allowed.includes(file.type)) {
+    if (!ALLOWED_TYPES.includes(file.type)) {
       toast.error("Only JPEG, PNG, WebP, and GIF images are allowed");
-      e.target.value = "";
       return;
     }
-
-    // Size check (10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_SIZE) {
       toast.error("Image must be under 10MB");
-      e.target.value = "";
       return;
     }
-
     setImage(file);
     setPreview(URL.createObjectURL(file));
     setUploadError(null);
+    setIsExpanded(true);
+  };
+
+  const handleFile = (e) => {
+    validateAndSetFile(e.target.files[0]);
+    if (e.target) e.target.value = "";
+  };
+
+  // Drag-and-drop handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    validateAndSetFile(file);
   };
 
   const removeImage = () => {
@@ -96,18 +119,33 @@ export default function CreatePost() {
     <div className="bg-white rounded-card shadow-card border border-surface-border p-4">
       <div className="flex gap-3">
         <Avatar src={user?.profilePic} name={user?.name} size="md" />
-        <div className="flex-1">
+        <div
+          className={`flex-1 relative ${
+            isDragging
+              ? "ring-2 ring-primary ring-offset-2 rounded-xl bg-primary-50/30"
+              : ""
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {/* Drag overlay indicator */}
+          {isDragging && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-primary-50/50 pointer-events-none">
+              <p className="text-sm font-medium text-primary">Drop image here</p>
+            </div>
+          )}
+
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => setIsExpanded(true)}
             placeholder={`What's on your mind, ${user?.name?.split(" ")[0]}?`}
             rows={isExpanded ? 4 : 2}
-            maxLength={MAX_CHARS + 100} // Allow typing past for UX, but enforce via UI
+            maxLength={MAX_CHARS + 100}
             className="w-full text-sm text-gray-800 placeholder-gray-400 resize-none focus:outline-none leading-relaxed"
           />
 
-          {/* Character counter — always visible when expanded */}
           {isExpanded && (
             <div className="flex items-center justify-between mt-0.5">
               <p className="text-[10px] text-gray-300">
@@ -117,12 +155,14 @@ export default function CreatePost() {
                 className={`text-[10px] font-medium tabular-nums transition-colors ${
                   isOverLimit
                     ? "text-red-500 font-bold"
-                    : isWarning
+                    : MAX_CHARS - charCount < 100
                     ? "text-red-400"
+                    : isWarning
+                    ? "text-amber-500"
                     : "text-gray-400"
                 }`}
               >
-                {charCount.toLocaleString()}/{MAX_CHARS.toLocaleString()}
+                {(MAX_CHARS - charCount).toLocaleString()} remaining
               </p>
             </div>
           )}

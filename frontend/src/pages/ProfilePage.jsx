@@ -331,7 +331,13 @@ export default function ProfilePage() {
     <MainLayout>
       <div className="max-w-[1024px] mx-auto space-y-4">
         {/* ── Hero Card (Full Width) ─────────────────────── */}
-        <ProfileHeader profile={profile} stats={stats} isOwner={isOwner} />
+        <ProfileHeader
+          profile={profile}
+          stats={stats}
+          isOwner={isOwner}
+          mutuals={mutuals}
+          mutualCount={mutualData?.count || mutuals.length}
+        />
 
         {/* ── Two Column Layout ──────────────────────────── */}
         <div className="flex flex-col lg:flex-row gap-4 items-start">
@@ -368,7 +374,7 @@ export default function ProfilePage() {
             {/* About tab */}
             {activeTab === 'about' && (
               <>
-                <AboutSection about={profile.about || profile.bio} isOwner={isOwner} />
+                <AboutSection about={profile.about || profile.bio} isOwner={isOwner} userId={profile._id} />
                 <ExperienceSection experiences={profile.experience || []} isOwner={isOwner} userId={profile._id} />
                 <EducationSection educations={profile.education || []} isOwner={isOwner} userId={profile._id} />
                 <SkillsSection skills={profile.skills || []} isOwner={isOwner} userId={profile._id} />

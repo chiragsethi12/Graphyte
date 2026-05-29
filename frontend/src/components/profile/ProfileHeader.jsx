@@ -10,6 +10,7 @@ import Avatar from '../ui/Avatar';
 import Button from '../ui/Button';
 import ConfirmAction from '../ui/ConfirmDialog';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 /* ─── Connection Action Buttons ────────────────────────────────── */
 
@@ -68,7 +69,7 @@ function ConnectionActions({ userId }) {
 
 /* ─── Profile Header Hero ──────────────────────────────────────── */
 
-export default function ProfileHeader({ profile, stats, isOwner }) {
+export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], mutualCount = 0 }) {
   const navigate = useNavigate();
   const [bannerError, setBannerError] = useState(false);
   const connectionCount = stats?.connectionCount ?? profile?.connections?.length ?? 0;
@@ -175,6 +176,27 @@ export default function ProfileHeader({ profile, stats, isOwner }) {
             <p className="mt-1.5 text-[13px] text-primary font-semibold hover:underline cursor-pointer">
               {connectionCount} connection{connectionCount !== 1 ? 's' : ''}
             </p>
+
+            {/* Mutual connections avatar stack (non-owner view only) */}
+            {!isOwner && mutuals.length > 0 && (
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex -space-x-2">
+                  {mutuals.slice(0, 3).map((m) => (
+                    <Link
+                      key={m._id}
+                      to={`/profile/${m.username || m._id}`}
+                      className="inline-block ring-2 ring-white rounded-full hover:z-10 transition-transform hover:scale-110"
+                    >
+                      <Avatar src={m.profilePic} name={m.name} size="xs" />
+                    </Link>
+                  ))}
+                </div>
+                <p className="text-[12px] text-gray-500">
+                  <span className="font-semibold text-gray-700">{mutualCount || mutuals.length}</span>
+                  {' '}mutual connection{(mutualCount || mutuals.length) !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Right: Affiliations summary */}

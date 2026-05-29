@@ -50,7 +50,12 @@ export default function SkillsSection({ skills = [], isOwner = false, userId }) 
               >
                 {open ? <X size={16} /> : <Plus size={16} />}
               </button>
-              <button className="p-2 rounded-xl text-gray-400 hover:text-primary hover:bg-primary-50/50 transition-all">
+              <button
+                onClick={() => setOpen((p) => !p)}
+                className={`p-2 rounded-xl transition-all ${
+                  open ? 'text-primary bg-primary-50/50' : 'text-gray-400 hover:text-primary hover:bg-primary-50/50'
+                }`}
+              >
                 <Edit2 size={16} />
               </button>
             </>
