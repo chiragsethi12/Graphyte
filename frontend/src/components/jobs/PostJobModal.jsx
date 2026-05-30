@@ -45,10 +45,14 @@ export default function PostJobModal({ onClose }) {
     const update = (key, val) => setForm((f) => ({ ...f, [key]: val }));
     const updateSalary = (key, val) => setForm((f) => ({ ...f, salary: { ...f.salary, [key]: val } }));
 
-    const addSkill = () => {
-        const s = form.skillInput.trim();
-        if (s && !form.skills.includes(s)) {
-            update("skills", [...form.skills, s]);
+    const addSkill = (val) => {
+        const input = typeof val === "string" ? val : form.skillInput;
+        const newSkills = input
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s && !form.skills.includes(s));
+        if (newSkills.length > 0) {
+            update("skills", [...form.skills, ...newSkills]);
         }
         update("skillInput", "");
     };
@@ -74,7 +78,7 @@ export default function PostJobModal({ onClose }) {
                 } : undefined,
             }),
         onSuccess: () => {
-            toast.success("Job posted successfully!");
+            toast.success("Job posted!");
             queryClient.invalidateQueries({ queryKey: ["jobs"] });
             queryClient.invalidateQueries({ queryKey: ["myListings"] });
             onClose();
@@ -216,7 +220,14 @@ export default function PostJobModal({ onClose }) {
                         <div className="flex gap-2">
                             <Input
                                 value={form.skillInput}
-                                onChange={(e) => update("skillInput", e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val.endsWith(",")) {
+                                        addSkill(val);
+                                    } else {
+                                        update("skillInput", val);
+                                    }
+                                }}
                                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
                                 placeholder="Add a skill and press Enter"
                                 className="flex-1"

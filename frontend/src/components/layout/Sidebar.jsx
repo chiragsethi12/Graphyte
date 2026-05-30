@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Newspaper, Users, Briefcase, MessageSquare, BarChart2,
   Search, Bell, Shield, Star, Crown, Settings
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import api from "../../lib/axios";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
+import JobDetailModal from "../jobs/JobDetailModal";
 
 const navItems = [
   { to: "/feed",          icon: Newspaper,     label: "Feed" },
@@ -19,6 +23,16 @@ const navItems = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const { user, unreadNotifications, unreadMessages } = useAuth();
+  const [selectedJobId, setSelectedJobId] = useState(null);
+
+  // Fetch recommended jobs
+  const { data: recData, isLoading: isRecLoading } = useQuery({
+    queryKey: ["recommendedJobs"],
+    queryFn: () => api.get("/jobs/recommended").then((r) => r.data),
+    enabled: !!user,
+  });
+
+  const recommendedJobs = recData?.jobs || [];
 
   return (
     <aside className="w-[220px] flex-shrink-0 hidden lg:flex flex-col h-screen sticky top-0 bg-white border-r border-surface-border">
@@ -56,6 +70,40 @@ export default function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Recommended Jobs Section */}
+        {user && (
+          <div className="mt-6 pt-6 border-t border-surface-border flex flex-col gap-3">
+            <div>
+              <h3 className="text-xs font-bold text-gray-900 px-1">Recommended Jobs</h3>
+              <p className="text-[10px] text-gray-500 mt-0.5 px-1 leading-normal line-clamp-2">
+                Based on your skills: {user.skills?.length > 0 ? user.skills.join(", ") : "None added yet"}
+              </p>
+            </div>
+            {isRecLoading ? (
+              <div className="flex flex-col gap-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-10 bg-gray-50 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : recommendedJobs.length === 0 ? (
+              <p className="text-[11px] text-gray-400 italic px-1">No recommendations found</p>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {recommendedJobs.slice(0, 4).map((job) => (
+                  <div
+                    key={job._id}
+                    onClick={() => setSelectedJobId(job._id)}
+                    className="p-2 rounded-lg border border-gray-100 bg-white hover:border-primary hover:bg-primary-50/20 cursor-pointer transition-all duration-150"
+                  >
+                    <p className="text-xs font-semibold text-gray-800 truncate">{job.title}</p>
+                    <p className="text-[10px] text-gray-500 truncate mt-0.5">{job.company} • {job.location}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Bottom section */}
@@ -85,6 +133,9 @@ export default function Sidebar() {
           </button>
         </div>
       </div>
+      {selectedJobId && (
+        <JobDetailModal jobId={selectedJobId} onClose={() => setSelectedJobId(null)} />
+      )}
     </aside>
   );
 }

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { User, Lock, Bell, Shield, Camera, Save, Eye, EyeOff, X, Image as ImageIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { User, Lock, Shield, Camera, Save, Eye, EyeOff, X, Image as ImageIcon, Bookmark } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import MainLayout from '../components/layout/MainLayout';
@@ -335,42 +337,38 @@ function EditProfileTab() {
   );
 }
 
-function AccountTab() {
+function ChangePasswordSection() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
-  const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const { register, handleSubmit, watch, formState: { errors }, reset } = useForm();
 
   const changePwMutation = useMutation({
-    mutationFn: () =>
-      api.put('/users/change-password', {
-        currentPassword: form.currentPassword,
-        newPassword: form.newPassword,
+    mutationFn: (data) =>
+      api.patch('/users/me/password', {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
       }),
     onSuccess: () => {
       toast.success('Password changed!');
-      setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      reset();
     },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed'),
+    onError: (err) => toast.error(err.response?.data?.message || 'Failed to update password'),
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (form.newPassword !== form.confirmPassword) return toast.error("Passwords don't match");
-    if (form.newPassword.length < 6) return toast.error('Min 6 characters');
-    changePwMutation.mutate();
+  const onSubmit = (data) => {
+    changePwMutation.mutate(data);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
-      <h3 className="font-bold text-gray-900">Change Password</h3>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md pb-6 border-b border-surface-border">
+      <h3 className="font-bold text-gray-900 text-sm">Change Password</h3>
       <div>
-        <label className="text-xs font-medium text-gray-500 mb-1 block">Current Password</label>
+        <label className="text-xs font-semibold text-gray-600 mb-1 block">Current Password</label>
         <div className="relative">
           <input
             type={showCurrent ? 'text' : 'password'}
-            value={form.currentPassword}
-            onChange={(e) => setForm((f) => ({ ...f, currentPassword: e.target.value }))}
-            className="input-base pr-10"
+            {...register("currentPassword", { required: "Current password is required" })}
+            className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary pr-10 transition-all"
           />
           <button
             type="button"
@@ -380,15 +378,18 @@ function AccountTab() {
             {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         </div>
+        {errors.currentPassword && <p className="text-xs text-red-500 mt-1">{errors.currentPassword.message}</p>}
       </div>
       <div>
-        <label className="text-xs font-medium text-gray-500 mb-1 block">New Password</label>
+        <label className="text-xs font-semibold text-gray-600 mb-1 block">New Password</label>
         <div className="relative">
           <input
             type={showNew ? 'text' : 'password'}
-            value={form.newPassword}
-            onChange={(e) => setForm((f) => ({ ...f, newPassword: e.target.value }))}
-            className="input-base pr-10"
+            {...register("newPassword", {
+              required: "New password is required",
+              minLength: { value: 6, message: "New password must be at least 6 characters" }
+            })}
+            className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary pr-10 transition-all"
           />
           <button
             type="button"
@@ -398,15 +399,19 @@ function AccountTab() {
             {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         </div>
+        {errors.newPassword && <p className="text-xs text-red-500 mt-1">{errors.newPassword.message}</p>}
       </div>
       <div>
-        <label className="text-xs font-medium text-gray-500 mb-1 block">Confirm New Password</label>
+        <label className="text-xs font-semibold text-gray-600 mb-1 block">Confirm New Password</label>
         <input
           type="password"
-          value={form.confirmPassword}
-          onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
-          className="input-base"
+          {...register("confirmPassword", {
+            required: "Please confirm your new password",
+            validate: (value) => value === watch("newPassword") || "Passwords do not match"
+          })}
+          className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
         />
+        {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>}
       </div>
       <Button type="submit" variant="primary" loading={changePwMutation.isPending}>
         Update Password
@@ -415,29 +420,140 @@ function AccountTab() {
   );
 }
 
-function PrivacyTab() {
-  const { user, setUser } = useAuth();
-  const [isPublic, setIsPublic] = useState(user?.isPublic ?? true);
-  const [emailNotif, setEmailNotif] = useState(user?.emailNotifications ?? true);
+function DeleteAccountSection() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
 
-  const mutation = useMutation({
-    mutationFn: () => api.put('/users/privacy', { isPublic, emailNotifications: emailNotif }),
-    onSuccess: ({ data }) => {
-      setUser(data.user);
-      toast.success('Privacy settings updated');
+  const deleteMutation = useMutation({
+    mutationFn: (data) =>
+      api.delete('/users/me', { data: { password: data.password } }),
+    onSuccess: () => {
+      toast.success('Account deleted successfully!');
+      logout();
+      navigate('/login');
     },
+    onError: (err) => toast.error(err.response?.data?.message || 'Delete failed'),
   });
+
+  const confirmText = watch("confirmText");
+  const onSubmit = (data) => {
+    deleteMutation.mutate(data);
+  };
+
+  return (
+    <div className="pt-6 space-y-4 max-w-md">
+      <div>
+        <h3 className="font-bold text-red-650 text-sm">Danger Zone</h3>
+        <p className="text-xs text-gray-500 mt-0.5">Permanently delete your profile and all associated data.</p>
+      </div>
+
+      <div className="p-4 bg-red-50/50 border border-red-100 rounded-xl space-y-4">
+        <p className="text-xs text-red-700 font-medium leading-relaxed">
+          Warning: This action is irreversible. All of your posts, comments, connections, messages, and notifications will be permanently purged from our databases.
+        </p>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+          <div>
+            <label className="text-xs font-semibold text-gray-700 mb-1 block">
+              Type <strong className="text-red-600 select-all">DELETE</strong> to confirm
+            </label>
+            <input
+              type="text"
+              {...register("confirmText", {
+                required: "You must type DELETE to confirm",
+                validate: (v) => v === "DELETE" || "You must type DELETE in all caps"
+              })}
+              placeholder="DELETE"
+              className="w-full px-3 py-2 text-sm bg-white border border-red-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all font-mono"
+            />
+            {errors.confirmText && <p className="text-xs text-red-500 mt-1">{errors.confirmText.message}</p>}
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-gray-700 mb-1 block">Current Password</label>
+            <input
+              type="password"
+              {...register("password", { required: "Your password is required to delete your account" })}
+              className="w-full px-3 py-2 text-sm bg-white border border-red-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"
+            />
+            {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            loading={deleteMutation.isPending}
+            disabled={confirmText !== "DELETE"}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold transition-all"
+          >
+            Permanently Delete Account
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AccountTab() {
+  return (
+    <div className="space-y-6">
+      <ChangePasswordSection />
+      <DeleteAccountSection />
+    </div>
+  );
+}
+
+function PrivacyTab() {
+  const queryClient = useQueryClient();
+
+  const { data: meData, isLoading } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => api.get('/auth/me').then(r => r.data)
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: (updates) => api.patch('/users/me', updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      toast.success('Privacy settings updated!');
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Failed to update settings')
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-1/3" />
+        <div className="h-12 bg-gray-150 rounded w-full" />
+        <div className="h-12 bg-gray-150 rounded w-full" />
+      </div>
+    );
+  }
+
+  const user = meData?.user;
+  const isPublic = user?.isPublic ?? true;
+  const emailNotif = user?.emailNotifications ?? true;
+
+  const handleTogglePublic = () => {
+    toggleMutation.mutate({ isPublic: !isPublic });
+  };
+
+  const handleToggleEmail = () => {
+    toggleMutation.mutate({ emailNotifications: !emailNotif });
+  };
 
   return (
     <div className="space-y-6 max-w-md">
-      <h3 className="font-bold text-gray-900">Privacy Settings</h3>
-      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+      <h3 className="font-bold text-gray-900 text-sm">Privacy Settings</h3>
+      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
         <div>
           <p className="text-sm font-medium text-gray-900">Public Profile</p>
-          <p className="text-xs text-gray-500">Others can find you in search</p>
+          <p className="text-xs text-gray-500">Others can find you in search results</p>
         </div>
         <button
-          onClick={() => setIsPublic((p) => !p)}
+          onClick={handleTogglePublic}
+          disabled={toggleMutation.isPending}
           className={`w-10 h-5 rounded-full transition-colors relative ${isPublic ? 'bg-primary' : 'bg-gray-300'}`}
         >
           <span
@@ -445,13 +561,14 @@ function PrivacyTab() {
           />
         </button>
       </div>
-      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
         <div>
           <p className="text-sm font-medium text-gray-900">Email Notifications</p>
-          <p className="text-xs text-gray-500">Receive email updates</p>
+          <p className="text-xs text-gray-500">Receive email alerts for notifications</p>
         </div>
         <button
-          onClick={() => setEmailNotif((p) => !p)}
+          onClick={handleToggleEmail}
+          disabled={toggleMutation.isPending}
           className={`w-10 h-5 rounded-full transition-colors relative ${emailNotif ? 'bg-primary' : 'bg-gray-300'}`}
         >
           <span
@@ -459,9 +576,6 @@ function PrivacyTab() {
           />
         </button>
       </div>
-      <Button variant="primary" onClick={() => mutation.mutate()} loading={mutation.isPending}>
-        Save Privacy Settings
-      </Button>
     </div>
   );
 }
@@ -483,8 +597,8 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(key)}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-left ${
                   activeTab === key
-                    ? 'bg-primary-50 text-primary'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-primary-50 text-primary font-semibold'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
                 <Icon size={16} /> {label}
@@ -493,7 +607,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Tab content */}
-          <Card className="flex-1 p-6">
+          <Card className="flex-1 p-6 bg-white border border-surface-border">
             {activeTab === 'profile' && <EditProfileTab />}
             {activeTab === 'account' && <AccountTab />}
             {activeTab === 'privacy' && <PrivacyTab />}

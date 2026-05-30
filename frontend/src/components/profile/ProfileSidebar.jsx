@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Globe, Eye, Users, Award, ExternalLink, Copy } from 'lucide-react';
+import { Globe, Eye, Users, Award, ExternalLink, Copy, Bookmark } from 'lucide-react';
 import api from '../../lib/axios';
 import Avatar from '../ui/Avatar';
 import toast from 'react-hot-toast';
@@ -179,6 +179,19 @@ export default function ProfileSidebar({ profile, stats, isOwner, mutuals, mutua
 
       {/* Skill Score (owner only) */}
       {isOwner && <SkillScoreWidget stats={stats} />}
+
+      {/* Shortcuts (owner only) */}
+      {isOwner && (
+        <SidebarCard title="Shortcuts" icon={Bookmark}>
+          <Link
+            to="/saved"
+            className="text-xs font-semibold text-gray-700 hover:text-primary transition-colors flex items-center gap-2 px-1.5 py-1.5 hover:bg-gray-50 rounded-lg"
+          >
+            <Bookmark size={13} className="text-gray-400" />
+            <span>Saved Posts</span>
+          </Link>
+        </SidebarCard>
+      )}
 
       {/* Public Profile URL */}
       <PublicProfileWidget profile={profile} />

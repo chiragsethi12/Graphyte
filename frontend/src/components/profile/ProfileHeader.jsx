@@ -100,6 +100,7 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
           <img
             src={profile.bannerPic}
             alt=""
+            loading="lazy"
             onError={() => setBannerError(true)}
             className="absolute inset-0 w-full h-full object-cover opacity-[0.08]"
           />
@@ -127,6 +128,7 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
               <img
                 src={profile.profilePic}
                 alt={profile.name}
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             ) : (

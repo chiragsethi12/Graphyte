@@ -1,5 +1,4 @@
 import "dotenv/config";  // MUST be first — loads .env before any other import resolves
-import "express-async-errors";
 import express from "express";
 import http from "http";
 import cors from "cors";

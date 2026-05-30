@@ -2,6 +2,11 @@ import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/User.model.js";
 import Post from "../models/Post.model.js";
 import bcrypt from "bcryptjs";
+import Comment from "../models/Comment.model.js";
+import Connection from "../models/Connection.model.js";
+import Message from "../models/Message.model.js";
+import Notification from "../models/Notification.model.js";
+import SavedPost from "../models/SavedPost.model.js";
 
 // ─── GET /api/users/:identifier ─────────────────────────────────────────────
 export const getUserProfile = asyncHandler(async (req, res) => {
@@ -167,6 +172,28 @@ export const getRecommendedUsers = asyncHandler(async (req, res) => {
     const myConnIds = me.connections.map((id) => id.toString());
     const excludeIds = [...myConnIds, req.user._id.toString()];
 
+    const mySkills = me.skills || [];
+    const mySkillSet = new Set(mySkills.map((s) => s.trim().toLowerCase()));
+
+    const getSharedSkillsCount = (userSkills) => {
+        if (!userSkills) return 0;
+        return userSkills.filter((s) => mySkillSet.has(s.trim().toLowerCase())).length;
+    };
+
+    // 1. Users sharing 2+ skills
+    let group1 = [];
+    if (mySkills.length > 0) {
+        const skillRegexes = mySkills.map((s) => new RegExp("^" + s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&") + "$", "i"));
+        const candidates = await User.find({
+            _id: { $nin: excludeIds },
+            isPublic: { $ne: false },
+            skills: { $in: skillRegexes },
+        }).select("name username profilePic headline location skills connections");
+
+        group1 = candidates.filter((u) => getSharedSkillsCount(u.skills) >= 2);
+    }
+
+    // 2. Friends of friends (FoF)
     const friendsOfFriends = await User.find({ _id: { $in: me.connections } }).select("connections");
     const fofIds = new Set();
     friendsOfFriends.forEach((friend) => {
@@ -176,24 +203,43 @@ export const getRecommendedUsers = asyncHandler(async (req, res) => {
         });
     });
 
-    let candidates = await User.find({ _id: { $nin: excludeIds }, isPublic: { $ne: false } })
+    const group1Ids = new Set(group1.map((u) => u._id.toString()));
+    const fofIdsFiltered = Array.from(fofIds).filter((id) => !group1Ids.has(id));
+
+    let group2 = [];
+    if (fofIdsFiltered.length > 0) {
+        group2 = await User.find({
+            _id: { $in: fofIdsFiltered },
+            isPublic: { $ne: false },
+        }).select("name username profilePic headline location skills connections");
+    }
+
+    // 3. Fallback active users
+    const group1And2Ids = new Set([
+        ...group1.map((u) => u._id.toString()),
+        ...group2.map((u) => u._id.toString()),
+    ]);
+    const fallbackExcludeIds = [...excludeIds, ...Array.from(group1And2Ids)];
+
+    const group3 = await User.find({
+        _id: { $nin: fallbackExcludeIds },
+        isPublic: { $ne: false },
+    })
         .select("name username profilePic headline location skills connections")
-        .limit(30);
+        .limit(20);
 
-    const mySkillSet = new Set((me.skills || []).map((s) => s.toLowerCase()));
-    const myLocation = (me.location || "").toLowerCase();
+    const merged = [...group1, ...group2, ...group3];
 
-    const scored = candidates.map((u) => {
+    const results = merged.slice(0, 12).map((u) => {
         const mutualCount = u.connections.filter((id) => myConnIds.includes(id.toString())).length;
-        const sharedSkills = (u.skills || []).filter((s) => mySkillSet.has(s.toLowerCase())).length;
-        const locationMatch = myLocation && u.location?.toLowerCase().includes(myLocation) ? 1 : 0;
-        const score = mutualCount * 10 + sharedSkills * 5 + locationMatch * 3;
-        return { user: u, score, mutualCount, sharedSkills };
+        const sharedSkills = getSharedSkillsCount(u.skills);
+        return {
+            ...u.toObject(),
+            mutualCount,
+            sharedSkills,
+        };
     });
 
-    scored.sort((a, b) => b.score - a.score);
-    const top = scored.slice(0, 8);
-    const results = top.map(({ user, mutualCount, sharedSkills }) => ({ ...user.toObject(), mutualCount, sharedSkills }));
     res.json({ success: true, users: results });
 });
 
@@ -260,4 +306,43 @@ export const updatePrivacy = asyncHandler(async (req, res) => {
 
     const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true }).select("-password");
     res.json({ success: true, user });
+});
+
+// ─── PATCH /api/users/me ──────────────────────────────────────────────────────
+export const updateMe = asyncHandler(async (req, res) => {
+    const { isPublic, emailNotifications } = req.body;
+    const updates = {};
+    if (isPublic !== undefined) updates.isPublic = Boolean(isPublic);
+    if (emailNotifications !== undefined) updates.emailNotifications = Boolean(emailNotifications);
+
+    const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true }).select("-password");
+    res.json({ success: true, user });
+});
+
+// ─── DELETE /api/users/me ─────────────────────────────────────────────────────
+export const deleteAccount = asyncHandler(async (req, res) => {
+    const { password } = req.body;
+    if (!password) {
+        return res.status(400).json({ success: false, message: "Password is required to delete account" });
+    }
+
+    const user = await User.findById(req.user._id);
+    const valid = await user.matchPassword(password);
+    if (!valid) {
+        return res.status(400).json({ success: false, message: "Incorrect password" });
+    }
+
+    const id = req.user._id;
+
+    await Promise.all([
+        User.deleteOne({ _id: id }),
+        Post.deleteMany({ author: id }),
+        Comment.deleteMany({ user: id }),
+        Connection.deleteMany({ $or: [{ sender: id }, { recipient: id }] }),
+        Message.deleteMany({ $or: [{ sender: id }, { recipient: id }] }),
+        Notification.deleteMany({ $or: [{ recipient: id }, { sender: id }] }),
+        SavedPost.deleteMany({ user: id }),
+    ]);
+
+    res.json({ success: true, message: "Account deleted successfully" });
 });

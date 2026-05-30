@@ -16,6 +16,7 @@ import SearchPage from "./pages/SearchPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ActivityPage from "./pages/ActivityPage";
+import SavedPostsPage from "./pages/SavedPostsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +64,7 @@ function AppRoutes() {
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="/activity" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
+      <Route path="/saved" element={<ProtectedRoute><SavedPostsPage /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/feed" replace />} />
     </Routes>

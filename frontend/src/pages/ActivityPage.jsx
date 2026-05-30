@@ -135,10 +135,10 @@ export default function ActivityPage() {
                 color="purple"
               />
               <StatCard
-                icon={Award}
-                label="Skill Score"
-                value={analytics.skillScore}
-                subtitle="Based on your engagement"
+                icon={TrendingUp}
+                label="Avg Engagement"
+                value={analytics.engagement.avgEngagementPerPost}
+                subtitle="Per post engagement"
                 color="amber"
               />
             </div>
@@ -227,7 +227,7 @@ export default function ActivityPage() {
             {analytics.skillStats?.length > 0 && (
               <Card className="p-5">
                 <h3 className="font-bold text-gray-900 text-sm mb-4">
-                  Skill Landscape
+                  Skills Insights
                 </h3>
                 <p className="text-xs text-gray-500 mb-4">
                   How many Graphyte professionals share your listed skills

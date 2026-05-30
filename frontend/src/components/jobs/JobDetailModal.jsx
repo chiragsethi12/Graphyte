@@ -1,4 +1,4 @@
-import { X, MapPin, Briefcase, Clock, DollarSign, Users, ChevronRight, ExternalLink } from "lucide-react";
+import { X, MapPin, Briefcase, Clock, DollarSign, Users, ChevronRight, ExternalLink, Layers } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import api from "../../lib/axios";
@@ -22,6 +22,14 @@ const TYPE_LABELS = {
     "remote": "Remote",
     "internship": "Internship",
     "contract": "Contract",
+};
+
+const EXP_LABELS = {
+    "any": "Any Experience",
+    "entry": "Entry Level",
+    "mid": "Mid Level",
+    "senior": "Senior",
+    "lead": "Lead / Principal",
 };
 
 export default function JobDetailModal({ jobId, onClose }) {
@@ -89,6 +97,11 @@ export default function JobDetailModal({ jobId, onClose }) {
                                         <span className="flex items-center gap-1">
                                             <Briefcase size={12} /> {TYPE_LABELS[job.type] || job.type}
                                         </span>
+                                        {job.experienceLevel && (
+                                            <span className="flex items-center gap-1">
+                                                <Layers size={12} /> {EXP_LABELS[job.experienceLevel] || job.experienceLevel}
+                                            </span>
+                                        )}
                                         {job.applicants?.length > 0 && (
                                             <span className="flex items-center gap-1">
                                                 <Users size={12} /> {job.applicants.length} applicant{job.applicants.length !== 1 ? "s" : ""}
@@ -108,9 +121,9 @@ export default function JobDetailModal({ jobId, onClose }) {
                             <div className="mt-5">
                                 {isOwner ? (
                                     <Button variant="outline" fullWidth disabled>You posted this job</Button>
-                                ) : hasApplied ? (
+                                ) : (hasApplied || applyMutation.isSuccess) ? (
                                     <Button variant="outline" fullWidth disabled>
-                                        ✓ Application Submitted
+                                        Applied ✓
                                     </Button>
                                 ) : (
                                     <Button

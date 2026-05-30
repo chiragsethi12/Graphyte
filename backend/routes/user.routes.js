@@ -8,6 +8,8 @@ import {
   getRecommendedUsers,
   changePassword,
   updatePrivacy,
+  updateMe,
+  deleteAccount,
 } from '../controllers/user.controller.js';
 import protect from '../middleware/auth.middleware.js';
 import { upload, handleMulterError } from '../config/cloudinary.js';
@@ -40,6 +42,9 @@ router.put(
 );
 router.put('/change-password', protect, changePassword);
 router.put('/privacy', protect, updatePrivacy);
+router.patch('/me/password', protect, changePassword);
+router.patch('/me', protect, updateMe);
+router.delete('/me', protect, deleteAccount);
 
 // ── Sub-resource routes before the :identifier wildcard ──────────────────────
 router.get('/:userId/posts', protect, getUserPosts);
