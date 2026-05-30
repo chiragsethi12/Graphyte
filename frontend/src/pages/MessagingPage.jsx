@@ -4,12 +4,15 @@ import { useConversations, useMessageSocket } from "../hooks/useMessages";
 import MainLayout from "../components/layout/MainLayout";
 import ConversationList from "../components/messaging/ConversationList";
 import ChatWindow from "../components/messaging/ChatWindow";
+import NewMessageModal from "../components/messaging/NewMessageModal";
+import api from "../lib/axios";
 
 export default function MessagingPage() {
   const { user, clearMessageCount, fetchUnreadMessageCount } = useAuth();
   const [activeConversation, setActiveConversation] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showChat, setShowChat] = useState(false); // mobile: toggle list vs chat
+  const [showNewModal, setShowNewModal] = useState(false);
 
   const { data, isLoading } = useConversations();
   const conversations = data?.conversations || [];
@@ -37,6 +40,11 @@ export default function MessagingPage() {
     setActiveConversation(conv);
     setShowChat(true); // On mobile, switch to chat view
     clearMessageCount();
+    
+    // Mark as read immediately when switching
+    if (conv.unread > 0 && conv.participant?._id) {
+      api.put(`/messages/${conv.participant._id}/read`).catch(console.error);
+    }
   };
 
   const handleBack = () => {
@@ -60,6 +68,7 @@ export default function MessagingPage() {
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               isLoading={isLoading}
+              onNewClick={() => setShowNewModal(true)}
             />
           </div>
 
@@ -72,6 +81,12 @@ export default function MessagingPage() {
           </div>
         </div>
       </div>
+      <NewMessageModal
+        open={showNewModal}
+        onClose={() => setShowNewModal(false)}
+        onSelect={handleSelectConversation}
+        existingConversations={conversations}
+      />
     </MainLayout>
   );
 }

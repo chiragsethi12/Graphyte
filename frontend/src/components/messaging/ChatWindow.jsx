@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Smile, Paperclip, Video, Phone, MoreVertical, ArrowLeft, Image, X, FileText } from "lucide-react";
+import { Send, Smile, Paperclip, MoreVertical, ArrowLeft, Image, X, FileText, Check, CheckCheck } from "lucide-react";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { useAuth } from "../../context/AuthContext";
@@ -54,12 +54,12 @@ function MessageBubble({ msg, isMine }) {
           </div>
         )}
         {/* Timestamp + read receipt */}
-        <div className={`px-4 pb-2 ${!msg.content && msg.attachment?.url ? "pt-1" : ""} text-[10px] ${isMine ? "text-white/60 text-right" : "text-gray-400"}`}>
+        <div className={`px-4 pb-2 ${!msg.content && msg.attachment?.url ? "pt-1" : ""} text-[10px] flex items-center justify-end gap-1 ${isMine ? "text-white/60" : "text-gray-400"}`}>
           {timeStr}
           {isMine && (
-            <span className="ml-1">
-              {msg.read ? "✓✓" : "✓"}
-            </span>
+            msg.read
+              ? <CheckCheck size={14} className="text-blue-300" />
+              : <Check size={14} className="text-white/50" />
           )}
         </div>
       </div>
@@ -315,12 +315,6 @@ export default function ChatWindow({ conversation, onBack }) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
-            <Video size={18} />
-          </button>
-          <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
-            <Phone size={18} />
-          </button>
           <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
             <MoreVertical size={18} />
           </button>

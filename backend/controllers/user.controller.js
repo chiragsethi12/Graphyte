@@ -16,22 +16,40 @@ export const getUserProfile = asyncHandler(async (req, res) => {
 
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    if (req.user._id.toString() !== user._id.toString()) {
-        // Remove previous view from this user to prevent spam
-        await User.findByIdAndUpdate(user._id, { 
-            $inc: { profileViews: 1 },
-            $pull: { profileViewHistory: { viewerId: req.user._id } }
-        });
-        
-        // Push new view to front/back and keep last 100
+    const isOwner = req.user._id.toString() === user._id.toString();
+
+    if (!isOwner) {
+        // Track profile view (single atomic operation)
         await User.findByIdAndUpdate(user._id, {
+            $inc: { profileViews: 1 },
             $push: {
                 profileViewHistory: {
                     $each: [{ viewerId: req.user._id, viewedAt: new Date() }],
-                    $slice: -100
-                }
-            }
+                    $slice: -100,
+                },
+            },
         });
+
+        // Private profile gating — return restricted payload if not connected
+        if (user.isPublic === false) {
+            const isConnected = user.connections.some(
+                (conn) => conn._id.toString() === req.user._id.toString()
+            );
+            if (!isConnected) {
+                return res.json({
+                    success: true,
+                    isPrivate: true,
+                    user: {
+                        _id: user._id,
+                        name: user.name,
+                        profilePic: user.profilePic,
+                        headline: user.headline,
+                        username: user.username,
+                        isPublic: false,
+                    },
+                });
+            }
+        }
     }
 
     res.json({ success: true, user });

@@ -45,20 +45,6 @@ export const getConversations = asyncHandler(async (req, res) => {
                 lastSender: { $first: "$sender" },
                 sender: { $first: "$sender" },
                 recipient: { $first: "$recipient" },
-                unread: {
-                    $sum: {
-                        $cond: [
-                            {
-                                $and: [
-                                    { $eq: ["$recipient", req.user._id] },
-                                    { $eq: ["$read", false] },
-                                ],
-                            },
-                            1,
-                            0,
-                        ],
-                    },
-                },
             },
         },
         { $sort: { lastMessageAt: -1 } },
@@ -67,6 +53,14 @@ export const getConversations = asyncHandler(async (req, res) => {
     if (!messages.length) {
         return res.json({ success: true, conversations: [] });
     }
+
+    // Batch-query accurate unread counts per conversation
+    const unreadCounts = await Message.aggregate([
+        { $match: { recipient: req.user._id, read: false, deleted: false } },
+        { $group: { _id: "$conversationId", count: { $sum: 1 } } },
+    ]);
+    const unreadMap = {};
+    unreadCounts.forEach((u) => { unreadMap[u._id] = u.count; });
 
     // Determine the "other" participant for each conversation
     const otherUserIds = messages.map((m) => {
@@ -89,7 +83,7 @@ export const getConversations = asyncHandler(async (req, res) => {
             lastMessage: m.lastMessage,
             lastAttachment: m.lastAttachment || null,
             lastMessageAt: m.lastMessageAt,
-            unread: m.unread,
+            unread: unreadMap[m._id] || 0,
         };
     });
 

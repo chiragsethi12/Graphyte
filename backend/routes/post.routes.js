@@ -1,6 +1,7 @@
 import express from "express";
 import {
     createPost,
+    editPost,
     getFeed,
     getTrendingPosts,
     getPostById,
@@ -25,6 +26,7 @@ router.post("/:id/comment",             protect, commentOnPost);
 router.get("/:id/comments",             protect, getComments);
 router.delete("/:id/comment/:commentId", protect, deleteComment);
 router.post("/:id/share",               protect, sharePost);
+router.patch("/:id",                    protect, editPost);
 router.delete("/:id",                    protect, deletePost);
 
 export default router;

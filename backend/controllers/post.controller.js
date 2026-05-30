@@ -30,12 +30,45 @@ export const createPost = asyncHandler(async (req, res) => {
     await post.populate("author", "name profilePic headline username");
 
     // Notify first-degree connections of new post (live feed update)
-    io.emit("newPost", { authorId: req.user._id });
+    const currentUserForBroadcast = await User.findById(req.user._id).select("connections").lean();
+    for (const connId of currentUserForBroadcast.connections) {
+        const socketId = getReceiverSocketId(connId.toString());
+        if (socketId) io.to(socketId).emit("newPost", { authorId: req.user._id });
+    }
 
     // Reward posting
     await User.findByIdAndUpdate(req.user._id, { $inc: { skillScore: 1 } });
 
     res.status(201).json({ success: true, post });
+});
+
+// ─── Edit Post ───────────────────────────────────────────────────────────────
+
+export const editPost = asyncHandler(async (req, res) => {
+    const post = await Post.findById(req.params.id).select("author content createdAt");
+
+    if (!post) return res.status(404).json({ success: false, message: "Post not found" });
+
+    if (post.author.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+
+    // Only allow edits within 10 minutes of creation
+    if (Date.now() - post.createdAt > 10 * 60 * 1000) {
+        return res.status(403).json({ success: false, message: "Edit window has expired (10 minutes)" });
+    }
+
+    const { content } = req.body;
+    if (content === undefined) {
+        return res.status(400).json({ success: false, message: "Content is required" });
+    }
+
+    post.content = content.trim();
+    await post.save();
+
+    await post.populate("author", "name profilePic headline username");
+
+    res.json({ success: true, post });
 });
 
 // ─── Feed ────────────────────────────────────────────────────────────────────

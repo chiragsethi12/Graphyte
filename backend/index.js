@@ -20,6 +20,7 @@ import notificationRoutes from "./routes/notification.routes.js";
 import searchRoutes from "./routes/search.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import messageRoutes from "./routes/message.routes.js";
+import savedRoutes from "./routes/saved.routes.js";
 
 connectDB();
 
@@ -54,6 +55,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/saved", savedRoutes);
 
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {

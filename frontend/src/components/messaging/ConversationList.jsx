@@ -36,6 +36,7 @@ export default function ConversationList({
   searchQuery,
   onSearchChange,
   isLoading,
+  onNewClick,
 }) {
   const { onlineUsers } = useAuth();
 
@@ -45,6 +46,7 @@ export default function ConversationList({
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold text-gray-900">Messaging</h2>
           <button
+            onClick={onNewClick}
             className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors"
             title="New message"
           >
