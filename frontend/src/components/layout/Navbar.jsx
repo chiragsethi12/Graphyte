@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bell, Settings, Search, LogOut, User, ChevronDown, BarChart2, MessageSquare } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../lib/axios";
 import Avatar from "../ui/Avatar";
 import toast from "react-hot-toast";
 
@@ -63,7 +64,11 @@ export default function Navbar() {
 
           {/* Notifications */}
           <button
-            onClick={() => navigate("/notifications")}
+            onClick={() => {
+              navigate("/notifications");
+              clearNotificationCount();
+              api.patch("/notifications/mark-all-read").catch(() => {});
+            }}
             className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors relative"
           >
             <Bell size={18} />
