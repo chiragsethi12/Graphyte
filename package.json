@@ -1,18 +1,18 @@
 {
-  "name": "graphite",
+  "name": "graphyte",
   "private": true,
   "type": "module",
   "workspaces": [
-    "client",
-    "server"
+    "frontend",
+    "backend"
   ],
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "dev": "concurrently -k -n client,server -c blue,green \"npm run dev --workspace client\" \"npm run dev --workspace server\"",
-    "build": "npm run build --workspace client && npm run build --workspace server",
-    "lint": "npm run lint --workspace client && npm run lint --workspace server"
+    "dev": "concurrently -k -n frontend,backend -c blue,green \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
+    "build": "npm run build --workspace frontend && npm run build --workspace backend",
+    "lint": "npm run lint --workspace frontend && npm run lint --workspace backend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

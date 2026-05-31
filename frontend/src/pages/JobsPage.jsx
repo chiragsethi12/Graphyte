@@ -9,6 +9,7 @@ import PostJobModal from "../components/jobs/PostJobModal";
 import JobDetailModal from "../components/jobs/JobDetailModal";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 function JobsSkeleton() {
   return (
@@ -34,6 +35,7 @@ function JobsSkeleton() {
 }
 
 export default function JobsPage() {
+  usePageTitle("Jobs");
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") || "";
   const pageParam = parseInt(searchParams.get("page")) || 1;

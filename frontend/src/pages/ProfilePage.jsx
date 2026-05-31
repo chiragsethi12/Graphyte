@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { MapPin, Users, UserPlus, Clock, CheckCircle, UserMinus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/axios';
@@ -282,6 +283,7 @@ export default function ProfilePage() {
   });
 
   const profile = data?.user;
+  usePageTitle(profile?.name || "Profile");
   const stats = statsData?.stats;
   const mutuals = mutualData?.mutuals || [];
   const isOwner = me?._id === profile?._id;

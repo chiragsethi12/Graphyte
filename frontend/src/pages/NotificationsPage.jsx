@@ -8,6 +8,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Avatar from "../components/ui/Avatar";
 import formatRelativeTime from "../utils/formatRelativeTime";
 import toast from "react-hot-toast";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 // Sub-component for Connection Request Buttons
 function ConnectionActionButtons({ senderId, onResponded }) {
@@ -154,6 +155,7 @@ function NotificationItem({ notification, onMarkRead, onDelete }) {
 }
 
 export default function NotificationsPage() {
+  usePageTitle("Notifications");
   const [filter, setFilter] = useState("all");
   const queryClient = useQueryClient();
   const { clearNotificationCount } = useAuth();

@@ -7,8 +7,10 @@ import ConversationList from "../components/messaging/ConversationList";
 import ChatWindow from "../components/messaging/ChatWindow";
 import NewMessageModal from "../components/messaging/NewMessageModal";
 import api from "../lib/axios";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 export default function MessagingPage() {
+  usePageTitle("Messaging");
   const { user, clearMessageCount, fetchUnreadMessageCount } = useAuth();
   const [activeConversation, setActiveConversation] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");

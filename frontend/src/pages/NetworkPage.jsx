@@ -11,6 +11,7 @@ import Card from "../components/ui/Card";
 import ConfirmAction from "../components/ui/ConfirmDialog";
 import { ConnectionCardSkeleton } from "../components/ui/SkeletonScreens";
 import toast from "react-hot-toast";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 // Inline helper to calculate readable time-ago string
 function formatTimeAgo(dateInput) {
@@ -132,6 +133,7 @@ function SentCard({ conn, onWithdraw }) {
 }
 
 export default function NetworkPage() {
+  usePageTitle("My Network");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [connectionsSearch, setConnectionsSearch] = useState("");

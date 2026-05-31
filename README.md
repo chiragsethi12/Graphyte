@@ -1,148 +1,81 @@
-# Graphite (Professional Networking Platform)
+# Graphyte — Professional Networking Platform
+[Add a screenshot or GIF of the app here after deployment]
 
-Graphite is a modern, full-stack professional networking platform similar to LinkedIn. It allows users to build professional profiles, connect with others, share posts, send real-time messages, and receive real-time notifications.
+## Live Demo
+[Your Vercel URL here]
 
-## 🌟 Key Features
+## Tech Stack
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Node.js](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![Socket.IO](https://img.shields.io/badge/Socket.io-black?style=for-the-badge&logo=socket.io&badgeColor=010101)
+![TanStack Query](https://img.shields.io/badge/-TanStack%20Query-FF4154?style=for-the-badge&logo=react%20query&logoColor=white)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=Cloudinary&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
+![Tailwind CSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-- **Authentication & Security**: Secure JWT-based authentication with email password resets (via Nodemailer).
-- **Professional Profiles**: Customizable profiles including avatars, banners, headlines, about sections, experience, and skills.
-- **Social Feed**: Infinite-scrolling feed of posts. Users can create posts with images (via Cloudinary), like, and comment.
-- **Real-time Messaging**: 1:1 direct messaging built with Socket.io. Features include typing indicators, online status, read receipts, and image attachments.
-- **Real-time Notifications**: Instant updates for new connections, likes, and comments.
-- **Networking**: Send, accept, or decline connection requests. View your professional network.
-- **Search**: Global search functionality to discover other professionals.
+## Features
+| Feature | Description |
+| :--- | :--- |
+| ✅ **JWT Authentication** | With auto-logout on token expiry |
+| ✅ **Social Feed** | With cursor-based infinite scroll |
+| ✅ **Real-time Messaging** | With typing indicators and read receipts |
+| ✅ **Professional Profiles** | With completeness tracking |
+| ✅ **Job Listings** | With skill-matched recommendations |
+| ✅ **Smart Notifications** | With real-time badge updates |
+| ✅ **Advanced Search** | Across users, jobs, and posts |
+| ✅ **Saved Posts** | Bookmarks / Saved Posts functionality |
+| ✅ **Connection Network** | With mutual connection detection |
+| ✅ **Responsive design** | Mobile-first layout |
 
-## 🛠️ Tech Stack
+## Architecture Highlights
+- Cursor-based pagination for O(log n) feed and message queries via MongoDB compound indexes
+- Real-time bidirectional communication via Socket.IO with conversation room scoping
+- TanStack Query for server state with optimistic updates on like/save/connect
+- JWT with automatic 401 interception — expired sessions handled gracefully client-side
+- Cloudinary for media storage with Multer multipart handling
 
-**Frontend**
-- React 18 (Vite)
-- Tailwind CSS (Styling)
-- Zustand (Global State Management)
-- React Query (Data fetching & caching)
-- React Router (Routing)
-- Lucide React (Icons)
-
-**Backend**
-- Node.js & Express.js
-- MongoDB & Mongoose (Database)
-- Socket.io (Real-time WebSockets)
-- Cloudinary & Multer (Image uploads)
-- Nodemailer (Email services)
-- JSON Web Tokens (Authentication)
-
-## 🚀 Getting Started
-
+## Local Setup
 ### Prerequisites
-
-- Node.js (v18 or higher)
-- MongoDB account (MongoDB Atlas recommended)
-- Cloudinary account (for image hosting)
-- Gmail account (with App Password for email services)
+- Node.js 18+, MongoDB Atlas account, Cloudinary account
 
 ### Installation
+```bash
+git clone <repo-url>
+cd Graphyte
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/chiragsethi12/Graphyte.git
-   cd graphite
-   ```
+# Backend
+cd backend && npm install
+cp .env.example .env  # fill in your values
+npm run dev
 
-2. **Install Backend Dependencies**
-   ```bash
-   cd backend
-   npm install
-   ```
-
-3. **Install Frontend Dependencies**
-   ```bash
-   cd ../frontend
-   npm install
-   ```
+# Frontend (new terminal)
+cd ../frontend && npm install
+cp .env.example .env
+npm run dev
+```
 
 ### Environment Variables
+Check the `.env.example` files in their respective directories for all required keys:
+- `backend/.env.example`
+- `frontend/.env.example`
 
-You need to set up environment variables for both the backend and frontend. 
+## Screenshots
+[Add 3-4 screenshots: Feed, Profile, Messaging, Jobs]
 
-**Backend (`backend/.env`)**
-Create a `.env` file in the `backend` directory:
-```env
-PORT=5000
-NODE_ENV=development
+## API Overview
+- `/api/auth` - Authentication & password reset
+- `/api/users` - Profiles, suggestions, search
+- `/api/posts` - Feed, creation, likes, comments
+- `/api/connections` - Requests, network graph
+- `/api/messages` - Real-time chat history
+- `/api/jobs` - Postings, filtering, applications
+- `/api/notifications` - Real-time alerts & unread counts
+- `/api/saved` - Bookmarked posts
 
-# MongoDB Connection
-MONGO_URI=your_mongodb_connection_string
-
-# JWT Secret Keys
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRES_IN=7d
-
-# Cloudinary Setup (Images)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Frontend URL
-CLIENT_URL=http://localhost:3000
-
-# Nodemailer Setup (for Forgot Password)
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASS="your_16_character_app_password"
-```
-
-**Frontend (`frontend/.env`)**
-Create a `.env` file in the `frontend` directory:
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_SOCKET_URL=http://localhost:5000
-```
-
-### Running the Application
-
-You can run the frontend and backend servers simultaneously. Open two terminal tabs:
-
-**Terminal 1 (Backend)**
-```bash
-cd backend
-npm run dev
-```
-
-**Terminal 2 (Frontend)**
-```bash
-cd frontend
-npm run dev
-```
-
-The application will be accessible at `http://localhost:3000`.
-
-## 📁 Project Structure
-
-```text
-graphite/
-├── backend/                  # Express server
-│   ├── config/               # DB and Cloudinary configs
-│   ├── controllers/          # Route handlers
-│   ├── middleware/           # Auth and validation middlewares
-│   ├── models/               # Mongoose schemas (User, Post, Message, etc.)
-│   ├── routes/               # Express API routes
-│   ├── socket/               # Socket.io event handlers
-│   ├── utils/                # Utility functions (Nodemailer)
-│   └── index.js              # Server entry point
-│
-└── frontend/                 # React application
-    ├── src/
-    │   ├── components/       # Reusable UI components
-    │   ├── context/          # React Context (AuthContext)
-    │   ├── hooks/            # Custom React Query hooks
-    │   ├── lib/              # Axios instance and Socket client
-    │   ├── pages/            # Page-level components
-    │   └── App.jsx           # Main application routing
-    └── vite.config.js        # Vite configuration
-```
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
-
-## 📝 License
-
-This project is licensed under the MIT License.
+## What I'd Add Next
+- Refresh token rotation
+- Redis for unread count caching
+- Elasticsearch for advanced search
+- Push notifications

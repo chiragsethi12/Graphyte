@@ -11,8 +11,10 @@ import NetworkSuggestions from "../components/feed/NetworkSuggestions";
 import Card from "../components/ui/Card";
 import { FeedSkeleton } from "../components/ui/SkeletonScreens";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 export default function FeedPage() {
+  usePageTitle("Feed");
   const {
     data,
     isLoading,
