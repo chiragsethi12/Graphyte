@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useConversations, useMessageSocket } from "../hooks/useMessages";
 import MainLayout from "../components/layout/MainLayout";
@@ -16,6 +17,9 @@ export default function MessagingPage() {
 
   const { data, isLoading } = useConversations();
   const conversations = data?.conversations || [];
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const userIdFromUrl = searchParams.get("user");
 
   // Subscribe to real-time new messages
   useMessageSocket(activeConversation?.participant?._id);
@@ -35,6 +39,44 @@ export default function MessagingPage() {
       setActiveConversation(conversations[0]);
     }
   }, [conversations, activeConversation]);
+
+  useEffect(() => {
+    if (!userIdFromUrl) return;
+    if (isLoading) return; // wait for conversations to load
+
+    // Check if there's an existing conversation with this user
+    const existing = conversations.find(
+      (c) => c.participant?._id === userIdFromUrl
+    );
+
+    if (existing) {
+      handleSelectConversation(existing);
+    } else {
+      // No prior conversation — fetch the user's info to build a virtual conversation
+      api.get(`/users/${userIdFromUrl}`).then((res) => {
+        const targetUser = res.data.user || res.data;
+        if (!targetUser?._id) return;
+
+        const virtualConv = {
+          _id: `new_${targetUser._id}`,
+          participant: {
+            _id: targetUser._id,
+            name: targetUser.name,
+            username: targetUser.username,
+            profilePic: targetUser.profilePic,
+            headline: targetUser.headline,
+          },
+          lastMessage: "",
+          lastMessageAt: null,
+          unread: 0,
+        };
+        handleSelectConversation(virtualConv);
+      }).catch(console.error);
+    }
+
+    // Clear the URL param after processing so refresh doesn't re-trigger
+    setSearchParams({}, { replace: true });
+  }, [userIdFromUrl, conversations, isLoading]);
 
   const handleSelectConversation = (conv) => {
     setActiveConversation(conv);

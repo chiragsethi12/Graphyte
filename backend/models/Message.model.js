@@ -26,11 +26,10 @@ const messageSchema = new mongoose.Schema(
 // ─── Validators ──────────────────────────────────────────────────────────────
 
 // At least content or attachment must be present
-messageSchema.pre("validate", function (next) {
+messageSchema.pre("validate", function () {
     if (!this.content && !this.attachment?.url) {
         this.invalidate("content", "Message must have content or an attachment");
     }
-    next();
 });
 
 // ─── Indexes ─────────────────────────────────────────────────────────────────
