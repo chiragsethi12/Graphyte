@@ -4,11 +4,10 @@ let socket = null;
 
 export const getSocket = () => {
   if (!socket) {
-    const userId = JSON.parse(localStorage.getItem("graphite_user") || "null")?._id;
     socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
       withCredentials: false,
       autoConnect: false,
-      query: { userId },
+      // No userId here — connectSocket() sets it before connecting
     });
   }
   return socket;
@@ -16,7 +15,9 @@ export const getSocket = () => {
 
 export const connectSocket = (userId) => {
   const s = getSocket();
-  if (userId) s.io.opts.query = { userId };
+  if (userId) {
+    s.io.opts.query = { userId };
+  }
   if (!s.connected) s.connect();
   return s;
 };

@@ -7,7 +7,7 @@ import Avatar from "../ui/Avatar";
 import toast from "react-hot-toast";
 
 export default function Navbar() {
-  const { user, logout, unreadNotifications, unreadMessages } = useAuth();
+  const { user, logout, unreadNotifications, unreadMessages, clearNotificationCount } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
