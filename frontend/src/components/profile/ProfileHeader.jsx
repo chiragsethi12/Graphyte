@@ -14,6 +14,8 @@ import { Link } from 'react-router-dom';
 
 /* ─── Connection Action Buttons ────────────────────────────────── */
 
+/* ─── Connection Action Buttons ────────────────────────────────── */
+
 function ConnectionActions({ userId }) {
   const { status, sendRequest, withdraw, respond, remove } = useConnectionStatus(userId);
 
@@ -23,7 +25,7 @@ function ConnectionActions({ userId }) {
     return (
       <ConfirmAction onConfirm={() => remove.mutate()} message="Remove connection?" confirmLabel="Remove">
         {(ask) => (
-          <button onClick={ask} className="inline-flex items-center gap-2 px-5 py-2 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary-50 transition-all">
+          <button onClick={ask} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-border text-text-primary bg-bg-hover hover:bg-bg-active text-sm font-semibold transition-all min-h-[40px]">
             <CheckCircle size={16} /> Connected
           </button>
         )}
@@ -35,7 +37,7 @@ function ConnectionActions({ userId }) {
     return (
       <ConfirmAction onConfirm={() => withdraw.mutate()} message="Withdraw request?" confirmLabel="Withdraw" variant="warning">
         {(ask) => (
-          <button onClick={ask} className="inline-flex items-center gap-2 px-5 py-2 rounded-full border-2 border-gray-300 text-gray-500 text-sm font-semibold hover:bg-gray-50 transition-all">
+          <button onClick={ask} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-border text-text-muted bg-bg-hover hover:bg-bg-active text-sm font-semibold transition-all min-h-[40px]">
             <Clock size={16} /> Pending
           </button>
         )}
@@ -46,10 +48,10 @@ function ConnectionActions({ userId }) {
   if (status === 'pending_received') {
     return (
       <div className="flex gap-2">
-        <button onClick={() => respond.mutate('accept')} className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-950 transition-all">
+        <button onClick={() => respond.mutate('accept')} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-accent text-white text-sm font-semibold hover:bg-accent-hover transition-all min-h-[40px]">
           Accept
         </button>
-        <button onClick={() => respond.mutate('reject')} className="inline-flex items-center gap-2 px-5 py-2 rounded-full border-2 border-gray-300 text-gray-500 text-sm font-semibold hover:bg-gray-50 transition-all">
+        <button onClick={() => respond.mutate('reject')} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-border text-text-muted bg-bg-hover hover:bg-bg-active text-sm font-semibold transition-all min-h-[40px]">
           Decline
         </button>
       </div>
@@ -60,7 +62,7 @@ function ConnectionActions({ userId }) {
     <button
       onClick={() => sendRequest.mutate()}
       disabled={sendRequest.isPending}
-      className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-950 transition-all shadow-sm disabled:opacity-50"
+      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-accent text-white text-sm font-semibold hover:bg-accent-hover transition-all shadow-glow-accent disabled:opacity-50 min-h-[40px]"
     >
       <UserPlus size={16} /> Connect
     </button>
@@ -87,13 +89,13 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
   const showBannerImage = profile.bannerPic && !bannerError;
 
   return (
-    <div className="bg-white rounded-2xl shadow-card border border-surface-border overflow-hidden">
+    <div className="bg-bg-elevated rounded-xl border border-border shadow-md overflow-hidden">
       {/* ── Banner ──────────────────────────────────────────── */}
       <div className="h-44 md:h-52 relative overflow-hidden">
         {/* Gradient fallback — always rendered behind the image */}
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, #660033 0%, #4d0026 40%, #330019 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #1A000D 0%, #660033 60%, #99004C 100%)' }}
         />
         {/* User banner image — covers the gradient when valid */}
         {showBannerImage && (
@@ -106,13 +108,13 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
           />
         )}
         {/* Burgundy tinted overlay — dims any image to a subtle background */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(102,0,51,0.85) 0%, rgba(77,0,38,0.75) 50%, rgba(51,0,25,0.85) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(26,0,13,0.85) 0%, rgba(102,0,51,0.65) 60%, rgba(124,58,237,0.7) 100%)' }} />
 
         {/* Edit banner (owner only) */}
         {isOwner && (
           <button
             onClick={() => navigate('/settings')}
-            className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-lg text-gray-600 hover:bg-white hover:text-primary transition-all shadow-sm"
+            className="absolute top-4 right-4 z-10 p-2 bg-bg-overlay/85 border border-border rounded-md text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all min-h-[36px] min-w-[36px] flex items-center justify-center shadow-sm"
           >
             <Edit2 size={15} />
           </button>
@@ -123,7 +125,7 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
       <div className="px-6 md:px-8 pb-6">
         {/* Avatar — overlaps banner */}
         <div className="-mt-16 md:-mt-20 mb-3 relative z-10">
-          <div className="w-32 h-32 rounded-full ring-4 ring-white shadow-lg bg-white overflow-hidden flex items-center justify-center">
+          <div className="w-32 h-32 rounded-full ring-4 ring-bg-elevated shadow-lg bg-bg-elevated overflow-hidden flex items-center justify-center">
             {profile.profilePic ? (
               <img
                 src={profile.profilePic}
@@ -132,7 +134,7 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-4xl font-semibold text-primary">
+              <span className="text-4xl font-semibold text-accent">
                 {profile.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || '?'}
               </span>
             )}
@@ -143,23 +145,23 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
         <div className="flex flex-col lg:flex-row lg:justify-between gap-3">
           {/* Left: identity */}
           <div className="min-w-0 flex-1">
-            <h1 className="text-[22px] md:text-2xl font-extrabold text-gray-900 tracking-tight leading-tight">
+            <h1 className="text-[22px] md:text-2xl font-extrabold text-text-primary tracking-tight leading-tight">
               {profile.name}
             </h1>
 
             {profile.headline && (
-              <p className="text-[14px] text-gray-600 mt-0.5 leading-snug max-w-md">
+              <p className="text-[14px] text-text-muted mt-0.5 leading-snug max-w-md">
                 {profile.headline}
               </p>
             )}
 
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
               {profile.location && (
-                <span className="flex items-center gap-1 text-[13px] text-gray-400">
+                <span className="flex items-center gap-1 text-[13px] text-text-faint">
                   <MapPin size={13} /> {profile.location}
                 </span>
               )}
-              <button className="flex items-center gap-1 text-[13px] text-primary font-medium hover:underline">
+              <button className="flex items-center gap-1 text-[13px] text-accent font-semibold hover:underline">
                 <Mail size={13} /> Contact info
               </button>
               {profile.website && (
@@ -167,7 +169,7 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
                   href={profile.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[13px] text-primary hover:underline"
+                  className="flex items-center gap-1 text-[13px] text-accent font-semibold hover:underline"
                 >
                   <Globe size={13} /> Website
                 </a>
@@ -175,7 +177,7 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
             </div>
 
             {/* Connections count */}
-            <p className="mt-1.5 text-[13px] text-primary font-semibold hover:underline cursor-pointer">
+            <p className="mt-1.5 text-[13px] text-accent font-semibold hover:underline cursor-pointer">
               {connectionCount} connection{connectionCount !== 1 ? 's' : ''}
             </p>
 
@@ -187,14 +189,14 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
                     <Link
                       key={m._id}
                       to={`/profile/${m.username || m._id}`}
-                      className="inline-block ring-2 ring-white rounded-full hover:z-10 transition-transform hover:scale-110"
+                      className="inline-block ring-2 ring-bg-elevated rounded-full hover:z-10 transition-transform hover:scale-110"
                     >
                       <Avatar src={m.profilePic} name={m.name} size="xs" />
                     </Link>
                   ))}
                 </div>
-                <p className="text-[12px] text-gray-500">
-                  <span className="font-semibold text-gray-700">{mutualCount || mutuals.length}</span>
+                <p className="text-[12px] text-text-muted">
+                  <span className="font-semibold text-text-primary">{mutualCount || mutuals.length}</span>
                   {' '}mutual connection{(mutualCount || mutuals.length) !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -205,21 +207,21 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
           <div className="flex flex-col gap-2 lg:items-end flex-shrink-0 mt-1 lg:mt-0">
             {currentRole && (
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
-                  <Briefcase size={15} className="text-gray-400" />
+                <div className="w-8 h-8 rounded-md bg-bg-hover border border-border flex items-center justify-center flex-shrink-0">
+                  <Briefcase size={15} className="text-text-faint" />
                 </div>
                 <div className="lg:text-right">
-                  <p className="text-[13px] font-medium text-gray-700 leading-snug">{currentRole.company}</p>
+                  <p className="text-[13px] font-semibold text-text-muted leading-snug">{currentRole.company}</p>
                 </div>
               </div>
             )}
             {firstEdu && (
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
-                  <GraduationCap size={15} className="text-gray-400" />
+                <div className="w-8 h-8 rounded-md bg-bg-hover border border-border flex items-center justify-center flex-shrink-0">
+                  <GraduationCap size={15} className="text-text-faint" />
                 </div>
                 <div className="lg:text-right">
-                  <p className="text-[13px] font-medium text-gray-700 leading-snug">{firstEdu.school}</p>
+                  <p className="text-[13px] font-semibold text-text-muted leading-snug">{firstEdu.school}</p>
                 </div>
               </div>
             )}
@@ -227,24 +229,24 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
         </div>
 
         {/* ── Action Buttons ──────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-2.5 mt-4 pt-4 border-t border-gray-100">
+        <div className="flex flex-wrap items-center gap-2.5 mt-4 pt-4 border-t border-border">
               {isOwner ? (
                 <>
                   <button
                     onClick={() => navigate('/settings')}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-950 transition-all shadow-sm"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-accent text-white text-sm font-semibold hover:bg-accent-hover transition-all shadow-glow-accent min-h-[40px]"
                   >
                     <Edit2 size={14} /> Edit Profile
                   </button>
                   <button
                     onClick={() => navigate('/activity')}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary-50 transition-all"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-border text-text-primary bg-bg-hover hover:bg-bg-active text-sm font-semibold transition-all min-h-[40px]"
                   >
                     <BarChart2 size={14} /> Analytics
                   </button>
                   <button
                     onClick={handleShareProfile}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full border-2 border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-all"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-border text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all min-h-[40px]"
                   >
                     <Copy size={14} /> Share
                   </button>
@@ -254,7 +256,7 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
                   <ConnectionActions userId={profile._id} />
                   <button
                     onClick={handleShareProfile}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full border-2 border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-all"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-border text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all min-h-[40px]"
                   >
                     <Copy size={14} /> Share
                   </button>

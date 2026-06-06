@@ -15,18 +15,18 @@ function JobsSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="bg-white rounded-card shadow-card border border-surface-border p-5 animate-pulse flex flex-col gap-3">
+        <div key={i} className="bg-bg-elevated rounded-xl border border-border p-5 animate-pulse flex flex-col gap-3">
           <div className="flex gap-4">
-            <div className="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0" />
+            <div className="w-10 h-10 bg-bg-hover rounded-md flex-shrink-0" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-2/3" />
-              <div className="h-3 bg-gray-200 rounded w-1/3" />
+              <div className="h-4 bg-bg-hover rounded w-2/3" />
+              <div className="h-3 bg-bg-hover rounded w-1/3" />
             </div>
           </div>
-          <div className="h-12 bg-gray-100 rounded w-full mt-2 animate-pulse" />
+          <div className="h-12 bg-bg-hover/50 rounded w-full mt-2" />
           <div className="flex gap-2 mt-auto">
-            <div className="h-6 bg-gray-100 rounded w-16" />
-            <div className="h-6 bg-gray-100 rounded w-20" />
+            <div className="h-6 bg-bg-hover rounded w-16" />
+            <div className="h-6 bg-bg-hover rounded w-20" />
           </div>
         </div>
       ))}
@@ -144,10 +144,10 @@ export default function JobsPage() {
     <MainLayout>
       <div className="max-w-[1040px] mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pb-2 border-b border-surface-border">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pb-2 border-b border-border">
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900">Opportunities</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-extrabold text-text-primary">Opportunities</h1>
+            <p className="text-sm text-text-muted mt-1">
               Professional placements curated for the Graphyte network.
             </p>
           </div>
@@ -160,49 +160,49 @@ export default function JobsPage() {
         <div className="flex flex-col md:flex-row gap-6 items-start">
           {/* Left Side: Filter Panel */}
           <div className="w-full md:w-64 flex-shrink-0">
-            <Card className="p-5 border border-surface-border bg-white shadow-sm space-y-5 sticky top-20">
-              <h2 className="font-bold text-gray-900 text-sm border-b border-surface-border pb-3 flex items-center gap-2">
-                <Filter size={15} className="text-primary" /> Filter Options
+            <Card className="p-5 border border-border bg-bg-elevated space-y-5 sticky top-20">
+              <h2 className="font-bold text-text-primary text-sm border-b border-border pb-3 flex items-center gap-2">
+                <Filter size={15} className="text-accent" /> Filter Options
               </h2>
 
               {/* Search Bar */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-gray-700">Search</label>
+                <label className="block text-xs font-semibold text-text-muted">Search</label>
                 <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
                   <input
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     placeholder="Title, company, skills..."
-                    className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
+                    className="w-full pl-9 pr-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all min-h-[44px]"
                   />
                 </div>
               </div>
 
               {/* Location Input */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-gray-700">Location</label>
+                <label className="block text-xs font-semibold text-text-muted">Location</label>
                 <div className="relative">
-                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
                   <input
                     value={locationInput}
                     onChange={(e) => setLocationInput(e.target.value)}
                     placeholder="City, state, or remote"
-                    className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
+                    className="w-full pl-9 pr-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all min-h-[44px]"
                   />
                 </div>
               </div>
 
               {/* Type Filter Select */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-gray-700">Job Type</label>
+                <label className="block text-xs font-semibold text-text-muted">Job Type</label>
                 <select
                   value={typeFilter}
                   onChange={(e) => {
                     setTypeFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
+                  className="w-full px-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all min-h-[44px]"
                 >
                   <option value="">All Types</option>
                   <option value="full-time">Full-Time</option>
@@ -215,14 +215,14 @@ export default function JobsPage() {
 
               {/* Experience Level Filter Select */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-gray-700">Experience Level</label>
+                <label className="block text-xs font-semibold text-text-muted">Experience Level</label>
                 <select
                   value={expFilter}
                   onChange={(e) => {
                     setExpFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
+                  className="w-full px-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all min-h-[44px]"
                 >
                   <option value="">All Levels</option>
                   <option value="any">Any Experience</option>
@@ -243,7 +243,7 @@ export default function JobsPage() {
                     setExpFilter("");
                     setPage(1);
                   }}
-                  className="w-full text-center text-xs font-semibold text-gray-500 hover:text-primary transition-colors pt-2 border-t border-dashed border-gray-150"
+                  className="w-full text-center text-xs font-semibold text-text-muted hover:text-accent transition-colors pt-2 border-t border-dashed border-border"
                 >
                   Clear All Filters
                 </button>
@@ -254,7 +254,7 @@ export default function JobsPage() {
           {/* Main Area: Tabs, Grid & Pagination */}
           <div className="flex-1 min-w-0 space-y-4">
             {/* Tabs */}
-            <div className="flex border-b border-surface-border">
+            <div className="flex border-b border-border">
               {[
                 { id: "all", label: "All Jobs" },
                 { id: "applied", label: "My Applications" },
@@ -268,8 +268,8 @@ export default function JobsPage() {
                   }}
                   className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-[2px] transition-all duration-150 ${
                     activeTab === t.id
-                      ? "border-primary text-primary"
-                      : "border-transparent text-gray-500 hover:text-gray-900"
+                      ? "border-accent text-accent font-bold"
+                      : "border-transparent text-text-muted hover:text-text-primary"
                   }`}
                 >
                   {t.label}
@@ -281,9 +281,9 @@ export default function JobsPage() {
             {isLoading ? (
               <JobsSkeleton />
             ) : currentJobs.length === 0 ? (
-              <Card className="text-center py-16 px-4 bg-white border border-surface-border">
-                <p className="font-semibold text-gray-700 mb-1">No jobs found</p>
-                <p className="text-sm text-gray-400">
+              <Card className="text-center py-16 px-4 bg-bg-elevated border border-border">
+                <p className="font-semibold text-text-primary mb-1">No jobs found</p>
+                <p className="text-sm text-text-muted">
                   {activeTab === "all"
                     ? "Try adjusting your search filters."
                     : activeTab === "applied"
@@ -307,21 +307,21 @@ export default function JobsPage() {
 
             {/* Pagination (only active on 'all' tab) */}
             {activeTab === "all" && totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 pt-4 border-t border-surface-border">
+              <div className="flex items-center justify-center gap-3 pt-4 border-t border-border">
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 rounded-md border border-border text-text-muted hover:bg-bg-hover hover:text-text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
                 >
                   <ChevronLeft size={16} />
                 </button>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-text-muted">
                   Page {page} of {totalPages}
                 </span>
                 <button
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 rounded-md border border-border text-text-muted hover:bg-bg-hover hover:text-text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
                 >
                   <ChevronRight size={16} />
                 </button>

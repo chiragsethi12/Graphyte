@@ -55,20 +55,20 @@ function Comment({ comment, postId, onReply }) {
         <Avatar src={comment.user?.profilePic} name={comment.user?.name} size="xs" />
       </Link>
       <div className="flex-1 min-w-0">
-        <div className="bg-gray-50 rounded-xl px-3 py-2">
+        <div className="bg-bg-hover rounded-md px-3 py-2.5 border border-border">
           <Link
             to={`/profile/${comment.user?.username || comment.user?._id}`}
-            className="text-xs font-semibold text-gray-900 hover:text-primary"
+            className="text-xs font-semibold text-text-primary hover:text-accent"
           >
             {comment.user?.name}
           </Link>
-          <p className="text-sm text-gray-700 mt-0.5 leading-relaxed">{comment.text}</p>
+          <p className="text-sm text-text-primary mt-0.5 leading-relaxed">{comment.text}</p>
         </div>
-        <div className="flex items-center gap-3 mt-1 px-1">
-          <span className="text-[10px] text-gray-400">{formatRelativeTime(comment.createdAt)}</span>
+        <div className="flex items-center gap-3 mt-1.5 px-1">
+          <span className="text-[10px] text-text-faint">{formatRelativeTime(comment.createdAt)}</span>
           <button
             onClick={() => onReply(comment)}
-            className="text-[10px] font-semibold text-gray-500 hover:text-primary transition-colors"
+            className="text-[10px] font-semibold text-text-muted hover:text-accent transition-colors"
           >
             Reply
           </button>
@@ -81,7 +81,7 @@ function Comment({ comment, postId, onReply }) {
               {(requestConfirm) => (
                 <button
                   onClick={requestConfirm}
-                  className="text-[10px] font-semibold text-red-400 hover:text-red-600 transition-colors"
+                  className="text-[10px] font-semibold text-semantic-destructive hover:text-red-500 transition-colors"
                 >
                   Delete
                 </button>
@@ -92,7 +92,7 @@ function Comment({ comment, postId, onReply }) {
 
         {/* Replies */}
         {comment.replies?.length > 0 && (
-          <div className="mt-2 space-y-2 pl-3 border-l-2 border-gray-100">
+          <div className="mt-2 space-y-2 pl-3 border-l-2 border-border">
             {comment.replies.map((reply) => (
               <Comment key={reply._id} comment={reply} postId={postId} onReply={onReply} />
             ))}
@@ -120,11 +120,11 @@ function ShareModal({ postId, onClose }) {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-card shadow-2xl w-full max-w-md p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div className="bg-bg-overlay rounded-xl border border-border shadow-lg w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900">Share Post</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
+          <h3 className="font-bold text-text-primary">Share Post</h3>
+          <button onClick={onClose} className="p-1.5 rounded-md text-text-muted hover:bg-bg-hover hover:text-text-primary">
             <X size={16} />
           </button>
         </div>
@@ -133,7 +133,7 @@ function ShareModal({ postId, onClose }) {
           onChange={(e) => setText(e.target.value)}
           placeholder="Add a comment about this post... (optional)"
           rows={3}
-          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-300"
+          className="w-full px-3 py-2 text-sm bg-bg-elevated border border-border rounded-md resize-none text-text-primary placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent"
         />
         <div className="flex justify-end gap-2 mt-4">
           <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
@@ -179,11 +179,11 @@ function EditModal({ post, onClose, onSave }) {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-card shadow-2xl w-full max-w-md p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div className="bg-bg-overlay rounded-xl border border-border shadow-lg w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900">Edit Post</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
+          <h3 className="font-bold text-text-primary">Edit Post</h3>
+          <button onClick={onClose} className="p-1.5 rounded-md text-text-muted hover:bg-bg-hover hover:text-text-primary">
             <X size={16} />
           </button>
         </div>
@@ -192,10 +192,10 @@ function EditModal({ post, onClose, onSave }) {
           onChange={(e) => setEditContent(e.target.value)}
           rows={4}
           maxLength={3000}
-          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-300"
+          className="w-full px-3 py-2 text-sm bg-bg-elevated border border-border rounded-md resize-none text-text-primary placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent"
         />
         <p className={`text-[10px] mt-1 text-right tabular-nums ${
-          3000 - editContent.length < 100 ? "text-red-400" : "text-gray-400"
+          3000 - editContent.length < 100 ? "text-semantic-destructive font-bold" : "text-text-faint"
         }`}>
           {(3000 - editContent.length).toLocaleString()} remaining
         </p>
@@ -324,7 +324,7 @@ export default function PostCard({ post: initialPost }) {
 
   return (
     <>
-      <div className="bg-white rounded-card shadow-card border border-surface-border overflow-hidden">
+      <div className="bg-bg-elevated rounded-xl border border-border shadow-md overflow-hidden">
         {/* Author row */}
         <div className="flex items-start justify-between p-4 pb-3">
           <Link
@@ -333,11 +333,11 @@ export default function PostCard({ post: initialPost }) {
           >
             <Avatar src={post.author?.profilePic} name={post.author?.name} size="md" />
             <div>
-              <p className="font-semibold text-sm text-gray-900 group-hover:text-primary transition-colors">
+              <p className="font-semibold text-sm text-text-primary group-hover:text-accent transition-colors">
                 {post.author?.name}
               </p>
-              <p className="text-xs text-gray-500 line-clamp-1">{post.author?.headline}</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">{formatRelativeTime(post.createdAt)}</p>
+              <p className="text-xs text-text-muted line-clamp-1">{post.author?.headline}</p>
+              <p className="text-[10px] text-text-faint mt-0.5">{formatRelativeTime(post.createdAt)}</p>
             </div>
           </Link>
 
@@ -345,7 +345,7 @@ export default function PostCard({ post: initialPost }) {
             {canEdit && (
               <button
                 onClick={() => setShowEditModal(true)}
-                className="p-1.5 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary transition-colors"
+                className="p-2 rounded-md text-text-muted hover:bg-bg-hover hover:text-accent transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
                 title="Edit post"
               >
                 <Pencil size={14} />
@@ -360,7 +360,7 @@ export default function PostCard({ post: initialPost }) {
                 {(requestConfirm) => (
                   <button
                     onClick={requestConfirm}
-                    className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                    className="p-2 rounded-md text-text-muted hover:bg-bg-hover hover:text-semantic-destructive transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -373,7 +373,7 @@ export default function PostCard({ post: initialPost }) {
         {/* Content */}
         {post.content && (
           <div className="px-4 pb-3">
-            <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
+            <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap break-words">
               {formatText(post.content)}
             </p>
           </div>
@@ -383,7 +383,7 @@ export default function PostCard({ post: initialPost }) {
         {post.tags?.length > 0 && (
           <div className="px-4 pb-3 flex flex-wrap gap-1">
             {post.tags.map((tag) => (
-              <span key={tag} className="text-[11px] text-primary font-medium">
+              <span key={tag} className="text-[11px] text-accent font-medium hover:underline cursor-pointer">
                 #{tag}
               </span>
             ))}
@@ -395,7 +395,7 @@ export default function PostCard({ post: initialPost }) {
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
-            className="w-full cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-primary-300"
+            className="w-full cursor-zoom-in focus:outline-none border-y border-border"
           >
             <img
               src={post.image}
@@ -408,27 +408,27 @@ export default function PostCard({ post: initialPost }) {
 
         {/* Shared post preview */}
         {isShare && post.sharedPost && (
-          <div className="mx-4 mb-3 rounded-xl border border-surface-border overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border-b border-surface-border">
+          <div className="mx-4 mb-3 rounded-xl border border-border overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 bg-bg-hover border-b border-border">
               <Avatar
                 src={post.sharedPost.author?.profilePic}
                 name={post.sharedPost.author?.name}
                 size="xs"
               />
-              <span className="text-xs font-semibold text-gray-700">
+              <span className="text-xs font-semibold text-text-primary">
                 {post.sharedPost.author?.name}
               </span>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-[10px] text-text-faint">
                 · {formatRelativeTime(post.sharedPost.createdAt)}
               </span>
             </div>
-            <div className="p-3">
-              <p className="text-sm text-gray-700 line-clamp-3 break-words">{formatText(post.sharedPost.content)}</p>
+            <div className="p-3 bg-bg-base/30">
+              <p className="text-sm text-text-muted line-clamp-3 break-words">{formatText(post.sharedPost.content)}</p>
               {post.sharedPost.image && (
                 <img
                   src={post.sharedPost.image}
                   alt=""
-                  className="mt-2 w-full h-32 object-cover rounded-lg"
+                  className="mt-2 w-full h-32 object-cover rounded-md border border-border"
                   loading="lazy"
                 />
               )}
@@ -437,10 +437,10 @@ export default function PostCard({ post: initialPost }) {
         )}
 
         {/* Stats row */}
-        <div className="px-4 py-2 flex items-center gap-1 text-xs text-gray-400 border-t border-surface-border">
+        <div className="px-4 py-2 flex items-center gap-1 text-xs text-text-muted border-t border-border">
           {post.likesCount > 0 && (
             <span className="flex items-center gap-1">
-              <Heart size={11} className="text-red-400 fill-red-400" /> {post.likesCount}
+              <Heart size={11} className="text-semantic-destructive fill-semantic-destructive" /> {post.likesCount}
             </span>
           )}
           {post.likesCount > 0 && post.commentsCount > 0 && (
@@ -449,7 +449,7 @@ export default function PostCard({ post: initialPost }) {
           {post.commentsCount > 0 && (
             <button
               onClick={() => setShowComments((v) => !v)}
-              className="hover:text-primary transition-colors"
+              className="hover:text-accent transition-colors"
             >
               {post.commentsCount} comment{post.commentsCount !== 1 ? "s" : ""}
             </button>
@@ -463,22 +463,22 @@ export default function PostCard({ post: initialPost }) {
         </div>
 
         {/* Action buttons */}
-        <div className="px-4 py-2 flex items-center gap-1 border-t border-surface-border">
+        <div className="px-4 py-2 flex items-center gap-1 border-t border-border">
           <button
             onClick={() => likeMutation.mutate()}
             disabled={likeMutation.isPending}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${post.isLiked
-                ? "text-red-500 bg-red-50"
-                : "text-gray-500 hover:bg-gray-100"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-colors min-h-[40px] flex-1 sm:flex-initial justify-center ${post.isLiked
+                ? "text-semantic-destructive bg-semantic-destructive/10 border border-semantic-destructive/20"
+                : "text-text-muted hover:bg-bg-hover hover:text-text-primary"
               }`}
           >
-            <Heart size={15} className={post.isLiked ? "fill-red-500" : ""} />
+            <Heart size={15} className={post.isLiked ? "fill-semantic-destructive" : ""} />
             {post.isLiked ? "Liked" : "Like"}
           </button>
 
           <button
             onClick={() => setShowComments((v) => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors min-h-[40px] flex-1 sm:flex-initial justify-center"
           >
             <MessageCircle size={15} />
             Comment
@@ -487,7 +487,7 @@ export default function PostCard({ post: initialPost }) {
 
           <button
             onClick={() => setShowShareModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors min-h-[40px] flex-1 sm:flex-initial justify-center"
           >
             <Share2 size={15} />
             Share
@@ -499,28 +499,28 @@ export default function PostCard({ post: initialPost }) {
           <button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-colors min-h-[40px] flex-1 sm:flex-initial justify-center ${
               isSaved
-                ? "text-primary bg-primary-50"
-                : "text-gray-500 hover:bg-gray-100"
+                ? "text-accent bg-accent-muted border border-border-accent"
+                : "text-text-muted hover:bg-bg-hover hover:text-text-primary"
             }`}
             title={isSaved ? "Unsave post" : "Save post"}
           >
-            <Bookmark size={15} className={isSaved ? "fill-primary" : ""} />
+            <Bookmark size={15} className={isSaved ? "fill-accent" : ""} />
             {isSaved ? "Saved" : "Save"}
           </button>
         </div>
 
         {/* Comments section */}
         {showComments && (
-          <div className="border-t border-surface-border px-4 py-3 space-y-3 bg-gray-50/50">
+          <div className="border-t border-border px-4 py-3 space-y-3 bg-bg-elevated/40">
             {/* Comment input */}
             <div className="flex gap-2.5">
               <Avatar src={user?.profilePic} name={user?.name} size="xs" />
               <div className="flex-1 flex gap-2">
                 <div className="flex-1">
                   {replyingTo && (
-                    <div className="flex items-center gap-1 text-[10px] text-primary mb-1">
+                    <div className="flex items-center gap-1 text-[10px] text-accent mb-1">
                       <span>Replying to {replyingTo.user?.name}</span>
                       <button onClick={() => setReplyingTo(null)}>
                         <X size={10} />
@@ -532,13 +532,13 @@ export default function PostCard({ post: initialPost }) {
                     onChange={(e) => setCommentText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleComment()}
                     placeholder={replyingTo ? `Reply to ${replyingTo.user?.name}...` : "Write a comment..."}
-                    className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-200"
+                    className="w-full px-3 py-2.5 text-sm bg-bg-elevated border border-border rounded-md text-text-primary placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]"
                   />
                 </div>
                 <button
                   onClick={handleComment}
                   disabled={!commentText.trim() || commentMutation.isPending}
-                  className="self-end p-2 rounded-xl bg-primary text-white hover:bg-primary-950 disabled:opacity-40 transition-colors"
+                  className="self-end p-2.5 rounded-md bg-accent text-white hover:bg-accent-hover disabled:opacity-40 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
                   <Send size={14} />
                 </button>
@@ -548,12 +548,12 @@ export default function PostCard({ post: initialPost }) {
             {/* Comments list */}
             {commentsLoading && (
               <div className="flex justify-center py-3">
-                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
               </div>
             )}
 
             {!commentsLoading && comments.length === 0 && (
-              <p className="text-xs text-center text-gray-400 py-2">
+              <p className="text-xs text-center text-text-faint py-2">
                 No comments yet. Be the first!
               </p>
             )}

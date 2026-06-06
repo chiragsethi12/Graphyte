@@ -1,21 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --primary: #660033;
-    --primary-light: #fdf2f6;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
   body {
-    @apply font-sans bg-surface-muted text-gray-900 antialiased;
+    @apply font-sans bg-bg-base text-text-primary antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -27,39 +18,40 @@
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
+    @apply bg-border-muted rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
+    @apply bg-text-faint;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white font-semibold rounded-lg px-4 py-2 
-           hover:bg-primary-950 active:scale-[0.98] transition-all duration-150 
-           disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-accent text-white font-semibold rounded-md px-4 py-2.5 
+           hover:bg-accent-hover active:scale-[0.98] transition-all duration-150 
+           disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2;
   }
 
   .btn-outline {
-    @apply border border-primary text-primary font-semibold rounded-lg px-4 py-2
-           hover:bg-primary-50 active:scale-[0.98] transition-all duration-150
-           disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply border border-border text-text-primary font-semibold rounded-md px-4 py-2.5
+           hover:bg-bg-hover active:scale-[0.98] transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2;
   }
 
   .btn-ghost {
-    @apply text-gray-600 font-medium rounded-lg px-4 py-2
-           hover:bg-gray-100 active:scale-[0.98] transition-all duration-150;
+    @apply text-text-muted font-medium rounded-md px-4 py-2.5
+           hover:bg-bg-hover hover:text-text-primary active:scale-[0.98] transition-all duration-150
+           flex items-center justify-center gap-2;
   }
 
   .card {
-    @apply bg-white rounded-card shadow-card border border-surface-border;
+    @apply bg-bg-elevated rounded-xl border border-border shadow-md overflow-hidden;
   }
 
   .input-base {
-    @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-300 
-           focus:border-primary transition-colors duration-150;
+    @apply w-full rounded-md border border-border bg-bg-elevated px-3 py-2 text-sm text-text-primary
+           placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent 
+           focus:border-accent transition-colors duration-150;
   }
 }
 

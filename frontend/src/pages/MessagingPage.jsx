@@ -43,40 +43,22 @@ export default function MessagingPage() {
   }, [conversations, activeConversation]);
 
   useEffect(() => {
-    if (!userIdFromUrl) return;
-    if (isLoading) return; // wait for conversations to load
-
-    // Check if there's an existing conversation with this user
-    const existing = conversations.find(
-      (c) => c.participant?._id === userIdFromUrl
-    );
-
+    if (!userIdFromUrl || isLoading) return;
+    const existing = conversations.find(c => c.participant?._id === userIdFromUrl);
     if (existing) {
       handleSelectConversation(existing);
     } else {
-      // No prior conversation — fetch the user's info to build a virtual conversation
-      api.get(`/users/${userIdFromUrl}`).then((res) => {
-        const targetUser = res.data.user || res.data;
-        if (!targetUser?._id) return;
-
-        const virtualConv = {
-          _id: `new_${targetUser._id}`,
-          participant: {
-            _id: targetUser._id,
-            name: targetUser.name,
-            username: targetUser.username,
-            profilePic: targetUser.profilePic,
-            headline: targetUser.headline,
-          },
+      api.get(`/users/${userIdFromUrl}`).then(res => {
+        const u = res.data.user || res.data;
+        handleSelectConversation({
+          _id: `new_${u._id}`,
+          participant: u,
           lastMessage: "",
           lastMessageAt: null,
-          unread: 0,
-        };
-        handleSelectConversation(virtualConv);
+          unread: 0
+        });
       }).catch(console.error);
     }
-
-    // Clear the URL param after processing so refresh doesn't re-trigger
     setSearchParams({}, { replace: true });
   }, [userIdFromUrl, conversations, isLoading]);
 
@@ -102,9 +84,9 @@ export default function MessagingPage() {
   return (
     <MainLayout>
       <div className="max-w-[1100px] mx-auto -mt-6 -mx-4 lg:-mx-6">
-        <div className="flex h-[calc(100vh-60px)] bg-white rounded-card shadow-card border border-surface-border overflow-hidden">
+        <div className="flex h-[calc(100vh-60px)] bg-bg-elevated rounded-xl border border-border overflow-hidden">
           {/* Conversation panel — hidden on mobile when chat is open */}
-          <div className={`w-full lg:w-80 flex-shrink-0 border-r border-surface-border ${showChat ? "hidden lg:block" : "block"}`}>
+          <div className={`w-full lg:w-80 flex-shrink-0 border-r border-border ${showChat ? "hidden lg:block" : "block"}`}>
             <ConversationList
               conversations={filtered}
               activeId={activeConversation?._id}

@@ -1,17 +1,17 @@
 import clsx from "clsx";
 
 const variants = {
-  primary: "bg-primary text-white hover:bg-primary-950",
-  outline: "border border-primary text-primary hover:bg-primary-50",
-  ghost:   "text-gray-600 hover:bg-gray-100",
-  danger:  "bg-red-600 text-white hover:bg-red-700",
-  white:   "bg-white text-gray-800 border border-gray-200 hover:bg-gray-50",
+  primary: "bg-accent text-white hover:bg-accent-hover",
+  outline: "border border-border text-text-primary hover:bg-bg-hover",
+  ghost:   "text-text-muted hover:bg-bg-hover hover:text-text-primary",
+  danger:  "bg-semantic-destructive text-white hover:bg-red-600",
+  white:   "bg-bg-hover text-text-primary border border-border hover:bg-bg-active",
 };
 
 const sizes = {
-  sm:  "text-xs px-3 py-1.5",
-  md:  "text-sm px-4 py-2",
-  lg:  "text-base px-6 py-2.5",
+  sm:  "text-xs px-3 py-1.5 min-h-[36px]",
+  md:  "text-sm px-4 py-2.5 min-h-[44px]",
+  lg:  "text-base px-6 py-3 min-h-[48px]",
 };
 
 export default function Button({
@@ -28,7 +28,7 @@ export default function Button({
     <button
       disabled={disabled || loading}
       className={clsx(
-        "inline-flex items-center justify-center gap-2 font-semibold rounded-lg",
+        "inline-flex items-center justify-center gap-2 font-semibold rounded-md",
         "active:scale-[0.98] transition-all duration-150 cursor-pointer",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         variants[variant],

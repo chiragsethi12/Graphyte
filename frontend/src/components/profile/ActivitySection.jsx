@@ -16,7 +16,7 @@ function MiniPostCard({ post }) {
   return (
     <Link
       to={`/profile/${post.author?.username || post.author?._id}`}
-      className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-all group flex flex-col"
+      className="bg-bg-base rounded-xl border border-border overflow-hidden hover:shadow-md hover:border-border-muted transition-all group flex flex-col"
     >
       {post.image && (
         <div className="h-32 overflow-hidden">
@@ -28,14 +28,14 @@ function MiniPostCard({ post }) {
         </div>
       )}
       <div className="p-3.5 flex-1 flex flex-col">
-        <p className="text-sm text-gray-700 leading-snug line-clamp-3 break-words flex-1">
+        <p className="text-sm text-text-muted leading-snug line-clamp-3 break-words flex-1">
           {post.content}
         </p>
-        <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-gray-100">
+        <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-border">
           <Avatar src={post.author?.profilePic} name={post.author?.name} size="xs" />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-gray-800 truncate">{post.author?.name}</p>
-            <p className="text-[10px] text-gray-400">{formatRelativeTime(post.createdAt)}</p>
+            <p className="text-xs font-semibold text-text-primary truncate">{post.author?.name}</p>
+            <p className="text-[10px] text-text-muted">{formatRelativeTime(post.createdAt)}</p>
           </div>
         </div>
       </div>
@@ -65,13 +65,13 @@ export default function ActivitySection({ userId, isOwner, userName }) {
   const displayPosts = filtered.slice(0, 4);
 
   return (
-    <div className="bg-white rounded-2xl shadow-card border border-surface-border p-6 md:p-7">
+    <div className="card p-6 md:p-7">
       {/* Header */}
       <div className="flex items-center justify-between mb-1">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Activity</h2>
+          <h2 className="text-lg font-bold font-display text-text-primary">Activity</h2>
           {allPosts.length > 0 && (
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               {allPosts.length} post{allPosts.length !== 1 ? 's' : ''}
             </p>
           )}
@@ -79,7 +79,7 @@ export default function ActivitySection({ userId, isOwner, userName }) {
         {isOwner && (
           <Link
             to="/feed"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary-50 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border text-text-primary bg-bg-base text-sm font-semibold hover:bg-bg-hover hover:border-border-muted transition-all min-h-[44px]"
           >
             <PenSquare size={14} /> Create a post
           </Link>
@@ -94,8 +94,8 @@ export default function ActivitySection({ userId, isOwner, userName }) {
             onClick={() => setActiveTab(key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
               activeTab === key
-                ? 'bg-primary text-white shadow-sm'
-                : 'text-gray-500 hover:bg-gray-100'
+                ? 'bg-accent text-white shadow-sm hover:bg-accent-hover'
+                : 'text-text-muted hover:bg-bg-hover hover:text-text-primary'
             }`}
           >
             <Icon size={14} />
@@ -108,12 +108,12 @@ export default function ActivitySection({ userId, isOwner, userName }) {
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-gray-100 rounded-xl h-48 animate-pulse" />
+            <div key={i} className="bg-bg-base border border-border rounded-xl h-48 animate-pulse" />
           ))}
         </div>
       ) : displayPosts.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-text-muted">
             {activeTab === 'images'
               ? 'No image posts yet.'
               : activeTab === 'comments'
@@ -132,10 +132,10 @@ export default function ActivitySection({ userId, isOwner, userName }) {
           </div>
 
           {allPosts.length > 4 && (
-            <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+            <div className="mt-4 pt-4 border-t border-border text-center">
               <Link
                 to={`/profile/${userId}`}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline min-h-[44px]"
               >
                 Show all activity <ArrowRight size={14} />
               </Link>

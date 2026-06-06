@@ -15,15 +15,15 @@ function ExperienceItem({ exp, isLast, isEditing, onDelete, isDeleting }) {
     <div className="flex gap-4 relative">
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute left-[22px] top-[52px] bottom-0 w-px bg-gray-100" />
+        <div className="absolute left-[22px] top-[52px] bottom-0 w-px bg-border" />
       )}
 
       {/* Logo / icon */}
       <div className="relative z-10 flex-shrink-0">
         <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
-          isCurrent ? 'bg-primary-50 ring-2 ring-primary-100' : 'bg-gray-50 border border-gray-100'
+          isCurrent ? 'bg-accent/10 ring-2 ring-accent/20' : 'bg-bg-base border border-border'
         }`}>
-          <Briefcase size={18} className={isCurrent ? 'text-primary' : 'text-gray-400'} />
+          <Briefcase size={18} className={isCurrent ? 'text-accent' : 'text-text-muted'} />
         </div>
       </div>
 
@@ -31,9 +31,9 @@ function ExperienceItem({ exp, isLast, isEditing, onDelete, isDeleting }) {
       <div className="flex-1 min-w-0 pb-6">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h4 className="font-semibold text-gray-900 text-[15px] leading-tight">{exp.title}</h4>
-            <p className="text-sm text-gray-600 mt-0.5">{exp.company} · Full-time</p>
-            <p className="text-xs text-gray-400 mt-1">{duration}</p>
+            <h4 className="font-semibold text-text-primary text-[15px] leading-tight">{exp.title}</h4>
+            <p className="text-sm text-text-muted mt-0.5">{exp.company} · Full-time</p>
+            <p className="text-xs text-text-faint mt-1">{duration}</p>
           </div>
           {isEditing && (
             <ConfirmAction
@@ -45,7 +45,7 @@ function ExperienceItem({ exp, isLast, isEditing, onDelete, isDeleting }) {
                 <button
                   onClick={requestConfirm}
                   disabled={isDeleting}
-                  className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+                  className="p-1.5 rounded-lg text-text-faint hover:text-semantic-destructive hover:bg-semantic-destructive/10 border border-transparent hover:border-semantic-destructive/20 transition-all flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -54,7 +54,7 @@ function ExperienceItem({ exp, isLast, isEditing, onDelete, isDeleting }) {
           )}
         </div>
         {exp.description && (
-          <p className="text-sm text-gray-500 mt-3 leading-relaxed">{exp.description}</p>
+          <p className="text-sm text-text-muted mt-3 leading-relaxed">{exp.description}</p>
         )}
       </div>
     </div>
@@ -120,22 +120,22 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
   });
 
   return (
-    <div className="bg-white rounded-2xl shadow-card border border-surface-border p-6 md:p-7">
+    <div className="card p-6 md:p-7">
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-bold text-gray-900">Experience</h2>
+        <h2 className="text-lg font-bold font-display text-text-primary">Experience</h2>
         <div className="flex items-center gap-1">
           {isOwner && (
             <>
               <button
                 onClick={() => { setShowAdd((p) => !p); if (isEditing) setIsEditing(false); }}
-                className="p-2 rounded-xl text-gray-400 hover:text-primary hover:bg-primary-50/50 transition-all"
+                className="p-2 rounded-xl text-text-muted hover:text-accent hover:bg-bg-hover transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 {showAdd ? <X size={16} /> : <Plus size={16} />}
               </button>
               <button
                 onClick={() => { setIsEditing((p) => !p); if (showAdd) setShowAdd(false); }}
-                className={`p-2 rounded-xl transition-all ${
-                  isEditing ? 'text-primary bg-primary-50/50' : 'text-gray-400 hover:text-primary hover:bg-primary-50/50'
+                className={`p-2 rounded-xl transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                  isEditing ? 'text-accent bg-accent/10' : 'text-text-muted hover:text-accent hover:bg-bg-hover'
                 }`}
               >
                 <Edit2 size={16} />
@@ -146,7 +146,7 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
       </div>
 
       {showAdd && (
-        <div className="mb-6 p-5 bg-gray-50/80 rounded-xl border border-gray-100 flex flex-col gap-3.5">
+        <div className="mb-6 p-5 bg-bg-base rounded-xl border border-border flex flex-col gap-3.5">
           <Input
             label="Title"
             value={form.title}
@@ -189,8 +189,8 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
       )}
 
       {isEditing && experiences.length > 0 && (
-        <p className="text-xs text-gray-400 mb-4 -mt-2">
-          Click the <Trash2 size={11} className="inline text-gray-400" /> icon to remove an entry.
+        <p className="text-xs text-text-muted mb-4 -mt-2">
+          Click the <Trash2 size={11} className="inline text-text-muted" /> icon to remove an entry.
         </p>
       )}
 
@@ -206,7 +206,7 @@ export default function ExperienceSection({ experiences = [], isOwner = false, u
           />
         ))}
         {experiences.length === 0 && (
-          <p className="text-sm text-gray-400 italic">
+          <p className="text-sm text-text-muted italic">
             {isOwner ? 'Add your professional experience to stand out.' : 'No experience added yet.'}
           </p>
         )}

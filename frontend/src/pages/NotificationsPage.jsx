@@ -42,14 +42,14 @@ function ConnectionActionButtons({ senderId, onResponded }) {
       <button
         disabled={loading}
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAction("accept"); }}
-        className="px-5 py-2 text-sm font-semibold bg-primary text-white rounded-full hover:bg-primary-600 transition-colors disabled:opacity-50 min-h-[44px]"
+        className="px-5 py-2 text-sm font-semibold bg-accent text-white rounded-full hover:bg-accent-hover transition-colors disabled:opacity-50 min-h-[44px]"
       >
         Accept
       </button>
       <button
         disabled={loading}
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAction("reject"); }}
-        className="px-5 py-2 text-sm font-semibold bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50 min-h-[44px]"
+        className="px-5 py-2 text-sm font-semibold bg-bg-hover text-text-primary rounded-full hover:bg-bg-active border border-border transition-colors disabled:opacity-50 min-h-[44px]"
       >
         Decline
       </button>
@@ -61,7 +61,7 @@ function NotificationItem({ notification, onMarkRead, onDelete }) {
   const navigate = useNavigate();
 
   const getNotificationText = () => {
-    const name = <span className="font-bold text-gray-900">{notification.sender?.name}</span>;
+    const name = <span className="font-bold text-text-primary">{notification.sender?.name}</span>;
     switch (notification.type) {
       case "like": return <>{name} liked your post</>;
       case "comment": return <>{name} commented on your post</>;
@@ -93,13 +93,13 @@ function NotificationItem({ notification, onMarkRead, onDelete }) {
   return (
     <div
       onClick={handleClick}
-      className={`group relative flex items-start gap-3 p-4 transition-colors cursor-pointer border-b border-surface-border last:border-0 hover:bg-gray-50 min-h-[72px] ${
-        !notification.read ? "bg-primary-50/30" : "bg-white"
+      className={`group relative flex items-start gap-3 p-4 transition-colors cursor-pointer border-b border-border last:border-0 hover:bg-bg-hover/50 min-h-[72px] ${
+        !notification.read ? "bg-accent/5 border-l-2 border-l-accent" : "bg-bg-elevated"
       }`}
     >
       {/* Unread indicator */}
       {!notification.read && (
-        <div className="absolute left-2.5 top-8 w-2.5 h-2.5 rounded-full bg-primary" />
+        <div className="absolute left-2.5 top-8 w-2.5 h-2.5 rounded-full bg-accent" />
       )}
 
       {/* Avatar */}
@@ -114,10 +114,10 @@ function NotificationItem({ notification, onMarkRead, onDelete }) {
       </div>
 
       <div className="flex-1 min-w-0 py-1">
-        <p className="text-sm text-gray-700 leading-snug">
+        <p className="text-sm text-text-muted leading-snug">
           {getNotificationText()}
         </p>
-        <p className="text-xs text-gray-400 mt-1">
+        <p className="text-xs text-text-faint mt-1">
           {formatRelativeTime(notification.createdAt)}
         </p>
 
@@ -133,7 +133,7 @@ function NotificationItem({ notification, onMarkRead, onDelete }) {
       <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity lg:block hidden">
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(notification._id); }}
-          className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="p-2 rounded-full text-text-faint hover:text-semantic-destructive hover:bg-semantic-destructive/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           title="Delete"
         >
           <X size={18} />
@@ -144,7 +144,7 @@ function NotificationItem({ notification, onMarkRead, onDelete }) {
       <div className="shrink-0 lg:hidden block">
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(notification._id); }}
-          className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="p-2 rounded-full text-text-faint hover:text-semantic-destructive hover:bg-semantic-destructive/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           title="Delete"
         >
           <X size={18} />
@@ -204,15 +204,15 @@ export default function NotificationsPage() {
   return (
     <MainLayout>
       <div className="max-w-[720px] mx-auto mb-10">
-        <div className="bg-white rounded-xl shadow-card border border-surface-border overflow-hidden">
+        <div className="card">
           
           {/* Header */}
-          <div className="px-5 py-4 border-b border-surface-border flex items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
+          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <h1 className="text-xl font-bold font-display text-text-primary">Notifications</h1>
             <button
               onClick={() => markAllReadMutation.mutate()}
               disabled={markAllReadMutation.isPending || notifications.every(n => n.read)}
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-primary transition-colors disabled:opacity-50 disabled:hover:text-gray-600 min-h-[44px] px-3 -mr-3 rounded-lg hover:bg-gray-50"
+              className="flex items-center gap-1.5 text-sm font-semibold text-text-muted hover:text-accent transition-colors disabled:opacity-50 disabled:hover:text-text-muted min-h-[44px] px-3 -mr-3 rounded-lg hover:bg-bg-hover"
             >
               <CheckCheck size={16} />
               Mark all as read
@@ -220,15 +220,15 @@ export default function NotificationsPage() {
           </div>
 
           {/* Filters */}
-          <div className="px-3 py-2 border-b border-surface-border bg-gray-50/50 flex gap-1 overflow-x-auto hide-scrollbar">
+          <div className="px-3 py-2 border-b border-border bg-bg-base flex gap-1 overflow-x-auto hide-scrollbar">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setFilter(tab.id)}
                 className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors min-h-[44px] ${
                   filter === tab.id
-                    ? "bg-primary text-white"
-                    : "text-gray-600 hover:bg-gray-200/60"
+                    ? "bg-accent text-white hover:bg-accent-hover"
+                    : "text-text-muted hover:bg-bg-hover hover:text-text-primary"
                 }`}
               >
                 {tab.label}
@@ -237,20 +237,20 @@ export default function NotificationsPage() {
           </div>
 
           {/* List */}
-          <div className="divide-y divide-surface-border bg-white min-h-[400px]">
+          <div className="divide-y divide-border bg-bg-elevated min-h-[400px]">
             {isLoading && (
               <div className="flex justify-center py-12">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
               </div>
             )}
 
             {!isLoading && filteredNotifications.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-                <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Bell size={28} className="text-primary" />
+                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Bell size={28} className="text-accent" />
                 </div>
-                <p className="text-lg font-bold text-gray-900 mb-1">You're all caught up! 🎉</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-lg font-bold font-display text-text-primary mb-1">You're all caught up! 🎉</p>
+                <p className="text-sm text-text-muted">
                   {filter === "all"
                     ? "No notifications to show right now."
                     : `No ${filter} notifications.`}
@@ -268,10 +268,10 @@ export default function NotificationsPage() {
             ))}
 
             {hasNextPage && (
-              <div className="p-4 flex justify-center border-t border-surface-border">
+              <div className="p-4 flex justify-center border-t border-border">
                 <button
                   onClick={() => fetchNextPage()}
-                  className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-full hover:bg-gray-200 transition-colors min-h-[44px]"
+                  className="px-6 py-2 bg-bg-hover border border-border text-text-primary font-semibold rounded-full hover:bg-bg-active transition-colors min-h-[44px]"
                 >
                   Load More
                 </button>

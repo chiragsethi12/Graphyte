@@ -26,11 +26,11 @@ import toast from 'react-hot-toast';
 /* ─── Shimmer Skeleton ─────────────────────────────────────────── */
 function Shimmer({ className = '' }) {
   return (
-    <div className={`relative overflow-hidden bg-gray-200/70 rounded ${className}`} style={{ isolation: 'isolate' }}>
+    <div className={`relative overflow-hidden bg-bg-hover rounded ${className}`} style={{ isolation: 'isolate' }}>
       <div
         className="absolute inset-0 -translate-x-full"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)',
           animation: 'shimmer 1.8s ease-in-out infinite',
         }}
       />
@@ -42,11 +42,11 @@ function ProfileSkeleton() {
   return (
     <div className="max-w-[1024px] mx-auto space-y-4">
       {/* Hero skeleton */}
-      <div className="bg-white rounded-2xl shadow-card border border-surface-border overflow-hidden">
+      <div className="bg-bg-elevated rounded-xl border border-border overflow-hidden">
         <Shimmer className="h-48 md:h-56 w-full rounded-none" />
         <div className="px-8 pb-6 flex gap-5">
           <div className="-mt-16 md:-mt-20 flex-shrink-0">
-            <Shimmer className="w-32 h-32 md:w-36 md:h-36 rounded-full ring-[5px] ring-white" />
+            <Shimmer className="w-32 h-32 md:w-36 md:h-36 rounded-full ring-[5px] ring-bg-elevated" />
           </div>
           <div className="flex-1 pt-4 space-y-3">
             <Shimmer className="h-7 w-52 rounded-md" />
@@ -65,16 +65,16 @@ function ProfileSkeleton() {
       {/* Content skeleton */}
       <div className="flex gap-4">
         <div className="flex-1 space-y-4">
-          <div className="bg-white rounded-2xl shadow-card border border-surface-border p-7 space-y-4">
+          <div className="bg-bg-elevated rounded-xl border border-border p-7 space-y-4">
             <Shimmer className="h-5 w-16 rounded-md" />
             <Shimmer className="h-3 w-full rounded-md" />
             <Shimmer className="h-3 w-5/6 rounded-md" />
             <Shimmer className="h-3 w-4/6 rounded-md" />
           </div>
-          <div className="bg-white rounded-2xl shadow-card border border-surface-border p-7 space-y-4">
+          <div className="bg-bg-elevated rounded-xl border border-border p-7 space-y-4">
             <Shimmer className="h-5 w-24 rounded-md" />
             <div className="flex gap-4">
-              <Shimmer className="w-11 h-11 rounded-xl flex-shrink-0" />
+              <Shimmer className="w-11 h-11 rounded-md flex-shrink-0" />
               <div className="flex-1 space-y-2">
                 <Shimmer className="h-4 w-44 rounded-md" />
                 <Shimmer className="h-3 w-36 rounded-md" />
@@ -84,11 +84,11 @@ function ProfileSkeleton() {
           </div>
         </div>
         <div className="w-[300px] hidden lg:block space-y-4">
-          <div className="bg-white rounded-2xl shadow-card border border-surface-border p-5 space-y-3">
+          <div className="bg-bg-elevated rounded-xl border border-border p-5 space-y-3">
             <Shimmer className="h-4 w-32 rounded-md" />
-            <Shimmer className="h-9 w-full rounded-xl" />
+            <Shimmer className="h-9 w-full rounded-md" />
           </div>
-          <div className="bg-white rounded-2xl shadow-card border border-surface-border p-5 space-y-3">
+          <div className="bg-bg-elevated rounded-xl border border-border p-5 space-y-3">
             <Shimmer className="h-4 w-36 rounded-md" />
             <div className="space-y-2.5">
               {[1, 2, 3].map((i) => (
@@ -115,14 +115,14 @@ function ConnectionStatusBadge({ userId }) {
   if (status === 'self') return null;
   if (status === 'connected') {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-semantic-success/10 text-semantic-success border border-semantic-success/20 text-xs font-semibold">
         <CheckCircle size={12} /> Connected
       </span>
     );
   }
   if (status === 'pending_sent' || status === 'pending_received') {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-medium">
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-semantic-warning/10 text-semantic-warning border border-semantic-warning/20 text-xs font-semibold">
         <Clock size={12} /> Pending
       </span>
     );
@@ -130,7 +130,7 @@ function ConnectionStatusBadge({ userId }) {
   return (
     <button
       onClick={(e) => { e.preventDefault(); sendRequest.mutate(); }}
-      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-50 text-primary text-xs font-semibold hover:bg-primary-100 transition-colors"
+      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-accent-muted text-accent border border-border-accent text-xs font-semibold hover:bg-accent/20 transition-all min-h-[36px]"
     >
       <UserPlus size={12} /> Connect
     </button>
@@ -163,14 +163,14 @@ function ConnectionsTab({ profile, isOwner }) {
 
   if (isOwner && ownLoading) {
     return (
-      <div className="bg-white rounded-2xl shadow-card border border-surface-border p-6">
+      <div className="bg-bg-elevated rounded-xl border border-border p-6">
         <div className="space-y-4 animate-pulse">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-full" />
+              <div className="w-10 h-10 bg-bg-hover rounded-full" />
               <div className="flex-1 space-y-2">
-                <div className="h-3 bg-gray-200 rounded w-1/3" />
-                <div className="h-2 bg-gray-200 rounded w-1/2" />
+                <div className="h-3 bg-bg-hover rounded w-1/3" />
+                <div className="h-2 bg-bg-hover rounded w-1/2" />
               </div>
             </div>
           ))}
@@ -181,30 +181,30 @@ function ConnectionsTab({ profile, isOwner }) {
 
   if (connections.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-card border border-surface-border text-center py-14">
-        <Users size={36} className="mx-auto text-gray-300 mb-3" />
-        <p className="text-gray-400 text-sm">No connections yet.</p>
+      <div className="bg-bg-elevated rounded-xl border border-border text-center py-14">
+        <Users size={36} className="mx-auto text-text-faint mb-3" />
+        <p className="text-text-muted text-sm">No connections yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-card border border-surface-border overflow-hidden">
-      <div className="divide-y divide-gray-100">
+    <div className="bg-bg-elevated rounded-xl border border-border shadow-md overflow-hidden">
+      <div className="divide-y divide-border">
         {connections.map((person) => (
-          <div key={person._id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors">
+          <div key={person._id} className="flex items-center justify-between px-5 py-4 hover:bg-bg-hover transition-colors">
             <Link
               to={`/profile/${person.username || person._id}`}
               className="flex items-center gap-3.5 min-w-0 flex-1"
             >
               <Avatar src={person.profilePic} name={person.name} size="md" />
               <div className="min-w-0">
-                <p className="font-semibold text-sm text-gray-900 truncate">{person.name}</p>
+                <p className="font-semibold text-sm text-text-primary truncate">{person.name}</p>
                 {person.headline && (
-                  <p className="text-xs text-gray-500 truncate max-w-[240px]">{person.headline}</p>
+                  <p className="text-xs text-text-muted truncate max-w-[240px]">{person.headline}</p>
                 )}
                 {person.location && (
-                  <p className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
+                  <p className="flex items-center gap-1 text-[11px] text-text-faint mt-0.5">
                     <MapPin size={10} /> {person.location}
                   </p>
                 )}
@@ -220,7 +220,7 @@ function ConnectionsTab({ profile, isOwner }) {
                   {(requestConfirm) => (
                     <button
                       onClick={requestConfirm}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-text-muted hover:text-semantic-destructive hover:bg-bg-hover transition-colors min-h-[36px]"
                     >
                       <UserMinus size={13} /> Remove
                     </button>
@@ -242,13 +242,13 @@ function InterestsSection({ interests }) {
   if (!interests?.length) return null;
 
   return (
-    <div className="bg-white rounded-2xl shadow-card border border-surface-border p-6 md:p-7">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">Interests</h2>
+    <div className="bg-bg-elevated rounded-xl border border-border p-6 md:p-7 shadow-md">
+      <h2 className="text-lg font-bold text-text-primary mb-4">Interests</h2>
       <div className="flex flex-wrap gap-2.5">
         {interests.map((interest) => (
           <span
             key={interest}
-            className="text-sm px-4 py-2 bg-primary-50/60 text-primary rounded-full font-medium border border-primary-100 hover:bg-primary-50 transition-colors cursor-default"
+            className="text-sm px-4 py-2 bg-accent-muted text-accent rounded-full font-semibold border border-border-accent hover:bg-accent/20 transition-colors cursor-default"
           >
             {interest}
           </span>
@@ -312,11 +312,11 @@ export default function ProfilePage() {
       <MainLayout>
         <div className="max-w-[1024px] mx-auto">
           <div className="text-center py-24">
-            <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-              <Users size={32} className="text-gray-300" />
+            <div className="w-20 h-20 bg-bg-hover rounded-2xl flex items-center justify-center mx-auto mb-5 border border-border">
+              <Users size={32} className="text-text-faint" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Profile not found</h2>
-            <p className="text-sm text-gray-400">This user may have been removed or the link is incorrect.</p>
+            <h2 className="text-xl font-bold text-text-primary mb-2">Profile not found</h2>
+            <p className="text-sm text-text-muted">This user may have been removed or the link is incorrect.</p>
           </div>
         </div>
       </MainLayout>
@@ -346,7 +346,7 @@ export default function ProfilePage() {
           {/* Left: Main content */}
           <div className="flex-1 min-w-0 space-y-4">
             {/* Nav tabs */}
-            <div className="bg-white rounded-2xl shadow-card border border-surface-border px-2">
+            <div className="bg-bg-elevated rounded-xl border border-border px-2 shadow-sm">
               <div className="flex gap-1">
                 {tabs.map((tab) => (
                   <button
@@ -354,16 +354,16 @@ export default function ProfilePage() {
                     onClick={() => setActiveTab(tab.key)}
                     className={`px-5 py-3.5 text-sm font-semibold border-b-[3px] transition-all flex items-center gap-2 ${
                       activeTab === tab.key
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ? 'border-accent text-accent'
+                        : 'border-transparent text-text-muted hover:text-text-primary hover:bg-bg-hover rounded-t-md'
                     }`}
                   >
                     {tab.label}
                     {tab.count !== undefined && (
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border ${
                         activeTab === tab.key
-                          ? 'bg-primary-50 text-primary'
-                          : 'bg-gray-100 text-gray-500'
+                          ? 'bg-accent-muted text-accent border-border-accent'
+                          : 'bg-bg-hover text-text-muted border-border'
                       }`}>
                         {tab.count}
                       </span>

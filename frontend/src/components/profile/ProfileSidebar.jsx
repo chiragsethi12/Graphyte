@@ -9,11 +9,11 @@ import toast from 'react-hot-toast';
 /* ─── Sidebar widget card ──────────────────────────────────────── */
 function SidebarCard({ title, icon: Icon, children }) {
   return (
-    <div className="bg-white rounded-2xl shadow-card border border-surface-border p-5">
+    <div className="bg-bg-elevated rounded-xl border border-border p-5">
       {title && (
-        <div className="flex items-center gap-2 mb-3.5 pb-3 border-b border-gray-100">
-          {Icon && <Icon size={15} className="text-gray-400" />}
-          <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
+        <div className="flex items-center gap-2 mb-3.5 pb-3 border-b border-border">
+          {Icon && <Icon size={15} className="text-text-faint" />}
+          <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
         </div>
       )}
       {children}
@@ -55,7 +55,7 @@ function ProfileViewersWidget({ profile, stats }) {
               <Link
                 key={i}
                 to={`/profile/${view.viewerId.username || view.viewerId._id}`}
-                className="inline-block ring-2 ring-white rounded-full hover:z-10 transition-transform hover:scale-110"
+                className="inline-block ring-2 ring-bg-elevated rounded-full hover:z-10 transition-transform hover:scale-110"
               >
                 <Avatar src={view.viewerId.profilePic} name={view.viewerId.name} size="sm" />
               </Link>
@@ -63,22 +63,22 @@ function ProfileViewersWidget({ profile, stats }) {
           ))}
         </div>
       )}
-      <p className="text-xs text-gray-500 leading-relaxed">
+      <p className="text-xs text-text-muted leading-relaxed">
         {latestViewer && (
           <>
             <Link
               to={`/profile/${latestViewer.username || latestViewer._id}`}
-              className="font-semibold text-gray-700 hover:text-primary transition-colors"
+              className="font-semibold text-text-primary hover:text-accent transition-colors"
             >
               {latestViewer.name}
             </Link>
             {othersCount > 0 && (
-              <span> and <span className="font-semibold text-gray-700">{othersCount} other{othersCount !== 1 ? 's' : ''}</span></span>
+              <span> and <span className="font-semibold text-text-primary">{othersCount} other{othersCount !== 1 ? 's' : ''}</span></span>
             )}
           </>
         )}
         {weeklyViews.length > 0 && (
-          <span className="text-gray-400 block mt-1">📊 {weeklyViews.length} view{weeklyViews.length !== 1 ? 's' : ''} this week</span>
+          <span className="text-text-faint block mt-1">📊 {weeklyViews.length} view{weeklyViews.length !== 1 ? 's' : ''} this week</span>
         )}
       </p>
     </SidebarCard>
@@ -96,13 +96,13 @@ function PublicProfileWidget({ profile }) {
 
   return (
     <SidebarCard title="Public profile & URL" icon={Globe}>
-      <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100">
-        <p className="text-xs text-gray-500 truncate flex-1 font-mono">
+      <div className="flex items-center gap-2 bg-bg-base rounded-md px-3 py-2.5 border border-border">
+        <p className="text-xs text-text-muted truncate flex-1 font-mono">
           {url.replace('https://', '').replace('http://', '')}
         </p>
         <button
           onClick={handleCopy}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-white transition-all flex-shrink-0"
+          className="p-1.5 rounded-md text-text-muted hover:text-accent hover:bg-bg-hover transition-all flex-shrink-0"
         >
           <Copy size={13} />
         </button>
@@ -129,16 +129,16 @@ function PeopleAlsoViewed({ userId }) {
           <Link
             key={person._id}
             to={`/profile/${person.username || person._id}`}
-            className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-gray-50 transition-colors group"
+            className="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-bg-hover transition-colors group"
           >
             <Avatar src={person.profilePic} name={person.name} size="sm" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-primary transition-colors">
+              <p className="text-sm font-semibold text-text-primary truncate group-hover:text-accent transition-colors">
                 {person.name}
               </p>
-              <p className="text-xs text-gray-400 truncate">{person.headline}</p>
+              <p className="text-xs text-text-muted truncate">{person.headline}</p>
             </div>
-            <ExternalLink size={12} className="text-gray-300 group-hover:text-primary transition-colors flex-shrink-0" />
+            <ExternalLink size={12} className="text-text-faint group-hover:text-accent transition-colors flex-shrink-0" />
           </Link>
         ))}
       </div>
@@ -153,10 +153,10 @@ function SkillScoreWidget({ stats }) {
   return (
     <SidebarCard title="Skill Score" icon={Award}>
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
-          <span className="text-xl font-extrabold text-amber-600">{stats.skillScore}</span>
+        <div className="w-12 h-12 rounded-md bg-semantic-warning/10 border border-semantic-warning/20 flex items-center justify-center flex-shrink-0">
+          <span className="text-xl font-extrabold text-semantic-warning">{stats.skillScore}</span>
         </div>
-        <p className="text-xs text-gray-500 leading-relaxed">
+        <p className="text-xs text-text-muted leading-relaxed">
           Your engagement-based ranking. Post, comment, and get endorsed to increase it.
         </p>
       </div>
@@ -185,9 +185,9 @@ export default function ProfileSidebar({ profile, stats, isOwner, mutuals, mutua
         <SidebarCard title="Shortcuts" icon={Bookmark}>
           <Link
             to="/saved"
-            className="text-xs font-semibold text-gray-700 hover:text-primary transition-colors flex items-center gap-2 px-1.5 py-1.5 hover:bg-gray-50 rounded-lg"
+            className="text-xs font-semibold text-text-muted hover:text-text-primary transition-colors flex items-center gap-2 px-1.5 py-1.5 hover:bg-bg-hover rounded-md min-h-[36px]"
           >
-            <Bookmark size={13} className="text-gray-400" />
+            <Bookmark size={13} className="text-text-faint" />
             <span>Saved Posts</span>
           </Link>
         </SidebarCard>
@@ -204,10 +204,10 @@ export default function ProfileSidebar({ profile, stats, isOwner, mutuals, mutua
               <Link
                 key={m._id}
                 to={`/profile/${m.username || m._id}`}
-                className="flex items-center gap-2.5 p-1.5 -mx-1 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2.5 p-1.5 -mx-1 rounded-md hover:bg-bg-hover transition-colors"
               >
                 <Avatar src={m.profilePic} name={m.name} size="xs" />
-                <span className="text-xs text-gray-700 font-medium">{m.name}</span>
+                <span className="text-xs text-text-muted font-medium">{m.name}</span>
               </Link>
             ))}
           </div>

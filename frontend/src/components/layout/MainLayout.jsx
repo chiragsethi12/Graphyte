@@ -1,16 +1,16 @@
-import Navbar from "./Navbar";
-import Sidebar from "./Sidebar";
+import NavigationRail from "./NavigationRail";
+import MobileBottomNav from "./MobileBottomNav";
 
 export default function MainLayout({ children }) {
   return (
-    <div className="min-h-screen bg-surface-muted">
-      <Navbar />
-      <div className="flex max-w-[1280px] mx-auto">
-        <Sidebar />
-        <main className="flex-1 min-w-0 px-4 py-6 lg:px-6">
+    <div className="flex min-h-screen bg-[#0A0A0A] text-white">
+      <NavigationRail />
+      <main className="flex-1 min-w-0 overflow-y-auto pb-16 lg:pb-0">
+        <div className="max-w-[720px] mx-auto px-4 py-6">
           {children}
-        </main>
-      </div>
+        </div>
+      </main>
+      <MobileBottomNav />
     </div>
   );
 }

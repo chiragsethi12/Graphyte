@@ -31,25 +31,25 @@ function formatTimeAgo(dateInput) {
 // Person Card for suggestions grid
 function SuggestionCard({ person, onConnect, loading }) {
   return (
-    <Card className="p-4 flex flex-col items-center text-center gap-3 hover:shadow-card-hover transition-all bg-white border border-surface-border">
+    <Card className="p-4 flex flex-col items-center text-center gap-3 hover:shadow-md transition-all">
       <Link to={`/profile/${person.username || person._id}`}>
         <Avatar src={person.profilePic} name={person.name} size="lg" />
       </Link>
       <div className="min-h-[4em] flex flex-col items-center">
-        <Link to={`/profile/${person.username || person._id}`} className="font-bold text-gray-900 text-sm hover:text-primary transition-colors truncate max-w-[160px]">
+        <Link to={`/profile/${person.username || person._id}`} className="font-bold text-text-primary text-sm hover:text-accent transition-colors truncate max-w-[160px] font-display">
           {person.name}
         </Link>
-        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 max-w-[180px]">{person.headline}</p>
+        <p className="text-xs text-text-muted mt-0.5 line-clamp-2 max-w-[180px]">{person.headline}</p>
       </div>
-      <div className="text-[11px] text-gray-400 space-y-0.5 mt-1 min-h-[2.5em] flex flex-col justify-center">
+      <div className="text-[11px] text-text-faint space-y-0.5 mt-1 min-h-[2.5em] flex flex-col justify-center">
         {person.mutualCount > 0 && (
           <p className="flex items-center justify-center gap-1">
-            <Users size={11} className="text-gray-400" />
+            <Users size={11} className="text-text-faint" />
             {person.mutualCount} mutual connection{person.mutualCount !== 1 ? "s" : ""}
           </p>
         )}
         {person.sharedSkills > 0 && (
-          <p className="text-primary font-medium">
+          <p className="text-accent font-medium">
             {person.sharedSkills} shared skill{person.sharedSkills !== 1 ? "s" : ""}
           </p>
         )}
@@ -65,13 +65,13 @@ function SuggestionCard({ person, onConnect, loading }) {
 function PendingCard({ conn, onRespond, isPending }) {
   const sender = conn.sender;
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-gray-50/50 transition-colors">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 border-b border-border last:border-0 hover:bg-bg-hover/50 bg-bg-elevated transition-colors">
       <Link to={`/profile/${sender?.username || sender?._id}`} className="flex items-center gap-3 min-w-0">
         <Avatar src={sender?.profilePic} name={sender?.name} size="md" />
         <div className="min-w-0">
-          <p className="font-semibold text-sm text-gray-900 truncate">{sender?.name}</p>
-          <p className="text-xs text-gray-500 truncate">{sender?.headline}</p>
-          <span className="inline-flex items-center gap-1 text-[10px] text-gray-400 mt-1">
+          <p className="font-semibold text-sm text-text-primary truncate">{sender?.name}</p>
+          <p className="text-xs text-text-muted truncate">{sender?.headline}</p>
+          <span className="inline-flex items-center gap-1 text-[10px] text-text-faint mt-1">
             <Clock size={10} /> Received {formatTimeAgo(conn.createdAt)}
           </span>
         </div>
@@ -90,7 +90,7 @@ function PendingCard({ conn, onRespond, isPending }) {
           variant="outline"
           onClick={() => onRespond(conn._id, "reject")}
           loading={isPending}
-          className="text-gray-600 border-gray-200 hover:bg-gray-50"
+          className="bg-bg-hover text-text-primary hover:bg-bg-active border border-border"
         >
           <X size={14} className="mr-1 inline" /> Decline
         </Button>
@@ -103,12 +103,12 @@ function PendingCard({ conn, onRespond, isPending }) {
 function SentCard({ conn, onWithdraw }) {
   const recipient = conn.recipient;
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-gray-50/50 transition-colors">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 border-b border-border last:border-0 hover:bg-bg-hover/50 bg-bg-elevated transition-colors">
       <Link to={`/profile/${recipient?.username || recipient?._id}`} className="flex items-center gap-3 min-w-0">
         <Avatar src={recipient?.profilePic} name={recipient?.name} size="md" />
         <div className="min-w-0">
-          <p className="font-semibold text-sm text-gray-900 truncate">{recipient?.name}</p>
-          <p className="text-xs text-gray-500 truncate">{recipient?.headline}</p>
+          <p className="font-semibold text-sm text-text-primary truncate">{recipient?.name}</p>
+          <p className="text-xs text-text-muted truncate">{recipient?.headline}</p>
         </div>
       </Link>
       <ConfirmAction
@@ -122,7 +122,7 @@ function SentCard({ conn, onWithdraw }) {
             size="sm"
             variant="outline"
             onClick={requestConfirm}
-            className="text-red-500 border-red-200 hover:bg-red-50 shrink-0 self-end sm:self-center"
+            className="text-semantic-destructive border-semantic-destructive/30 hover:bg-semantic-destructive/10 shrink-0 self-end sm:self-center"
           >
             <X size={14} className="mr-1 inline" /> Withdraw
           </Button>
@@ -222,9 +222,20 @@ export default function NetworkPage() {
       }
       toast.error(err.response?.data?.message || "Action failed");
     },
-    onSuccess: (_, { action }) => {
+    onSuccess: (_, { action, conn }) => {
       queryClient.invalidateQueries({ queryKey: ["connections"] });
-      toast.success(action === "accept" ? "Connection accepted!" : "Invitation declined");
+      if (action === "accept") {
+        const person = conn?.sender;
+        toast.success(`Connected with ${person?.name}!`, {
+          duration: 5000,
+          action: {
+            label: "Say hi",
+            onClick: () => navigate(`/messaging?user=${person?._id}`),
+          },
+        });
+      } else {
+        toast.success("Invitation declined");
+      }
     },
   });
 
@@ -284,29 +295,29 @@ export default function NetworkPage() {
     <MainLayout>
       <div className="max-w-[800px] mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">My Network</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-extrabold font-display text-text-primary">My Network</h1>
+          <p className="text-sm text-text-muted mt-1">
             Manage your professional connections and network requests.
           </p>
         </div>
 
         {/* 1. Pending Invitations */}
         {pending.length > 0 && (
-          <Card className="bg-white border border-surface-border">
-            <div className="px-5 py-4 border-b border-surface-border">
-              <h2 className="font-bold text-gray-900 text-sm flex items-center justify-between">
+          <Card className="bg-bg-elevated border border-border">
+            <div className="px-5 py-4 border-b border-border">
+              <h2 className="font-bold text-text-primary text-sm flex items-center justify-between font-display">
                 <span>Pending Invitations</span>
-                <span className="px-2 py-0.5 text-xs bg-primary-50 text-primary font-semibold rounded-full">
+                <span className="px-2 py-0.5 text-xs bg-accent/10 text-accent font-semibold rounded-full">
                   {pending.length}
                 </span>
               </h2>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border">
               {pending.map((conn) => (
                 <PendingCard
                   key={conn._id}
                   conn={conn}
-                  onRespond={(connectionId, action) => respondMutation.mutate({ connectionId, action })}
+                  onRespond={(connectionId, action) => respondMutation.mutate({ connectionId, action, conn })}
                   isPending={respondMutation.isPending}
                 />
               ))}
@@ -316,16 +327,16 @@ export default function NetworkPage() {
 
         {/* 2. Sent Requests */}
         {sent.length > 0 && (
-          <Card className="bg-white border border-surface-border">
-            <div className="px-5 py-4 border-b border-surface-border">
-              <h2 className="font-bold text-gray-900 text-sm flex items-center justify-between">
+          <Card className="bg-bg-elevated border border-border">
+            <div className="px-5 py-4 border-b border-border">
+              <h2 className="font-bold text-text-primary text-sm flex items-center justify-between font-display">
                 <span>Sent Requests</span>
-                <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 font-semibold rounded-full">
+                <span className="px-2 py-0.5 text-xs bg-bg-hover border border-border text-text-muted font-semibold rounded-full">
                   {sent.length}
                 </span>
               </h2>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border">
               {sent.map((conn) => (
                 <SentCard
                   key={conn._id}
@@ -339,7 +350,7 @@ export default function NetworkPage() {
 
         {/* 3. People You May Know (Suggestions Grid) */}
         <div className="space-y-3">
-          <h2 className="font-bold text-gray-900 text-sm px-1">People You May Know</h2>
+          <h2 className="font-bold text-text-primary text-sm px-1 font-display">People You May Know</h2>
           {suggestionsLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map((i) => (
@@ -347,7 +358,7 @@ export default function NetworkPage() {
               ))}
             </div>
           ) : suggestions.length === 0 ? (
-            <Card className="text-center py-10 text-gray-400 text-sm bg-white border border-surface-border">
+            <Card className="text-center py-10 text-text-muted text-sm bg-bg-elevated border border-border">
               No recommendations at the moment. Try adding more skills to your profile!
             </Card>
           ) : (
@@ -365,49 +376,49 @@ export default function NetworkPage() {
         </div>
 
         {/* 4. My Connections List */}
-        <Card className="bg-white border border-surface-border">
-          <div className="px-5 py-4 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+        <Card className="bg-bg-elevated border border-border">
+          <div className="px-5 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h2 className="font-bold text-text-primary text-sm flex items-center gap-2 font-display">
               <span>My Connections</span>
-              <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-500 rounded-full">
+              <span className="px-2 py-0.5 text-xs bg-bg-hover text-text-muted border border-border rounded-full font-mono">
                 {connections.length}
               </span>
             </h2>
             {/* Connection Search Input */}
             {connections.length > 0 && (
               <div className="relative w-full sm:w-60">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
                 <input
                   value={connectionsSearch}
                   onChange={(e) => setConnectionsSearch(e.target.value)}
                   placeholder="Search connections..."
-                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
                 />
               </div>
             )}
           </div>
 
           {connections.length === 0 ? (
-            <div className="text-center py-16 text-gray-400 text-sm">
-              <Users size={32} className="mx-auto mb-3 text-gray-300" />
-              <p className="font-semibold text-gray-700">No connections yet</p>
-              <p className="text-xs text-gray-400 mt-1">Start connecting with other professionals to grow your network.</p>
+            <div className="text-center py-16 text-text-muted text-sm">
+              <Users size={32} className="mx-auto mb-3 text-text-faint" />
+              <p className="font-semibold text-text-primary font-display">No connections yet</p>
+              <p className="text-xs text-text-faint mt-1">Start connecting with other professionals to grow your network.</p>
             </div>
           ) : filteredConnections.length === 0 ? (
-            <div className="text-center py-10 text-gray-400 text-xs">
+            <div className="text-center py-10 text-text-faint text-xs">
               No connections matched "{connectionsSearch}"
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border">
               {filteredConnections.map((person) => (
-                <div key={person._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-gray-50/50 transition-colors">
+                <div key={person._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-bg-hover/50 transition-colors">
                   <Link to={`/profile/${person.username || person._id}`} className="flex items-center gap-3 min-w-0">
                     <Avatar src={person.profilePic} name={person.name} size="md" />
                     <div className="min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 truncate">{person.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{person.headline}</p>
+                      <p className="font-semibold text-sm text-text-primary truncate font-display">{person.name}</p>
+                      <p className="text-xs text-text-muted truncate">{person.headline}</p>
                       {person.location && (
-                        <p className="flex items-center gap-0.5 text-[10px] text-gray-400 mt-0.5">
+                        <p className="flex items-center gap-0.5 text-[10px] text-text-faint mt-0.5">
                           <MapPin size={9} /> {person.location}
                         </p>
                       )}
@@ -419,7 +430,7 @@ export default function NetworkPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => navigate(`/messaging?user=${person._id}`)}
-                      className="text-gray-600 border-gray-200 hover:bg-gray-50"
+                      className="bg-bg-base text-text-primary border border-border hover:bg-bg-hover hover:border-border-muted"
                     >
                       <Send size={13} className="mr-1 inline" /> Message
                     </Button>
@@ -432,7 +443,7 @@ export default function NetworkPage() {
                       {(requestConfirm) => (
                         <button
                           onClick={requestConfirm}
-                          className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0"
+                          className="p-2 rounded-lg border border-border text-text-faint hover:text-semantic-destructive hover:border-semantic-destructive/30 hover:bg-semantic-destructive/10 transition-colors shrink-0"
                           title="Remove Connection"
                         >
                           <Trash2 size={14} />

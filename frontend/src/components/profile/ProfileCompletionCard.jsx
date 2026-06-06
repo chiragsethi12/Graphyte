@@ -24,10 +24,10 @@ function ProgressRing({ percentage, size = 96, strokeWidth = 7 }) {
   // Color based on completion
   const strokeColor =
     percentage >= 80
-      ? "#22c55e"   // green-500
+      ? "#10B981"   // semantic-success
       : percentage >= 50
-      ? "#f59e0b"   // amber-500
-      : "#660033";  // primary
+      ? "#F59E0B"   // semantic-warning
+      : "#99004C";  // accent (maroon)
 
   return (
     <svg width={size} height={size} className="transform -rotate-90">
@@ -37,7 +37,7 @@ function ProgressRing({ percentage, size = 96, strokeWidth = 7 }) {
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="#f3f4f6"
+        stroke="#1E1E2E" // border-DEFAULT
         strokeWidth={strokeWidth}
       />
       {/* Progress arc */}
@@ -92,12 +92,12 @@ export default function ProfileCompletionCard({ profile }) {
           <ProgressRing percentage={percentage} size={80} strokeWidth={6} />
           {/* Percentage text centered in the ring */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-extrabold text-gray-800">{percentage}%</span>
+            <span className="text-lg font-extrabold text-text-primary">{percentage}%</span>
           </div>
         </div>
         <div>
-          <p className="text-sm font-bold text-gray-800">Profile Strength</p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-sm font-semibold font-display text-text-primary">Profile Strength</p>
+          <p className="text-xs text-text-muted mt-0.5">
             {percentage < 50
               ? "Let's get started!"
               : percentage < 80
@@ -114,14 +114,14 @@ export default function ProfileCompletionCard({ profile }) {
             <button
               key={field.key}
               onClick={() => navigate("/settings")}
-              className="w-full flex items-center gap-2.5 text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
+              className="w-full flex items-center gap-2.5 text-left px-3 py-2 rounded-lg hover:bg-bg-hover transition-colors group min-h-[44px]"
             >
-              <AlertCircle size={14} className="text-gray-300 flex-shrink-0" />
-              <span className="text-xs text-gray-600 flex-1">
-                Add <span className="font-semibold text-gray-800">{field.label.toLowerCase()}</span>
+              <AlertCircle size={14} className="text-text-faint flex-shrink-0" />
+              <span className="text-xs text-text-muted flex-1">
+                Add <span className="font-medium text-text-primary">{field.label.toLowerCase()}</span>
                 {" "}to reach {Math.min(percentage + field.weight, 100)}%
               </span>
-              <ArrowRight size={12} className="text-gray-300 group-hover:text-primary transition-colors" />
+              <ArrowRight size={12} className="text-text-faint group-hover:text-accent transition-colors" />
             </button>
           ))}
         </div>
@@ -129,12 +129,12 @@ export default function ProfileCompletionCard({ profile }) {
 
       {/* Completed fields */}
       {completed.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-border">
           <div className="flex flex-wrap gap-1.5">
             {completed.map((field) => (
               <span
                 key={field.key}
-                className="inline-flex items-center gap-1 text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium"
+                className="inline-flex items-center gap-1.5 text-[10px] text-semantic-success bg-semantic-success/10 border border-semantic-success/20 px-2.5 py-1 rounded-full font-medium"
               >
                 <CheckCircle size={10} />
                 {field.label}

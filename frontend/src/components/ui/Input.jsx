@@ -8,30 +8,30 @@ const Input = forwardRef(function Input(
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label className="text-sm font-medium text-gray-700">{label}</label>
+        <label className="text-sm font-medium text-text-muted">{label}</label>
       )}
       <div className="relative">
         {Icon && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">
             <Icon size={16} />
           </span>
         )}
         <input
           ref={ref}
           className={clsx(
-            "w-full rounded-lg border px-3 py-2 text-sm placeholder-gray-400",
-            "focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary",
-            "transition-colors duration-150",
+            "w-full rounded-md border bg-bg-elevated px-3 py-2.5 text-sm text-text-primary placeholder-text-faint",
+            "focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent",
+            "transition-colors duration-150 min-h-[44px]",
             Icon && "pl-9",
             error
-              ? "border-red-400 focus:ring-red-200"
-              : "border-gray-300",
+              ? "border-semantic-destructive focus:ring-semantic-destructive"
+              : "border-border hover:border-text-faint",
             className
           )}
           {...props}
         />
       </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-semantic-destructive">{error}</p>}
     </div>
   );
 });

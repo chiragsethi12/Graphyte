@@ -4,7 +4,7 @@ export default function Card({ children, className = "", padding = true, ...prop
   return (
     <div
       className={clsx(
-        "bg-white rounded-card shadow-card border border-surface-border",
+        "bg-bg-elevated rounded-xl border border-border",
         padding && "p-4",
         className
       )}

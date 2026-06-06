@@ -50,10 +50,10 @@ export default function JobCard({ job }) {
   const badge = job.badge || (job.featured ? "Featured" : null);
 
   return (
-    <div className="bg-white rounded-card shadow-card border border-surface-border p-5 flex flex-col gap-3 hover:shadow-card-hover transition-all duration-150 h-full">
+    <div className="bg-bg-elevated rounded-xl border border-border p-5 flex flex-col gap-3 hover:border-accent hover:bg-bg-hover transition-all duration-150 h-full">
       {/* Top Section: Logo & Badges */}
       <div className="flex items-start justify-between">
-        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg font-bold text-gray-600 overflow-hidden flex-shrink-0">
+        <div className="w-10 h-10 rounded-md bg-bg-base border border-border flex items-center justify-center text-lg font-bold text-text-muted overflow-hidden flex-shrink-0">
           {job.companyLogo ? (
             <img src={job.companyLogo} alt={job.company} className="w-full h-full object-contain" />
           ) : (
@@ -70,9 +70,9 @@ export default function JobCard({ job }) {
 
       {/* Title & Company */}
       <div>
-        <h3 className="font-bold text-gray-900 text-base leading-tight truncate">{job.title}</h3>
-        <p className="text-sm font-medium text-primary mt-0.5 truncate">{job.company}</p>
-        <p className="text-xs text-gray-500 mt-2 line-clamp-3 leading-relaxed min-h-[4.5em]">{job.description}</p>
+        <h3 className="font-bold text-text-primary text-base leading-tight truncate">{job.title}</h3>
+        <p className="text-sm font-semibold text-accent mt-0.5 truncate">{job.company}</p>
+        <p className="text-xs text-text-muted mt-2 line-clamp-3 leading-relaxed min-h-[4.5em]">{job.description}</p>
       </div>
 
       {/* Skills badge chips (max 4, then "+N more") */}
@@ -81,13 +81,13 @@ export default function JobCard({ job }) {
           {job.skills.slice(0, 4).map((skill) => (
             <span
               key={skill}
-              className="px-2 py-0.5 bg-primary-50 text-primary-800 text-[10px] font-medium rounded-full border border-primary-100"
+              className="px-2.5 py-0.5 bg-accent-muted text-accent text-[10px] font-semibold rounded-full border border-border-accent"
             >
               {skill}
             </span>
           ))}
           {job.skills.length > 4 && (
-            <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-medium rounded-full">
+            <span className="px-2.5 py-0.5 bg-bg-hover text-text-muted text-[10px] font-semibold rounded-full border border-border">
               +{job.skills.length - 4} more
             </span>
           )}
@@ -95,7 +95,7 @@ export default function JobCard({ job }) {
       )}
 
       {/* Meta parameters */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-400 mt-1">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-text-faint mt-1">
         {job.location && (
           <span className="flex items-center gap-1"><MapPin size={11} />{job.location}</span>
         )}
@@ -108,13 +108,13 @@ export default function JobCard({ job }) {
       </div>
 
       {/* Footer Info */}
-      <div className="border-t border-gray-100 pt-3 mt-auto flex items-center justify-between">
-        <span className="flex items-center gap-1 text-[11px] text-gray-400">
+      <div className="border-t border-border pt-3 mt-auto flex items-center justify-between">
+        <span className="flex items-center gap-1 text-[11px] text-text-faint">
           <Calendar size={11} />
           Posted {new Date(job.createdAt).toLocaleDateString()}
         </span>
         {isOwner && (
-          <span className="text-xs font-semibold text-primary">
+          <span className="text-xs font-semibold text-accent">
             {job.applicants?.length || 0} applicant{job.applicants?.length !== 1 ? "s" : ""}
           </span>
         )}

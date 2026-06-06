@@ -96,12 +96,12 @@ export default function PostJobModal({ onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="bg-white rounded-card shadow-2xl w-full max-w-[640px] max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+            <div className="bg-bg-overlay rounded-xl border border-border shadow-lg w-full max-w-[640px] max-h-[90vh] flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-surface-border">
-                    <h2 className="text-xl font-bold text-gray-900">Post a Job</h2>
-                    <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                    <h2 className="text-xl font-bold text-text-primary">Post a Job</h2>
+                    <button onClick={onClose} className="p-2 rounded-md text-text-muted hover:bg-bg-hover hover:text-text-primary">
                         <X size={18} />
                     </button>
                 </div>
@@ -110,7 +110,7 @@ export default function PostJobModal({ onClose }) {
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">Job Title *</label>
+                            <label className="block text-xs font-semibold text-text-muted mb-1">Job Title *</label>
                             <Input
                                 value={form.title}
                                 onChange={(e) => update("title", e.target.value)}
@@ -119,7 +119,7 @@ export default function PostJobModal({ onClose }) {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">Company *</label>
+                            <label className="block text-xs font-semibold text-text-muted mb-1">Company *</label>
                             <Input
                                 value={form.company}
                                 onChange={(e) => update("company", e.target.value)}
@@ -131,7 +131,7 @@ export default function PostJobModal({ onClose }) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">Location</label>
+                            <label className="block text-xs font-semibold text-text-muted mb-1">Location</label>
                             <Input
                                 value={form.location}
                                 onChange={(e) => update("location", e.target.value)}
@@ -139,11 +139,11 @@ export default function PostJobModal({ onClose }) {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">Job Type</label>
+                            <label className="block text-xs font-semibold text-text-muted mb-1">Job Type</label>
                             <select
                                 value={form.type}
                                 onChange={(e) => update("type", e.target.value)}
-                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300"
+                                className="w-full px-3 py-2.5 text-sm bg-bg-elevated border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]"
                             >
                                 {JOB_TYPES.map((t) => (
                                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -154,11 +154,11 @@ export default function PostJobModal({ onClose }) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">Experience Level</label>
+                            <label className="block text-xs font-semibold text-text-muted mb-1">Experience Level</label>
                             <select
                                 value={form.experienceLevel}
                                 onChange={(e) => update("experienceLevel", e.target.value)}
-                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300"
+                                className="w-full px-3 py-2.5 text-sm bg-bg-elevated border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]"
                             >
                                 {EXP_LEVELS.map((l) => (
                                     <option key={l.value} value={l.value}>{l.label}</option>
@@ -166,7 +166,7 @@ export default function PostJobModal({ onClose }) {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">Application Deadline</label>
+                            <label className="block text-xs font-semibold text-text-muted mb-1">Application Deadline</label>
                             <Input
                                 type="date"
                                 value={form.deadline}
@@ -178,7 +178,7 @@ export default function PostJobModal({ onClose }) {
 
                     {/* Salary */}
                     <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-1">Salary Range (optional)</label>
+                        <label className="block text-xs font-semibold text-text-muted mb-1">Salary Range (optional)</label>
                         <div className="grid grid-cols-4 gap-2">
                             <Input
                                 type="number"
@@ -195,7 +195,7 @@ export default function PostJobModal({ onClose }) {
                             <select
                                 value={form.salary.currency}
                                 onChange={(e) => updateSalary("currency", e.target.value)}
-                                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none"
+                                className="px-3 py-2.5 text-sm bg-bg-elevated border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]"
                             >
                                 <option>USD</option>
                                 <option>EUR</option>
@@ -205,7 +205,7 @@ export default function PostJobModal({ onClose }) {
                             <select
                                 value={form.salary.period}
                                 onChange={(e) => updateSalary("period", e.target.value)}
-                                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none"
+                                className="px-3 py-2.5 text-sm bg-bg-elevated border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]"
                             >
                                 <option value="yearly">/ year</option>
                                 <option value="monthly">/ month</option>
@@ -216,7 +216,7 @@ export default function PostJobModal({ onClose }) {
 
                     {/* Skills */}
                     <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-1">Required Skills</label>
+                        <label className="block text-xs font-semibold text-text-muted mb-1">Required Skills</label>
                         <div className="flex gap-2">
                             <Input
                                 value={form.skillInput}
@@ -232,7 +232,7 @@ export default function PostJobModal({ onClose }) {
                                 placeholder="Add a skill and press Enter"
                                 className="flex-1"
                             />
-                            <Button type="button" variant="outline" size="sm" onClick={addSkill}>
+                            <Button type="button" variant="outline" size="sm" onClick={addSkill} className="min-h-[44px]">
                                 <Plus size={14} />
                             </Button>
                         </div>
@@ -241,10 +241,10 @@ export default function PostJobModal({ onClose }) {
                                 {form.skills.map((s) => (
                                     <span
                                         key={s}
-                                        className="flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary text-xs rounded-full font-medium"
+                                        className="flex items-center gap-1.5 px-3 py-1 bg-accent-muted text-accent text-xs rounded-full font-semibold border border-border-accent"
                                     >
                                         {s}
-                                        <button onClick={() => removeSkill(s)} className="hover:text-primary-900">
+                                        <button onClick={() => removeSkill(s)} className="hover:text-text-primary">
                                             <X size={11} />
                                         </button>
                                     </span>
@@ -255,20 +255,20 @@ export default function PostJobModal({ onClose }) {
 
                     {/* Description */}
                     <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-1">Job Description *</label>
+                        <label className="block text-xs font-semibold text-text-muted mb-1">Job Description *</label>
                         <textarea
                             value={form.description}
                             onChange={(e) => update("description", e.target.value)}
                             placeholder="Describe the role, responsibilities, and requirements..."
                             rows={6}
                             required
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 resize-none"
+                            className="w-full px-3 py-2 text-sm bg-bg-elevated border border-border rounded-md text-text-primary placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent resize-none leading-relaxed"
                         />
                     </div>
                 </form>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t border-surface-border">
+                <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
                     <Button variant="ghost" onClick={onClose}>Cancel</Button>
                     <Button
                         variant="primary"

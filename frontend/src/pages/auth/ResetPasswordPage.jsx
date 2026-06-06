@@ -58,14 +58,14 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left — Brand panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary-900 flex-col justify-between p-12 text-white">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-muted via-bg-base to-bg-elevated border-r border-border flex-col justify-between p-12 text-text-primary">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Graphyte</h1>
-          <p className="text-primary-200 text-sm">Professional Networking Platform</p>
+          <h1 className="text-3xl font-display font-extrabold tracking-tight mb-2 text-accent">Graphyte</h1>
+          <p className="text-text-muted text-sm">Professional Networking Platform</p>
         </div>
         <div>
-          <blockquote className="border-l-4 border-primary-400 pl-4 mb-8">
-            <p className="text-lg font-medium text-white/90 leading-relaxed">
+          <blockquote className="border-l-4 border-accent pl-4 mb-8">
+            <p className="text-lg font-medium text-text-primary/90 leading-relaxed">
               "A strong password is the first line of defense for your professional identity."
             </p>
           </blockquote>
@@ -76,36 +76,36 @@ export default function ResetPasswordPage() {
               "Include numbers and symbols",
               "Avoid common words or patterns",
             ].map((tip) => (
-              <div key={tip} className="flex items-center gap-3 bg-primary-800/50 rounded-xl px-4 py-3">
-                <CheckCircle size={16} className="text-primary-300 flex-shrink-0" />
-                <p className="text-primary-100 text-sm">{tip}</p>
+              <div key={tip} className="flex items-center gap-3 bg-bg-elevated/40 border border-border/60 rounded-xl px-4 py-3">
+                <CheckCircle size={16} className="text-accent flex-shrink-0" />
+                <p className="text-text-primary text-sm">{tip}</p>
               </div>
             ))}
           </div>
         </div>
-        <p className="text-primary-300 text-xs">© 2024 Graphyte Professional. All rights reserved.</p>
+        <p className="text-text-faint text-xs">© 2026 Graphyte Professional. All rights reserved.</p>
       </div>
 
       {/* Right — Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-surface-muted">
+      <div className="flex-1 flex items-center justify-center p-8 bg-bg-base">
         <div className="w-full max-w-[400px]">
           <div className="lg:hidden mb-8">
-            <h1 className="text-2xl font-extrabold text-primary">Graphyte</h1>
+            <h1 className="text-2xl font-display font-extrabold text-accent">Graphyte</h1>
           </div>
-          <div className="bg-white rounded-2xl shadow-card-hover border border-surface-border p-8">
+          <div className="bg-bg-elevated rounded-2xl shadow-lg border border-border p-8">
             {success ? (
               /* ─── Success State ─── */
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <CheckCircle size={32} className="text-green-600" />
+                <div className="w-16 h-16 bg-semantic-success/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <CheckCircle size={32} className="text-semantic-success" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Password reset!</h2>
-                <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                <h2 className="text-xl font-display font-bold text-text-primary mb-2">Password reset!</h2>
+                <p className="text-sm text-text-muted leading-relaxed mb-6">
                   Your password has been updated successfully. Redirecting to sign in…
                 </p>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline"
+                  className="inline-flex items-center gap-2 text-sm text-accent font-semibold hover:text-accent-hover hover:underline"
                 >
                   <ArrowLeft size={14} /> Go to Sign In
                 </Link>
@@ -115,18 +115,18 @@ export default function ResetPasswordPage() {
               <>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary mb-5 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary mb-5 transition-colors"
                 >
                   <ArrowLeft size={14} /> Back to Sign In
                 </Link>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">Set new password</h2>
-                <p className="text-sm text-gray-500 mb-6">
+                <h2 className="text-2xl font-display font-bold text-text-primary mb-1">Set new password</h2>
+                <p className="text-sm text-text-muted mb-6">
                   Choose a strong password to secure your account.
                 </p>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                   {serverError && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-start gap-2">
+                    <div className="bg-semantic-destructive/10 border border-semantic-destructive/30 rounded-lg px-4 py-3 text-sm text-semantic-destructive flex items-start gap-2">
                       <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
                       {serverError}
                     </div>
@@ -134,13 +134,13 @@ export default function ResetPasswordPage() {
 
                   {/* New Password */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">New password</label>
+                    <label className="text-sm font-medium text-text-muted">New password</label>
                     <div className="relative">
-                      <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
                       <input
                         type={showPass ? "text" : "password"}
                         placeholder="••••••••"
-                        className={`w-full pl-9 pr-9 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary ${errors.password ? "border-red-400" : "border-gray-300"}`}
+                        className={`w-full pl-9 pr-9 py-2.5 text-sm rounded-md bg-bg-elevated border text-text-primary placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all duration-150 min-h-[44px] ${errors.password ? "border-semantic-destructive focus:ring-semantic-destructive" : "border-border hover:border-text-faint"}`}
                         {...register("password", {
                           required: "Password is required",
                           minLength: { value: 6, message: "Password must be at least 6 characters" },
@@ -150,23 +150,23 @@ export default function ResetPasswordPage() {
                       <button
                         type="button"
                         onClick={() => setShowPass((p) => !p)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-muted min-h-[44px] px-1 flex items-center justify-center"
                       >
                         {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+                    {errors.password && <p className="text-semantic-destructive text-xs mt-1">{errors.password.message}</p>}
                     {/* Strength bar */}
                     {watchedPassword && (
                       <div className="mt-1.5">
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-bg-hover rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
                             style={{ width: strength.width }}
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Strength: <span className="font-medium">{strength.label}</span>
+                        <p className="text-xs text-text-muted mt-1">
+                          Strength: <span className="font-medium text-text-primary">{strength.label}</span>
                         </p>
                       </div>
                     )}
@@ -174,13 +174,13 @@ export default function ResetPasswordPage() {
 
                   {/* Confirm Password */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">Confirm password</label>
+                    <label className="text-sm font-medium text-text-muted">Confirm password</label>
                     <div className="relative">
-                      <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
                       <input
                         type={showConfirm ? "text" : "password"}
                         placeholder="••••••••"
-                        className={`w-full pl-9 pr-9 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary ${errors.confirmPassword ? "border-red-400" : "border-gray-300"}`}
+                        className={`w-full pl-9 pr-9 py-2.5 text-sm rounded-md bg-bg-elevated border text-text-primary placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all duration-150 min-h-[44px] ${errors.confirmPassword ? "border-semantic-destructive focus:ring-semantic-destructive" : "border-border hover:border-text-faint"}`}
                         {...register("confirmPassword", {
                           required: "Please confirm your password",
                           validate: (value) => value === watchedPassword || "Passwords do not match",
@@ -189,12 +189,12 @@ export default function ResetPasswordPage() {
                       <button
                         type="button"
                         onClick={() => setShowConfirm((p) => !p)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-muted min-h-[44px] px-1 flex items-center justify-center"
                       >
                         {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
-                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>}
+                    {errors.confirmPassword && <p className="text-semantic-destructive text-xs mt-1">{errors.confirmPassword.message}</p>}
                   </div>
 
                   <Button type="submit" fullWidth loading={isSubmitting} className="mt-2">

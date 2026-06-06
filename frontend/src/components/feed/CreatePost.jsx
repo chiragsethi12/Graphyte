@@ -116,13 +116,13 @@ export default function CreatePost() {
   };
 
   return (
-    <div className="bg-white rounded-card shadow-card border border-surface-border p-4">
+    <div className="bg-bg-elevated rounded-xl border border-border p-4">
       <div className="flex gap-3">
         <Avatar src={user?.profilePic} name={user?.name} size="md" />
         <div
           className={`flex-1 relative ${
             isDragging
-              ? "ring-2 ring-primary ring-offset-2 rounded-xl bg-primary-50/30"
+              ? "ring-2 ring-accent ring-offset-bg-base rounded-xl bg-accent-muted/30"
               : ""
           }`}
           onDragOver={handleDragOver}
@@ -131,8 +131,8 @@ export default function CreatePost() {
         >
           {/* Drag overlay indicator */}
           {isDragging && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-primary-50/50 pointer-events-none">
-              <p className="text-sm font-medium text-primary">Drop image here</p>
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-accent bg-accent-muted/50 pointer-events-none">
+              <p className="text-sm font-medium text-accent">Drop image here</p>
             </div>
           )}
 
@@ -143,23 +143,23 @@ export default function CreatePost() {
             placeholder={`What's on your mind, ${user?.name?.split(" ")[0]}?`}
             rows={isExpanded ? 4 : 2}
             maxLength={MAX_CHARS + 100}
-            className="w-full text-sm text-gray-800 placeholder-gray-400 resize-none focus:outline-none leading-relaxed"
+            className="w-full text-sm bg-transparent text-text-primary placeholder-text-faint resize-none focus:outline-none leading-relaxed"
           />
 
           {isExpanded && (
             <div className="flex items-center justify-between mt-0.5">
-              <p className="text-[10px] text-gray-300">
+              <p className="text-[10px] text-text-faint">
                 Use <span className="font-mono">**bold**</span> and <span className="font-mono">*italic*</span> for formatting
               </p>
               <p
                 className={`text-[10px] font-medium tabular-nums transition-colors ${
                   isOverLimit
-                    ? "text-red-500 font-bold"
+                    ? "text-semantic-destructive font-bold"
                     : MAX_CHARS - charCount < 100
-                    ? "text-red-400"
+                    ? "text-semantic-destructive/80"
                     : isWarning
-                    ? "text-amber-500"
-                    : "text-gray-400"
+                    ? "text-semantic-warning"
+                    : "text-text-faint"
                 }`}
               >
                 {(MAX_CHARS - charCount).toLocaleString()} remaining
@@ -169,9 +169,9 @@ export default function CreatePost() {
 
           {/* Image preview */}
           {preview && (
-            <div className="relative mt-2 rounded-xl overflow-hidden group">
+            <div className="relative mt-2 rounded-xl overflow-hidden group border border-border">
               {mutation.isPending && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 rounded-xl">
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 rounded-xl">
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 size={24} className="text-white animate-spin" />
                     <span className="text-xs text-white/80 font-medium">Uploading…</span>
@@ -196,7 +196,7 @@ export default function CreatePost() {
 
           {/* Upload error */}
           {uploadError && !mutation.isPending && (
-            <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-xs">
+            <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-semantic-destructive/10 text-semantic-destructive border border-semantic-destructive/20 rounded-md text-xs">
               <span>{uploadError}</span>
               <button
                 onClick={() => { setUploadError(null); mutation.mutate(); }}
@@ -208,12 +208,12 @@ export default function CreatePost() {
           )}
 
           {isExpanded && (
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-surface-border">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors min-h-[36px]"
                 >
                   <Image size={15} />
                   Photo
@@ -236,7 +236,7 @@ export default function CreatePost() {
                     setIsExpanded(false);
                     setUploadError(null);
                   }}
-                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-xs text-text-muted hover:text-text-primary transition-colors px-3 py-1.5 rounded-md hover:bg-bg-hover min-h-[36px]"
                 >
                   Cancel
                 </button>

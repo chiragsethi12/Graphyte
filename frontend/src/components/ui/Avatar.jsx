@@ -24,7 +24,7 @@ export default function Avatar({ src, name, size = "md", online = false, classNa
       ) : (
         <div
           className={clsx(
-            "rounded-full bg-primary-100 text-primary font-semibold",
+            "rounded-full bg-accent-muted text-accent font-semibold border border-border-accent",
             "flex items-center justify-center",
             sizes[size]
           )}
@@ -33,7 +33,7 @@ export default function Avatar({ src, name, size = "md", online = false, classNa
         </div>
       )}
       {online && (
-        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-semantic-success border-2 border-bg-elevated rounded-full" />
       )}
     </div>
   );

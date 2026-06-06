@@ -5,12 +5,12 @@ import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/ui/Card";
 
 const ICON_BG = {
-  blue: "bg-blue-50 text-blue-600",
-  purple: "bg-purple-50 text-purple-600",
-  green: "bg-green-50 text-green-600",
-  amber: "bg-amber-50 text-amber-600",
-  primary: "bg-primary-50 text-primary",
-  red: "bg-red-50 text-red-500",
+  blue: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+  purple: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+  green: "bg-green-500/10 text-green-400 border border-green-500/20",
+  amber: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+  primary: "bg-accent/10 text-accent border border-accent/20",
+  red: "bg-red-500/10 text-red-400 border border-red-500/20",
 };
 
 function StatCard({ icon: Icon, label, value, subtitle, color = "primary" }) {
@@ -21,9 +21,9 @@ function StatCard({ icon: Icon, label, value, subtitle, color = "primary" }) {
         <Icon size={18} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-2xl text-gray-900">{value ?? "—"}</p>
-        <p className="text-xs font-medium text-gray-500">{label}</p>
-        {subtitle && <p className="text-[10px] text-gray-400 mt-0.5">{subtitle}</p>}
+        <p className="font-bold text-2xl text-text-primary">{value ?? "—"}</p>
+        <p className="text-xs font-medium text-text-muted">{label}</p>
+        {subtitle && <p className="text-[10px] text-text-faint mt-0.5">{subtitle}</p>}
       </div>
     </Card>
   );
@@ -33,33 +33,33 @@ function EngagementBar({ label, value, max }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
   return (
     <div className="flex items-center gap-3">
-      <p className="text-xs text-gray-500 w-20 shrink-0">{label}</p>
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <p className="text-xs text-text-muted w-20 shrink-0">{label}</p>
+      <div className="flex-1 h-2 bg-bg-base border border-border rounded-full overflow-hidden">
         <div
-          className="h-full bg-primary rounded-full transition-all duration-500"
+          className="h-full bg-accent rounded-full transition-all duration-500"
           style={{ width: `${Math.min(pct, 100)}%` }}
         />
       </div>
-      <p className="text-xs font-semibold text-gray-700 w-10 text-right">{value}</p>
+      <p className="text-xs font-semibold text-text-primary w-10 text-right">{value}</p>
     </div>
   );
 }
 
 function TopPostCard({ post, index }) {
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-      <div className="w-6 h-6 rounded-full bg-primary-50 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+    <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-bg-hover/50 transition-colors">
+      <div className="w-6 h-6 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0">
         {index + 1}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-gray-700 line-clamp-2">{post.content || "(No text)"}</p>
-        <div className="flex gap-4 mt-1 text-xs text-gray-400">
+        <p className="text-sm text-text-muted line-clamp-2">{post.content || "(No text)"}</p>
+        <div className="flex gap-4 mt-1 text-xs text-text-faint">
           <span>♥ {post.likes}</span>
           <span>💬 {post.comments}</span>
           <span>🔄 {post.shares}</span>
         </div>
       </div>
-      <div className="flex items-center gap-1 text-xs font-semibold text-primary shrink-0">
+      <div className="flex items-center gap-1 text-xs font-semibold text-accent shrink-0">
         <TrendingUp size={12} /> {post.engagementScore}
       </div>
     </div>
@@ -68,12 +68,12 @@ function TopPostCard({ post, index }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-card shadow-card border border-surface-border p-4 animate-pulse">
+    <div className="bg-bg-elevated rounded-xl border border-border p-4 animate-pulse">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 bg-gray-200 rounded-xl" />
+        <div className="w-10 h-10 bg-bg-hover rounded-xl" />
         <div className="flex-1 space-y-2">
-          <div className="h-6 bg-gray-200 rounded w-16" />
-          <div className="h-3 bg-gray-200 rounded w-28" />
+          <div className="h-6 bg-bg-hover rounded w-16" />
+          <div className="h-3 bg-bg-hover rounded w-28" />
         </div>
       </div>
     </div>
@@ -102,8 +102,8 @@ export default function ActivityPage() {
       <div className="max-w-[860px] mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Insights</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-extrabold font-display text-text-primary">Insights</h1>
+          <p className="text-sm text-text-muted mt-1">
             Your professional activity and content performance
           </p>
         </div>
@@ -146,7 +146,7 @@ export default function ActivityPage() {
             <div className="grid md:grid-cols-2 gap-6">
               {/* Engagement breakdown */}
               <Card className="p-5">
-                <h3 className="font-bold text-gray-900 text-sm mb-4">Engagement Breakdown</h3>
+                <h3 className="font-bold text-text-primary text-sm mb-4">Engagement Breakdown</h3>
                 <div className="space-y-3">
                   <EngagementBar
                     label="Likes"
@@ -164,10 +164,10 @@ export default function ActivityPage() {
                     max={maxEngagement}
                   />
                 </div>
-                <div className="mt-4 pt-4 border-t border-surface-border">
-                  <p className="text-xs text-gray-500">
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-xs text-text-muted">
                     Avg engagement per post:{" "}
-                    <strong className="text-gray-800">
+                    <strong className="text-text-primary">
                       {analytics.engagement.avgEngagementPerPost}
                     </strong>
                   </p>
@@ -176,29 +176,29 @@ export default function ActivityPage() {
 
               {/* Last 30 days */}
               <Card className="p-5">
-                <h3 className="font-bold text-gray-900 text-sm mb-4">Last 30 Days</h3>
+                <h3 className="font-bold text-text-primary text-sm mb-4">Last 30 Days</h3>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-green-500/5 border border-green-500/10 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <Users size={14} className="text-green-600" />
-                      <p className="text-xs font-medium text-green-800">New Connections</p>
+                      <Users size={14} className="text-green-400" />
+                      <p className="text-xs font-medium text-green-300">New Connections</p>
                     </div>
-                    <p className="text-lg font-bold text-green-700">
+                    <p className="text-lg font-bold text-green-400">
                       {analytics.last30Days.newConnections}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-blue-500/5 border border-blue-500/10 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <BarChart2 size={14} className="text-blue-600" />
-                      <p className="text-xs font-medium text-blue-800">Notifications Received</p>
+                      <BarChart2 size={14} className="text-blue-400" />
+                      <p className="text-xs font-medium text-blue-300">Notifications Received</p>
                     </div>
-                    <p className="text-lg font-bold text-blue-700">
+                    <p className="text-lg font-bold text-blue-400">
                       {analytics.last30Days.notifications}
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-surface-border">
-                  <p className="text-[11px] text-gray-400">
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-[11px] text-text-faint">
                     Member since{" "}
                     {new Date(analytics.memberSince).toLocaleDateString("en-US", {
                       month: "long",
@@ -212,10 +212,10 @@ export default function ActivityPage() {
             {/* Top posts */}
             {analytics.topPosts?.length > 0 && (
               <Card className="p-5">
-                <h3 className="font-bold text-gray-900 text-sm mb-4">
+                <h3 className="font-bold text-text-primary text-sm mb-4">
                   🏆 Top Performing Posts
                 </h3>
-                <div className="divide-y divide-surface-border">
+                <div className="divide-y divide-border">
                   {analytics.topPosts.map((post, i) => (
                     <TopPostCard key={post._id} post={post} index={i} />
                   ))}
@@ -226,26 +226,26 @@ export default function ActivityPage() {
             {/* Skill stats */}
             {analytics.skillStats?.length > 0 && (
               <Card className="p-5">
-                <h3 className="font-bold text-gray-900 text-sm mb-4">
+                <h3 className="font-bold text-text-primary text-sm mb-4">
                   Skills Insights
                 </h3>
-                <p className="text-xs text-gray-500 mb-4">
+                <p className="text-xs text-text-muted mb-4">
                   How many Graphyte professionals share your listed skills
                 </p>
                 <div className="space-y-3">
                   {analytics.skillStats.map((s) => (
                     <div key={s.skill} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 font-medium">{s.skill}</span>
+                      <span className="text-sm text-text-muted font-medium">{s.skill}</span>
                       <div className="flex items-center gap-2">
-                        <div className="w-32 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-32 h-1.5 bg-bg-base border border-border rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-accent rounded-full"
                             style={{
                               width: `${Math.min((s.usersWithSkill / 100) * 100, 100)}%`,
                             }}
                           />
                         </div>
-                        <span className="text-xs text-gray-500 w-16 text-right">
+                        <span className="text-xs text-text-muted w-16 text-right">
                           {s.usersWithSkill} users
                         </span>
                       </div>
@@ -257,8 +257,8 @@ export default function ActivityPage() {
           </>
         ) : (
           <Card className="text-center py-12">
-            <p className="text-gray-500">No analytics data available yet.</p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-text-muted">No analytics data available yet.</p>
+            <p className="text-sm text-text-faint mt-1">
               Start posting and connecting to see your insights.
             </p>
           </Card>

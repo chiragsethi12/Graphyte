@@ -20,10 +20,10 @@ function timeLabel(dateStr) {
 function ConversationSkeleton() {
   return (
     <div className="flex items-center gap-3 px-4 py-3.5 animate-pulse">
-      <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
+      <div className="w-10 h-10 bg-bg-hover rounded-full flex-shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-3 bg-gray-200 rounded w-1/2" />
-        <div className="h-2 bg-gray-200 rounded w-3/4" />
+        <div className="h-3 bg-bg-hover rounded w-1/2" />
+        <div className="h-2 bg-bg-hover rounded w-3/4" />
       </div>
     </div>
   );
@@ -42,24 +42,24 @@ export default function ConversationList({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-surface-border">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl font-bold text-gray-900">Messaging</h2>
+          <h2 className="text-xl font-bold font-display text-text-primary">Messaging</h2>
           <button
             onClick={onNewClick}
-            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors"
+            className="p-1.5 rounded-lg text-text-muted hover:bg-bg-hover hover:text-accent transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
             title="New message"
           >
             <SquarePen size={18} />
           </button>
         </div>
         <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
           <input
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search messages"
-            className="w-full pl-9 pr-3 py-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary-200 transition-colors"
+            className="w-full pl-9 pr-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:bg-bg-base focus:ring-2 focus:ring-accent/50 focus:border-accent transition-colors"
           />
         </div>
       </div>
@@ -88,7 +88,7 @@ export default function ConversationList({
             <button
               key={conv._id}
               onClick={() => onSelect(conv)}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors border-l-2 ${isActive ? "border-primary bg-primary-50/50" : "border-transparent"
+              className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-bg-hover/50 transition-colors border-l-2 ${isActive ? "border-accent bg-accent/10 text-text-primary" : "border-transparent text-text-muted hover:text-text-primary"
                 }`}
             >
               <div className="relative flex-shrink-0">
@@ -98,24 +98,24 @@ export default function ConversationList({
                   size="md"
                 />
                 {isOnline && (
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-bg-elevated rounded-full" />
                 )}
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
+                  <p className="text-sm font-semibold text-text-primary truncate">
                     {conv.participant?.name}
                   </p>
-                  <span className="text-[10px] text-gray-400 flex-shrink-0 ml-2">
+                  <span className="text-[10px] text-text-faint flex-shrink-0 ml-2">
                     {timeLabel(conv.lastMessageAt)}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 truncate mt-0.5">
+                <p className="text-xs text-text-muted truncate mt-0.5">
                   {preview}
                 </p>
               </div>
               {conv.unread > 0 && (
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center">
                   {conv.unread > 9 ? "9+" : conv.unread}
                 </span>
               )}
@@ -124,9 +124,9 @@ export default function ConversationList({
         })}
 
         {!isLoading && conversations.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+          <div className="flex flex-col items-center justify-center h-40 text-text-muted">
             <p className="text-sm">No conversations yet</p>
-            <p className="text-xs mt-1">Connect with people and start messaging</p>
+            <p className="text-xs mt-1 text-text-faint">Connect with people and start messaging</p>
           </div>
         )}
       </div>

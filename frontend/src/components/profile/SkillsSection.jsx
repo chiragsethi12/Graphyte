@@ -35,25 +35,25 @@ export default function SkillsSection({ skills = [], isOwner = false, userId }) 
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-card border border-surface-border p-6 md:p-7">
+    <div className="card p-6 md:p-7">
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-bold text-gray-900">Skills</h2>
+        <h2 className="text-lg font-bold font-display text-text-primary">Skills</h2>
         <div className="flex items-center gap-1">
           {isOwner && (
             <>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-primary font-semibold hover:bg-primary-50 transition-all">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-accent font-semibold hover:bg-accent/10 transition-all min-h-[44px]">
                 <Award size={12} /> Take Quiz
               </button>
               <button
                 onClick={() => setOpen((p) => !p)}
-                className="p-2 rounded-xl text-gray-400 hover:text-primary hover:bg-primary-50/50 transition-all"
+                className="p-2 rounded-xl text-text-muted hover:text-accent hover:bg-bg-hover transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 {open ? <X size={16} /> : <Plus size={16} />}
               </button>
               <button
                 onClick={() => setOpen((p) => !p)}
-                className={`p-2 rounded-xl transition-all ${
-                  open ? 'text-primary bg-primary-50/50' : 'text-gray-400 hover:text-primary hover:bg-primary-50/50'
+                className={`p-2 rounded-xl transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                  open ? 'text-accent bg-accent/10' : 'text-text-muted hover:text-accent hover:bg-bg-hover'
                 }`}
               >
                 <Edit2 size={16} />
@@ -70,7 +70,7 @@ export default function SkillsSection({ skills = [], isOwner = false, userId }) 
             onChange={(e) => setNewSkill(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             placeholder="e.g. Strategic Planning"
-            className="flex-1 text-sm border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
+            className="flex-1 text-sm border border-border bg-bg-base text-text-primary rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
           />
           <Button size="sm" onClick={handleAdd} loading={addMutation.isPending}>
             Add
@@ -81,7 +81,7 @@ export default function SkillsSection({ skills = [], isOwner = false, userId }) 
       <div className="flex flex-wrap gap-2.5">
         {skills.map((skill) => (
           <div key={skill} className="flex items-center gap-1 group">
-            <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gray-50 text-gray-700 border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 hover:text-primary transition-all cursor-default">
+            <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-bg-base text-text-primary border border-border hover:border-accent/40 hover:bg-accent/10 hover:text-accent transition-all cursor-default">
               {skill}
             </span>
             {isOwner && open && (
@@ -93,7 +93,7 @@ export default function SkillsSection({ skills = [], isOwner = false, userId }) 
                 {(requestConfirm) => (
                   <button
                     onClick={requestConfirm}
-                    className="p-0.5 text-gray-300 hover:text-red-500 transition-colors"
+                    className="p-1.5 text-text-faint hover:text-semantic-destructive transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
                   >
                     <X size={12} />
                   </button>
@@ -103,7 +103,7 @@ export default function SkillsSection({ skills = [], isOwner = false, userId }) 
           </div>
         ))}
         {skills.length === 0 && (
-          <p className="text-sm text-gray-400 italic">
+          <p className="text-sm text-text-muted italic">
             {isOwner ? 'Add skills to showcase your expertise.' : 'No skills added yet.'}
           </p>
         )}

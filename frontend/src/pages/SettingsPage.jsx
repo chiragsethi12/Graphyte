@@ -133,7 +133,7 @@ function EditProfileTab() {
     <div className="space-y-5">
       {/* Photos */}
       <div className="relative">
-        <div className="h-28 bg-primary-900 rounded-card overflow-hidden relative">
+        <div className="h-28 bg-bg-base border border-border rounded-card overflow-hidden relative">
           {displayedBannerPic && (
             <img
               src={displayedBannerPic}
@@ -143,7 +143,7 @@ function EditProfileTab() {
           )}
           {/* Unsaved banner indicator */}
           {(bannerPic || removeBannerPic) && (
-            <div className="absolute top-2 left-2 px-2 py-0.5 bg-amber-400 text-amber-900 text-[10px] font-bold rounded-full">
+            <div className="absolute top-2 left-2 px-2 py-0.5 bg-amber-400/20 border border-amber-400/30 text-amber-300 text-[10px] font-bold rounded-full">
               Unsaved
             </div>
           )}
@@ -152,14 +152,14 @@ function EditProfileTab() {
               <button
                 type="button"
                 onClick={handleRemoveBannerPic}
-                className="p-1.5 bg-white/80 rounded-lg cursor-pointer hover:bg-red-50 transition-colors"
+                className="p-1.5 bg-bg-overlay/80 rounded-lg cursor-pointer hover:bg-semantic-destructive/10 border border-border/30 transition-colors"
                 title="Remove banner"
               >
-                <X size={14} className="text-red-500" />
+                <X size={14} className="text-semantic-destructive" />
               </button>
             )}
-            <label className="p-1.5 bg-white/80 rounded-lg cursor-pointer hover:bg-white transition-colors">
-              <Camera size={14} className="text-gray-600" />
+            <label className="p-1.5 bg-bg-overlay/80 rounded-lg cursor-pointer hover:bg-bg-active border border-border/30 transition-colors">
+              <Camera size={14} className="text-text-primary" />
               <input
                 type="file"
                 className="hidden"
@@ -171,7 +171,7 @@ function EditProfileTab() {
         </div>
         <div className="absolute -bottom-8 left-6">
           <div className="relative">
-            <div className={`${(profilePic || removeProfilePic) ? 'ring-2 ring-amber-400' : ''} rounded-full`}>
+            <div className={`${(profilePic || removeProfilePic) ? 'ring-2 ring-amber-450' : ''} rounded-full`}>
               <Avatar
                 src={displayedProfilePic}
                 name={user?.name}
@@ -180,10 +180,10 @@ function EditProfileTab() {
             </div>
             {/* Unsaved dot on avatar */}
             {(profilePic || removeProfilePic) && (
-              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-amber-400 border-2 border-white rounded-full" title="Unsaved change" />
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-amber-450 border-2 border-bg-elevated rounded-full" title="Unsaved change" />
             )}
-            <label className="absolute bottom-0 right-0 p-1.5 bg-white rounded-full shadow-md cursor-pointer hover:bg-gray-50 transition-colors">
-              <Camera size={12} className="text-gray-600" />
+            <label className="absolute bottom-0 right-0 p-1.5 bg-bg-overlay border border-border rounded-full shadow-md cursor-pointer hover:bg-bg-active transition-colors">
+              <Camera size={12} className="text-text-primary" />
               <input
                 type="file"
                 className="hidden"
@@ -199,25 +199,25 @@ function EditProfileTab() {
       <div className="pt-8 space-y-1">
         <div className="flex items-center gap-3 flex-wrap">
           {profilePic && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full">
               <ImageIcon size={11} />
               Photo ready to save
             </span>
           )}
           {removeProfilePic && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-red-600 bg-red-50 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs text-semantic-destructive bg-semantic-destructive/10 border border-semantic-destructive/20 px-2.5 py-1 rounded-full">
               <X size={11} />
               Photo will be removed
             </span>
           )}
           {bannerPic && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full">
               <ImageIcon size={11} />
               Banner ready to save
             </span>
           )}
           {removeBannerPic && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-red-600 bg-red-50 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs text-semantic-destructive bg-semantic-destructive/10 border border-semantic-destructive/20 px-2.5 py-1 rounded-full">
               <X size={11} />
               Banner will be removed
             </span>
@@ -227,7 +227,7 @@ function EditProfileTab() {
           <button
             type="button"
             onClick={handleRemoveProfilePic}
-            className="text-xs text-red-500 hover:text-red-700 hover:underline transition-colors"
+            className="text-xs text-semantic-destructive hover:text-red-400 hover:underline transition-colors"
           >
             Remove Photo
           </button>
@@ -237,7 +237,7 @@ function EditProfileTab() {
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Full Name</label>
+            <label className="text-xs font-medium text-text-muted mb-1 block">Full Name</label>
             <input
               value={form.name}
               onChange={(e) => update('name', e.target.value)}
@@ -245,7 +245,7 @@ function EditProfileTab() {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Username</label>
+            <label className="text-xs font-medium text-text-muted mb-1 block">Username</label>
             <input
               value={form.username}
               onChange={(e) => update('username', e.target.value)}
@@ -256,7 +256,7 @@ function EditProfileTab() {
         </div>
 
         <div>
-          <label className="text-xs font-medium text-gray-500 mb-1 block">Headline</label>
+          <label className="text-xs font-medium text-text-muted mb-1 block">Headline</label>
           <input
             value={form.headline}
             onChange={(e) => update('headline', e.target.value)}
@@ -267,7 +267,7 @@ function EditProfileTab() {
         </div>
 
         <div>
-          <label className="text-xs font-medium text-gray-500 mb-1 block">About</label>
+          <label className="text-xs font-medium text-text-muted mb-1 block">About</label>
           <textarea
             value={form.about}
             onChange={(e) => update('about', e.target.value)}
@@ -275,12 +275,12 @@ function EditProfileTab() {
             placeholder="Tell people about yourself..."
             maxLength={2600}
           />
-          <p className="text-[10px] text-gray-400 text-right mt-0.5">{form.about.length}/2600</p>
+          <p className="text-[10px] text-text-faint text-right mt-0.5">{form.about.length}/2600</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Location</label>
+            <label className="text-xs font-medium text-text-muted mb-1 block">Location</label>
             <input
               value={form.location}
               onChange={(e) => update('location', e.target.value)}
@@ -289,7 +289,7 @@ function EditProfileTab() {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Website</label>
+            <label className="text-xs font-medium text-text-muted mb-1 block">Website</label>
             <input
               value={form.website}
               onChange={(e) => update('website', e.target.value)}
@@ -300,7 +300,7 @@ function EditProfileTab() {
         </div>
 
         <div>
-          <label className="text-xs font-medium text-gray-500 mb-1 block">
+          <label className="text-xs font-medium text-text-muted mb-1 block">
             Skills (comma-separated)
           </label>
           <input
@@ -312,7 +312,7 @@ function EditProfileTab() {
         </div>
 
         <div>
-          <label className="text-xs font-medium text-gray-500 mb-1 block">
+          <label className="text-xs font-medium text-text-muted mb-1 block">
             Interests (comma-separated)
           </label>
           <input
@@ -360,28 +360,28 @@ function ChangePasswordSection() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md pb-6 border-b border-surface-border">
-      <h3 className="font-bold text-gray-900 text-sm">Change Password</h3>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md pb-6 border-b border-border">
+      <h3 className="font-bold text-text-primary text-sm font-display">Change Password</h3>
       <div>
-        <label className="text-xs font-semibold text-gray-600 mb-1 block">Current Password</label>
+        <label className="text-xs font-semibold text-text-muted mb-1 block">Current Password</label>
         <div className="relative">
           <input
             type={showCurrent ? 'text' : 'password'}
             {...register("currentPassword", { required: "Current password is required" })}
-            className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary pr-10 transition-all"
+            className="w-full px-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent pr-10 transition-all"
           />
           <button
             type="button"
             onClick={() => setShowCurrent((p) => !p)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-primary transition-colors"
           >
             {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         </div>
-        {errors.currentPassword && <p className="text-xs text-red-500 mt-1">{errors.currentPassword.message}</p>}
+        {errors.currentPassword && <p className="text-xs text-semantic-destructive mt-1">{errors.currentPassword.message}</p>}
       </div>
       <div>
-        <label className="text-xs font-semibold text-gray-600 mb-1 block">New Password</label>
+        <label className="text-xs font-semibold text-text-muted mb-1 block">New Password</label>
         <div className="relative">
           <input
             type={showNew ? 'text' : 'password'}
@@ -389,29 +389,29 @@ function ChangePasswordSection() {
               required: "New password is required",
               minLength: { value: 6, message: "New password must be at least 6 characters" }
             })}
-            className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary pr-10 transition-all"
+            className="w-full px-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent pr-10 transition-all"
           />
           <button
             type="button"
             onClick={() => setShowNew((p) => !p)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-primary transition-colors"
           >
             {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         </div>
-        {errors.newPassword && <p className="text-xs text-red-500 mt-1">{errors.newPassword.message}</p>}
+        {errors.newPassword && <p className="text-xs text-semantic-destructive mt-1">{errors.newPassword.message}</p>}
       </div>
       <div>
-        <label className="text-xs font-semibold text-gray-600 mb-1 block">Confirm New Password</label>
+        <label className="text-xs font-semibold text-text-muted mb-1 block">Confirm New Password</label>
         <input
           type="password"
           {...register("confirmPassword", {
             required: "Please confirm your new password",
             validate: (value) => value === watch("newPassword") || "Passwords do not match"
           })}
-          className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
+          className="w-full px-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
         />
-        {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>}
+        {errors.confirmPassword && <p className="text-xs text-semantic-destructive mt-1">{errors.confirmPassword.message}</p>}
       </div>
       <Button type="submit" variant="primary" loading={changePwMutation.isPending}>
         Update Password
@@ -444,19 +444,19 @@ function DeleteAccountSection() {
   return (
     <div className="pt-6 space-y-4 max-w-md">
       <div>
-        <h3 className="font-bold text-red-650 text-sm">Danger Zone</h3>
-        <p className="text-xs text-gray-500 mt-0.5">Permanently delete your profile and all associated data.</p>
+        <h3 className="font-bold text-semantic-destructive text-sm font-display">Danger Zone</h3>
+        <p className="text-xs text-text-muted mt-0.5">Permanently delete your profile and all associated data.</p>
       </div>
 
-      <div className="p-4 bg-red-50/50 border border-red-100 rounded-xl space-y-4">
-        <p className="text-xs text-red-700 font-medium leading-relaxed">
+      <div className="p-4 bg-semantic-destructive/5 border border-semantic-destructive/20 rounded-xl space-y-4">
+        <p className="text-xs text-semantic-destructive font-medium leading-relaxed">
           Warning: This action is irreversible. All of your posts, comments, connections, messages, and notifications will be permanently purged from our databases.
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
-            <label className="text-xs font-semibold text-gray-700 mb-1 block">
-              Type <strong className="text-red-600 select-all">DELETE</strong> to confirm
+            <label className="text-xs font-semibold text-text-muted mb-1 block">
+              Type <strong className="text-semantic-destructive bg-semantic-destructive/10 border border-semantic-destructive/20 px-1.5 py-0.5 rounded font-mono select-all">DELETE</strong> to confirm
             </label>
             <input
               type="text"
@@ -465,19 +465,19 @@ function DeleteAccountSection() {
                 validate: (v) => v === "DELETE" || "You must type DELETE in all caps"
               })}
               placeholder="DELETE"
-              className="w-full px-3 py-2 text-sm bg-white border border-red-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all font-mono"
+              className="w-full px-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-semantic-destructive/50 focus:border-semantic-destructive transition-all font-mono"
             />
-            {errors.confirmText && <p className="text-xs text-red-500 mt-1">{errors.confirmText.message}</p>}
+            {errors.confirmText && <p className="text-xs text-semantic-destructive mt-1">{errors.confirmText.message}</p>}
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-gray-700 mb-1 block">Current Password</label>
+            <label className="text-xs font-semibold text-text-muted mb-1 block">Current Password</label>
             <input
               type="password"
               {...register("password", { required: "Your password is required to delete your account" })}
-              className="w-full px-3 py-2 text-sm bg-white border border-red-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"
+              className="w-full px-3 py-2 text-sm bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-semantic-destructive/50 focus:border-semantic-destructive transition-all"
             />
-            {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
+            {errors.password && <p className="text-xs text-semantic-destructive mt-1">{errors.password.message}</p>}
           </div>
 
           <Button
@@ -485,7 +485,7 @@ function DeleteAccountSection() {
             variant="primary"
             loading={deleteMutation.isPending}
             disabled={confirmText !== "DELETE"}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold transition-all"
+            className="w-full bg-semantic-destructive hover:bg-semantic-destructive/80 text-white font-semibold transition-all"
           >
             Permanently Delete Account
           </Button>
@@ -524,9 +524,9 @@ function PrivacyTab() {
   if (isLoading) {
     return (
       <div className="space-y-4 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/3" />
-        <div className="h-12 bg-gray-150 rounded w-full" />
-        <div className="h-12 bg-gray-150 rounded w-full" />
+        <div className="h-6 bg-bg-hover rounded w-1/3" />
+        <div className="h-12 bg-bg-hover rounded w-full" />
+        <div className="h-12 bg-bg-hover rounded w-full" />
       </div>
     );
   }
@@ -545,31 +545,31 @@ function PrivacyTab() {
 
   return (
     <div className="space-y-6 max-w-md">
-      <h3 className="font-bold text-gray-900 text-sm">Privacy Settings</h3>
-      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+      <h3 className="font-bold text-text-primary text-sm font-display">Privacy Settings</h3>
+      <div className="flex items-center justify-between p-3 bg-bg-base rounded-lg border border-border">
         <div>
-          <p className="text-sm font-medium text-gray-900">Public Profile</p>
-          <p className="text-xs text-gray-500">Others can find you in search results</p>
+          <p className="text-sm font-medium text-text-primary">Public Profile</p>
+          <p className="text-xs text-text-muted">Others can find you in search results</p>
         </div>
         <button
           onClick={handleTogglePublic}
           disabled={toggleMutation.isPending}
-          className={`w-10 h-5 rounded-full transition-colors relative ${isPublic ? 'bg-primary' : 'bg-gray-300'}`}
+          className={`w-10 h-5 rounded-full transition-colors relative ${isPublic ? 'bg-accent' : 'bg-border-muted'}`}
         >
           <span
             className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isPublic ? 'left-5' : 'left-0.5'}`}
           />
         </button>
       </div>
-      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+      <div className="flex items-center justify-between p-3 bg-bg-base rounded-lg border border-border">
         <div>
-          <p className="text-sm font-medium text-gray-900">Email Notifications</p>
-          <p className="text-xs text-gray-500">Receive email alerts for notifications</p>
+          <p className="text-sm font-medium text-text-primary">Email Notifications</p>
+          <p className="text-xs text-text-muted">Receive email alerts for notifications</p>
         </div>
         <button
           onClick={handleToggleEmail}
           disabled={toggleMutation.isPending}
-          className={`w-10 h-5 rounded-full transition-colors relative ${emailNotif ? 'bg-primary' : 'bg-gray-300'}`}
+          className={`w-10 h-5 rounded-full transition-colors relative ${emailNotif ? 'bg-accent' : 'bg-border-muted'}`}
         >
           <span
             className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${emailNotif ? 'left-5' : 'left-0.5'}`}
@@ -586,7 +586,7 @@ export default function SettingsPage() {
   return (
     <MainLayout>
       <div className="max-w-[760px] mx-auto">
-        <h1 className="text-2xl font-extrabold text-gray-900 mb-5">Settings</h1>
+        <h1 className="text-2xl font-extrabold font-display text-text-primary mb-5">Settings</h1>
 
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Tab sidebar */}
@@ -595,10 +595,10 @@ export default function SettingsPage() {
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-left ${
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-left min-h-[44px] ${
                   activeTab === key
-                    ? 'bg-primary-50 text-primary font-semibold'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-accent/10 text-accent font-semibold'
+                    : 'text-text-muted hover:bg-bg-hover hover:text-text-primary'
                 }`}
               >
                 <Icon size={16} /> {label}
@@ -607,7 +607,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Tab content */}
-          <Card className="flex-1 p-6 bg-white border border-surface-border">
+          <Card className="flex-1 p-6 bg-bg-elevated border border-border shadow-md">
             {activeTab === 'profile' && <EditProfileTab />}
             {activeTab === 'account' && <AccountTab />}
             {activeTab === 'privacy' && <PrivacyTab />}

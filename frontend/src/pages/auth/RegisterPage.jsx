@@ -99,10 +99,10 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left — Brand */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary-900 flex-col justify-between p-12 text-white">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-muted via-bg-base to-bg-elevated border-r border-border flex-col justify-between p-12 text-text-primary">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Graphyte</h1>
-          <p className="text-primary-200 text-sm">Professional Networking Platform</p>
+          <h1 className="text-3xl font-display font-extrabold tracking-tight mb-2 text-accent">Graphyte</h1>
+          <p className="text-text-muted text-sm">Professional Networking Platform</p>
         </div>
         <div className="space-y-4">
           {[
@@ -110,31 +110,31 @@ export default function RegisterPage() {
             ["💼", "Curated Opportunities", "Access C-suite and executive roles invisible elsewhere"],
             ["📊", "Actionable Insights", "Data-driven analytics to supercharge your career"],
           ].map(([icon, title, desc]) => (
-            <div key={title} className="flex gap-4 bg-primary-800/40 rounded-xl p-4">
+            <div key={title} className="flex gap-4 bg-bg-elevated/40 border border-border/60 rounded-xl p-4">
               <span className="text-2xl">{icon}</span>
               <div>
-                <p className="font-semibold">{title}</p>
-                <p className="text-primary-200 text-sm mt-0.5">{desc}</p>
+                <p className="font-semibold text-text-primary">{title}</p>
+                <p className="text-text-muted text-sm mt-0.5">{desc}</p>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-primary-300 text-xs">© 2024 Graphyte Professional. All rights reserved.</p>
+        <p className="text-text-faint text-xs">© 2026 Graphyte Professional. All rights reserved.</p>
       </div>
 
       {/* Right — Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-surface-muted">
+      <div className="flex-1 flex items-center justify-center p-8 bg-bg-base">
         <div className="w-full max-w-[420px]">
           <div className="lg:hidden mb-8">
-            <h1 className="text-2xl font-extrabold text-primary">Graphyte</h1>
+            <h1 className="text-2xl font-display font-extrabold text-accent">Graphyte</h1>
           </div>
-          <div className="bg-white rounded-2xl shadow-card-hover border border-surface-border p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">Create your account</h2>
-            <p className="text-sm text-gray-500 mb-6">Join the world's most exclusive professional network</p>
+          <div className="bg-bg-elevated rounded-2xl shadow-lg border border-border p-8">
+            <h2 className="text-2xl font-display font-bold text-text-primary mb-1">Create your account</h2>
+            <p className="text-sm text-text-muted mb-6">Join the world's most exclusive professional network</p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
               {serverError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">{serverError}</div>
+                <div className="bg-semantic-destructive/10 border border-semantic-destructive/30 rounded-lg px-4 py-3 text-sm text-semantic-destructive">{serverError}</div>
               )}
 
               <Input
@@ -150,20 +150,20 @@ export default function RegisterPage() {
               />
 
               <div className="relative flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">Username</label>
+                <label className="text-sm font-medium text-text-muted">Username</label>
                 <div className="relative">
-                  <AtSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <AtSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
                   <input
                     type="text"
                     placeholder="your-username"
-                    className={`w-full pl-9 pr-24 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    className={`w-full pl-9 pr-24 py-2.5 text-sm rounded-md bg-bg-elevated border text-text-primary placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all duration-150 min-h-[44px] ${
                       usernameStatus === "available"
-                        ? "border-green-400 focus:ring-green-200"
+                        ? "border-semantic-success focus:ring-semantic-success focus:border-semantic-success"
                         : usernameStatus === "taken"
-                        ? "border-red-400 focus:ring-red-200"
+                        ? "border-semantic-destructive focus:ring-semantic-destructive focus:border-semantic-destructive"
                         : errors.username
-                        ? "border-red-400 focus:ring-red-200"
-                        : "border-gray-300 focus:ring-primary-300 focus:border-primary"
+                        ? "border-semantic-destructive focus:ring-semantic-destructive focus:border-semantic-destructive"
+                        : "border-border hover:border-text-faint"
                     }`}
                     {...register("username", {
                       required: "Username is required",
@@ -172,26 +172,26 @@ export default function RegisterPage() {
                       pattern: { value: /^[a-z0-9_-]+$/i, message: "Only letters, numbers, - and _ allowed" },
                     })}
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white">
-                    {usernameStatus === "checking" && <Loader2 size={14} className="text-gray-400 animate-spin" />}
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-bg-elevated pl-1">
+                    {usernameStatus === "checking" && <Loader2 size={14} className="text-text-faint animate-spin" />}
                     {usernameStatus === "available" && (
                       <>
-                        <CheckCircle2 size={14} className="text-green-500" />
-                        <span className="text-xs text-green-600 font-medium">Available</span>
+                        <CheckCircle2 size={14} className="text-semantic-success" />
+                        <span className="text-xs text-semantic-success font-medium">Available</span>
                       </>
                     )}
                     {usernameStatus === "taken" && (
                       <>
-                        <XCircle size={14} className="text-red-500" />
-                        <span className="text-xs text-red-500 font-medium">Taken</span>
+                        <XCircle size={14} className="text-semantic-destructive" />
+                        <span className="text-xs text-semantic-destructive font-medium">Taken</span>
                       </>
                     )}
                   </div>
                 </div>
-                {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username.message}</p>}
-                {usernameStatus === "available" && <p className="text-xs text-green-600 mt-0.5">✓ @{checkedUsername} is available</p>}
-                {usernameStatus === "taken" && <p className="text-xs text-red-500 mt-0.5">✗ @{checkedUsername} is already taken</p>}
-                {usernameStatus === "invalid" && <p className="text-xs text-gray-400 mt-0.5">Only letters, numbers, - and _ allowed</p>}
+                {errors.username && <p className="text-semantic-destructive text-xs mt-1">{errors.username.message}</p>}
+                {usernameStatus === "available" && <p className="text-xs text-semantic-success mt-0.5">✓ @{checkedUsername} is available</p>}
+                {usernameStatus === "taken" && <p className="text-xs text-semantic-destructive mt-0.5">✗ @{checkedUsername} is already taken</p>}
+                {usernameStatus === "invalid" && <p className="text-xs text-text-muted mt-0.5">Only letters, numbers, - and _ allowed</p>}
               </div>
 
               <Input
@@ -210,23 +210,23 @@ export default function RegisterPage() {
               />
 
               <div className="relative flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">Password</label>
+                <label className="text-sm font-medium text-text-muted">Password</label>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
                   <input
                     type={showPass ? "text" : "password"}
                     placeholder="Min. 6 characters"
-                    className={`w-full pl-9 pr-9 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary ${errors.password ? "border-red-400" : "border-gray-300"}`}
+                    className={`w-full pl-9 pr-9 py-2.5 text-sm rounded-md bg-bg-elevated border text-text-primary placeholder-text-faint focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-colors duration-150 min-h-[44px] ${errors.password ? "border-semantic-destructive focus:ring-semantic-destructive" : "border-border hover:border-text-faint"}`}
                     {...register("password", {
                       required: "Password is required",
                       minLength: { value: 6, message: "Password must be at least 6 characters" },
                     })}
                   />
-                  <button type="button" onClick={() => setShowPass((p) => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <button type="button" onClick={() => setShowPass((p) => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-muted min-h-[44px] px-1 flex items-center justify-center">
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+                {errors.password && <p className="text-semantic-destructive text-xs mt-1">{errors.password.message}</p>}
               </div>
 
               <Input
@@ -246,9 +246,9 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            <p className="text-center text-sm text-gray-500 mt-6">
+            <p className="text-center text-sm text-text-muted mt-6">
               Already on Graphyte?{" "}
-              <Link to="/login" className="text-primary font-semibold hover:underline">Sign In</Link>
+              <Link to="/login" className="text-accent font-semibold hover:text-accent-hover hover:underline">Sign In</Link>
             </p>
           </div>
         </div>

@@ -19,7 +19,7 @@ function ConnectionActionButton({ userId }) {
   if (isLoading) {
     return (
       <Button size="xs" variant="outline" disabled className="w-24">
-        <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <div className="w-3.5 h-3.5 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
       </Button>
     );
   }
@@ -38,7 +38,7 @@ function ConnectionActionButton({ userId }) {
           variant="outline"
           onClick={(e) => handleAction(e, () => remove.mutate())}
           loading={remove.isPending}
-          className="w-24 text-green-600 border-green-200 hover:bg-green-50"
+          className="w-24 text-green-400 border-green-900/50 hover:bg-green-950/25"
         >
           Connected
         </Button>
@@ -50,7 +50,7 @@ function ConnectionActionButton({ userId }) {
           variant="outline"
           onClick={(e) => handleAction(e, () => withdraw.mutate())}
           loading={withdraw.isPending}
-          className="w-24 text-amber-600 border-amber-200 hover:bg-amber-50"
+          className="w-24 text-amber-400 border-amber-900/50 hover:bg-amber-950/25"
         >
           Requested
         </Button>
@@ -100,20 +100,20 @@ function UserCard({ user, currentUser }) {
   const sharedCount = sharedSkills.length;
 
   return (
-    <Card className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:shadow-card-hover transition-all duration-150 bg-white border border-surface-border">
+    <Card className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:shadow-md hover:border-border-muted transition-all duration-150">
       <Link to={`/profile/${user.username || user._id}`} className="flex gap-3 min-w-0 flex-1">
         <Avatar src={user.profilePic} name={user.name} size="md" />
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-gray-900 text-sm hover:text-primary transition-colors truncate">
+          <div className="font-semibold text-text-primary text-sm hover:text-accent transition-colors truncate">
             {user.name}
           </div>
-          <p className="text-xs text-gray-500 truncate mt-0.5">{user.headline}</p>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[11px] text-gray-400">
+          <p className="text-xs text-text-muted truncate mt-0.5">{user.headline}</p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[11px] text-text-faint">
             {user.location && (
               <span className="flex items-center gap-0.5"><MapPin size={10} /> {user.location}</span>
             )}
             {sharedCount > 0 && (
-              <span className="text-primary font-medium">{sharedCount} shared skill{sharedCount !== 1 ? "s" : ""}</span>
+              <span className="text-accent font-medium">{sharedCount} shared skill{sharedCount !== 1 ? "s" : ""}</span>
             )}
           </div>
         </div>
@@ -141,33 +141,33 @@ function UserCard({ user, currentUser }) {
 // Compact post card without comment section
 function CompactPostCard({ post }) {
   return (
-    <Card className="p-4 hover:shadow-card-hover transition-shadow bg-white border border-surface-border">
+    <Card className="p-4 hover:shadow-md hover:border-border-muted transition-all">
       <div className="flex items-start gap-3">
         <Link to={`/profile/${post.author?.username || post.author?._id}`}>
           <Avatar src={post.author?.profilePic} name={post.author?.name} size="sm" />
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <Link to={`/profile/${post.author?.username || post.author?._id}`} className="font-semibold text-xs text-gray-900 hover:text-primary transition-colors">
+            <Link to={`/profile/${post.author?.username || post.author?._id}`} className="font-semibold text-xs text-text-primary hover:text-accent transition-colors">
               {post.author?.name}
             </Link>
             {post.author?.headline && (
-              <span className="text-[10px] text-gray-400 truncate max-w-[200px]">{post.author.headline}</span>
+              <span className="text-[10px] text-text-muted truncate max-w-[200px]">{post.author.headline}</span>
             )}
           </div>
-          <p className="text-[10px] text-gray-400 mt-0.5">{new Date(post.createdAt).toLocaleDateString()}</p>
-          <p className="text-sm text-gray-700 mt-2 line-clamp-3 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+          <p className="text-[10px] text-text-faint mt-0.5">{new Date(post.createdAt).toLocaleDateString()}</p>
+          <p className="text-sm text-text-muted mt-2 line-clamp-3 leading-relaxed whitespace-pre-wrap">{post.content}</p>
           {post.image && (
             <img src={post.image} alt="Post content" className="mt-3 rounded-lg max-h-48 object-cover w-full" />
           )}
           {post.tags?.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-3">
               {post.tags.map((t) => (
-                <span key={t} className="text-[10px] px-2 py-0.5 bg-gray-50 text-gray-500 rounded-full font-medium">#{t}</span>
+                <span key={t} className="text-[10px] px-2 py-0.5 bg-bg-base text-text-muted rounded-full font-medium border border-border">#{t}</span>
               ))}
             </div>
           )}
-          <div className="flex gap-4 mt-3 text-xs text-gray-400 font-medium border-t border-gray-50 pt-2.5">
+          <div className="flex gap-4 mt-3 text-xs text-text-faint font-medium border-t border-border pt-2.5">
             <span>♥ {post.likesCount || 0} likes</span>
             <span>💬 {post.commentsCount || 0} comments</span>
           </div>
@@ -255,12 +255,12 @@ export default function SearchPage() {
         {/* Search Input Bar */}
         <div className="relative">
           <form onSubmit={handleSearchSubmit} className="relative z-10">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-faint" />
             <input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search people, jobs, posts..."
-              className="w-full pl-11 pr-28 py-3 text-sm bg-white border border-surface-border rounded-card shadow-card focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary transition-all"
+              className="w-full pl-11 pr-28 py-3 text-sm bg-bg-elevated border border-border text-text-primary rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1.5">
               <Button
@@ -268,7 +268,7 @@ export default function SearchPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowFilters((f) => !f)}
-                className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-1 text-text-muted hover:text-text-primary hover:bg-bg-hover min-h-[36px]"
               >
                 <Filter size={14} /> Filters
               </Button>
@@ -279,45 +279,45 @@ export default function SearchPage() {
 
         {/* Collapsible Filters Panel */}
         {showFilters && (
-          <Card className="p-4 space-y-3 bg-white border border-surface-border shadow-sm">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-1">
-              <h3 className="font-bold text-sm text-gray-800 flex items-center gap-1.5">
-                <Filter size={14} className="text-primary" /> Advanced Filters
+          <Card className="p-4 space-y-3 bg-bg-elevated border border-border shadow-sm">
+            <div className="flex items-center justify-between border-b border-border pb-2 mb-1">
+              <h3 className="font-bold text-sm text-text-primary flex items-center gap-1.5 font-display">
+                <Filter size={14} className="text-accent" /> Advanced Filters
               </h3>
               <button
                 onClick={() => setFilters({ skills: "", location: "", company: "" })}
-                className="text-xs font-semibold text-primary hover:text-primary-900 transition-colors"
+                className="text-xs font-semibold text-accent hover:text-accent-hover transition-colors"
               >
                 Clear all
               </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="text-xs font-semibold text-gray-600 mb-1 block">Skills</label>
+                <label className="text-xs font-semibold text-text-muted mb-1 block">Skills</label>
                 <input
                   value={filters.skills}
                   onChange={(e) => setFilters((f) => ({ ...f, skills: e.target.value }))}
                   placeholder="React, Node.js..."
-                  className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300"
+                  className="w-full px-3 py-2 text-xs bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/55"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-600 mb-1 block">Location</label>
+                <label className="text-xs font-semibold text-text-muted mb-1 block">Location</label>
                 <input
                   value={filters.location}
                   onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value }))}
                   placeholder="New York, Remote..."
-                  className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300"
+                  className="w-full px-3 py-2 text-xs bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/55"
                 />
               </div>
               {activeTab === "people" && (
                 <div>
-                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Company</label>
+                  <label className="text-xs font-semibold text-text-muted mb-1 block">Company</label>
                   <input
                     value={filters.company}
                     onChange={(e) => setFilters((f) => ({ ...f, company: e.target.value }))}
                     placeholder="Google, Meta..."
-                    className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300"
+                    className="w-full px-3 py-2 text-xs bg-bg-base border border-border text-text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/55"
                   />
                 </div>
               )}
@@ -327,7 +327,7 @@ export default function SearchPage() {
 
         {/* Tab switchers */}
         {query.length > 1 && (
-          <div className="flex gap-1 border-b border-gray-200">
+          <div className="flex gap-1 border-b border-border">
             {[
               { id: "all", label: "All" },
               { id: "people", label: "People" },
@@ -337,10 +337,10 @@ export default function SearchPage() {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-[2px] transition-all duration-150 ${
+                className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-[2px] transition-all duration-150 min-h-[44px] ${
                   activeTab === tab.id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-accent text-accent"
+                    : "border-transparent text-text-muted hover:text-text-primary"
                 }`}
               >
                 {tab.label}
@@ -354,7 +354,7 @@ export default function SearchPage() {
           isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-card shadow-card border border-surface-border h-24 animate-pulse" />
+                <div key={i} className="bg-bg-elevated rounded-xl border border-border h-24 animate-pulse" />
               ))}
             </div>
           ) : (
@@ -363,7 +363,7 @@ export default function SearchPage() {
               {activeTab === "people" && (
                 <div className="space-y-2">
                   {users.length === 0 ? (
-                    <Card className="text-center py-10 text-gray-400 text-sm">No people matched your search</Card>
+                    <Card className="text-center py-10 text-text-muted text-sm bg-bg-elevated">No people matched your search</Card>
                   ) : (
                     users.map((u) => <UserCard key={u._id} user={u} currentUser={currentUser} />)
                   )}
@@ -374,7 +374,7 @@ export default function SearchPage() {
               {activeTab === "jobs" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {jobs.length === 0 ? (
-                    <Card className="text-center py-10 text-gray-400 text-sm col-span-full">No jobs matched your search</Card>
+                    <Card className="text-center py-10 text-text-muted text-sm col-span-full bg-bg-elevated">No jobs matched your search</Card>
                   ) : (
                     jobs.map((j) => (
                       <Link key={j._id} to={`/jobs`}>
@@ -389,7 +389,7 @@ export default function SearchPage() {
               {activeTab === "posts" && (
                 <div className="space-y-3">
                   {posts.length === 0 ? (
-                    <Card className="text-center py-10 text-gray-400 text-sm">No posts matched your search</Card>
+                    <Card className="text-center py-10 text-text-muted text-sm bg-bg-elevated">No posts matched your search</Card>
                   ) : (
                     posts.map((p) => <CompactPostCard key={p._id} post={p} />)
                   )}
@@ -400,10 +400,10 @@ export default function SearchPage() {
               {activeTab === "all" && (
                 <div className="space-y-6">
                   {users.length === 0 && jobs.length === 0 && posts.length === 0 ? (
-                    <Card className="text-center py-12 text-gray-400">
-                      <Search size={32} className="mx-auto mb-3 text-gray-300" />
-                      <p className="font-semibold text-gray-700">No results found for "{query}"</p>
-                      <p className="text-xs text-gray-400 mt-1">Try refining your search terms or filters.</p>
+                    <Card className="text-center py-12 text-text-muted bg-bg-elevated">
+                      <Search size={32} className="mx-auto mb-3 text-text-faint" />
+                      <p className="font-semibold text-text-primary font-display">No results found for "{query}"</p>
+                      <p className="text-xs text-text-faint mt-1">Try refining your search terms or filters.</p>
                     </Card>
                   ) : (
                     <>
@@ -411,12 +411,12 @@ export default function SearchPage() {
                       {users.length > 0 && (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between px-1">
-                            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
-                              <Sparkles size={13} className="text-primary" /> People
+                            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 font-display">
+                              <Sparkles size={13} className="text-accent" /> People
                             </h3>
                             <button
                               onClick={() => handleTabChange("people")}
-                              className="text-xs font-semibold text-primary hover:text-primary-900 transition-colors"
+                              className="text-xs font-semibold text-accent hover:text-accent-hover transition-colors"
                             >
                               See all ({users.length})
                             </button>
@@ -433,12 +433,12 @@ export default function SearchPage() {
                       {jobs.length > 0 && (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between px-1">
-                            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
-                              <Briefcase size={13} className="text-primary" /> Jobs
+                            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 font-display">
+                              <Briefcase size={13} className="text-accent" /> Jobs
                             </h3>
                             <button
                               onClick={() => handleTabChange("jobs")}
-                              className="text-xs font-semibold text-primary hover:text-primary-900 transition-colors"
+                              className="text-xs font-semibold text-accent hover:text-accent-hover transition-colors"
                             >
                               See all ({jobs.length})
                             </button>
@@ -457,12 +457,12 @@ export default function SearchPage() {
                       {posts.length > 0 && (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between px-1">
-                            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
-                              <Newspaper size={13} className="text-primary" /> Posts
+                            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 font-display">
+                              <Newspaper size={13} className="text-accent" /> Posts
                             </h3>
                             <button
                               onClick={() => handleTabChange("posts")}
-                              className="text-xs font-semibold text-primary hover:text-primary-900 transition-colors"
+                              className="text-xs font-semibold text-accent hover:text-accent-hover transition-colors"
                             >
                               See all ({posts.length})
                             </button>
@@ -482,9 +482,9 @@ export default function SearchPage() {
           )
         ) : (
           /* Empty onboarding search view */
-          <Card className="text-center py-16 text-gray-400 bg-white border border-surface-border">
-            <Search size={40} className="mx-auto mb-4 text-gray-300" />
-            <p className="font-bold text-gray-900 text-base">Search the Graphyte network</p>
+          <Card className="text-center py-16 text-text-muted bg-bg-elevated border border-border">
+            <Search size={40} className="mx-auto mb-4 text-text-faint" />
+            <p className="font-bold text-text-primary text-base font-display">Search the Graphyte network</p>
             <p className="text-sm mt-1">Find colleagues, jobs, or trending posts across the platform</p>
           </Card>
         )}
