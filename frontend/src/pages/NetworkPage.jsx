@@ -30,36 +30,88 @@ function formatTimeAgo(dateInput) {
 
 // Person Card for suggestions grid
 function SuggestionCard({ person, onConnect, loading }) {
+  // Derive shared skill names (if available from API) or fallback to count
+  const sharedSkillNames = person.sharedSkillNames || [];
+  const sharedSkillsCount = person.sharedSkills || sharedSkillNames.length || 0;
+  const displaySkills = sharedSkillNames.slice(0, 2);
+  const extraSkills = Math.max(0, sharedSkillsCount - displaySkills.length);
+
+  // Connection reason tag
+  const getReasonTag = () => {
+    if (person.mutualCount > 0) {
+      return {
+        text: `Via ${person.mutualCount} mutual${person.mutualCount !== 1 ? 's' : ''}`,
+        className: 'text-accent bg-accent/10 border-accent/20',
+      };
+    }
+    if (sharedSkillsCount > 0) {
+      return {
+        text: `${sharedSkillsCount} skill${sharedSkillsCount !== 1 ? 's' : ''} in common`,
+        className: 'text-semantic-info bg-semantic-info/10 border-semantic-info/20',
+      };
+    }
+    return {
+      text: 'Suggested for you',
+      className: 'text-text-faint bg-bg-hover border-border',
+    };
+  };
+
+  const reason = getReasonTag();
+
   return (
-    <Card className="p-4 flex flex-col items-center text-center gap-3 hover:shadow-md transition-all">
+    <Card className="p-4 flex flex-col items-center text-center gap-2.5 hover:shadow-md hover:-translate-y-0.5 hover:border-accent/30 transition-all duration-200">
       <Link to={`/profile/${person.username || person._id}`}>
         <Avatar src={person.profilePic} name={person.name} size="lg" />
       </Link>
-      <div className="min-h-[4em] flex flex-col items-center">
+
+      <div className="min-h-[3.5em] flex flex-col items-center">
         <Link to={`/profile/${person.username || person._id}`} className="font-bold text-text-primary text-sm hover:text-accent transition-colors truncate max-w-[160px] font-display">
           {person.name}
         </Link>
         <p className="text-xs text-text-muted mt-0.5 line-clamp-2 max-w-[180px]">{person.headline}</p>
       </div>
-      <div className="text-[11px] text-text-faint space-y-0.5 mt-1 min-h-[2.5em] flex flex-col justify-center">
-        {person.mutualCount > 0 && (
-          <p className="flex items-center justify-center gap-1">
-            <Users size={11} className="text-text-faint" />
-            {person.mutualCount} mutual connection{person.mutualCount !== 1 ? "s" : ""}
-          </p>
-        )}
-        {person.sharedSkills > 0 && (
-          <p className="text-accent font-medium">
-            {person.sharedSkills} shared skill{person.sharedSkills !== 1 ? "s" : ""}
-          </p>
-        )}
-      </div>
-      <Button variant="outline" size="sm" fullWidth onClick={() => onConnect(person._id)} loading={loading} className="mt-2">
+
+      {/* Location */}
+      {person.location && (
+        <p className="flex items-center gap-1 text-[11px] text-text-faint">
+          <MapPin size={10} /> {person.location}
+        </p>
+      )}
+
+      {/* Context: mutual connections */}
+      {person.mutualCount > 0 && (
+        <p className="flex items-center justify-center gap-1 text-[11px] text-text-faint">
+          <Users size={11} />
+          {person.mutualCount} mutual connection{person.mutualCount !== 1 ? "s" : ""}
+        </p>
+      )}
+
+      {/* Shared skills detail */}
+      {sharedSkillsCount > 0 && (
+        <div className="flex flex-wrap items-center justify-center gap-1">
+          {displaySkills.map((s) => (
+            <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-accent-muted text-accent border border-accent/15 font-medium">
+              {s}
+            </span>
+          ))}
+          {extraSkills > 0 && (
+            <span className="text-[10px] text-text-faint font-medium">+{extraSkills} more</span>
+          )}
+        </div>
+      )}
+
+      {/* Connection reason tag */}
+      <span className={`inline-flex items-center text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${reason.className}`}>
+        {reason.text}
+      </span>
+
+      <Button variant="outline" size="sm" fullWidth onClick={() => onConnect(person._id)} loading={loading} className="mt-1">
         <UserPlus size={13} className="mr-1 inline" /> Connect
       </Button>
     </Card>
   );
 }
+
 
 // Connection Row for pending invitations list
 function PendingCard({ conn, onRespond, isPending }) {

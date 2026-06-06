@@ -10,6 +10,7 @@ import MainLayout from '../components/layout/MainLayout';
 
 // Profile components
 import ProfileHeader from '../components/profile/ProfileHeader';
+import ShowcaseSection from '../components/profile/ShowcaseSection';
 import AboutSection from '../components/profile/AboutSection';
 import ActivitySection from '../components/profile/ActivitySection';
 import ExperienceSection from '../components/profile/ExperienceSection';
@@ -289,6 +290,10 @@ export default function ProfilePage() {
   const isOwner = me?._id === profile?._id;
   const connectionCount = stats?.connectionCount ?? profile?.connections?.length ?? 0;
 
+  // Connection status for endorsement feature
+  const { status: connectionStatus } = useConnectionStatus(profile?._id);
+  const isConnected = connectionStatus === 'connected';
+
   // Redirect ObjectId URLs to username
   useEffect(() => {
     if (!isLoading && profile) {
@@ -376,10 +381,11 @@ export default function ProfilePage() {
             {/* About tab */}
             {activeTab === 'about' && (
               <>
+                <ShowcaseSection items={profile.showcase || []} isOwner={isOwner} userId={profile._id} />
                 <AboutSection about={profile.about || profile.bio} isOwner={isOwner} userId={profile._id} />
+                <SkillsSection skills={profile.skills || []} isOwner={isOwner} userId={profile._id} profileUserId={profile._id} isConnected={isConnected} />
                 <ExperienceSection experiences={profile.experience || []} isOwner={isOwner} userId={profile._id} />
                 <EducationSection educations={profile.education || []} isOwner={isOwner} userId={profile._id} />
-                <SkillsSection skills={profile.skills || []} isOwner={isOwner} userId={profile._id} />
                 <InterestsSection interests={profile.interests} />
               </>
             )}
