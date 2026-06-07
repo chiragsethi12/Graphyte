@@ -354,7 +354,7 @@ export default function SearchPage() {
           isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-bg-elevated rounded-xl border border-border h-24 animate-pulse" />
+                <div key={i} className="skeleton h-24 rounded-xl" />
               ))}
             </div>
           ) : (

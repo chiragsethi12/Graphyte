@@ -24,6 +24,11 @@ const postSchema = new mongoose.Schema(
             enum: ["text", "image", "article", "share"],
             default: "text",
         },
+        postType: {
+            type: String,
+            enum: ["standard", "milestone"],
+            default: "standard",
+        },
         tags: [{ type: String, lowercase: true, trim: true }],
 
         // Share / repost

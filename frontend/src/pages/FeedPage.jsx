@@ -12,6 +12,8 @@ import Card from "../components/ui/Card";
 import { FeedSkeleton } from "../components/ui/SkeletonScreens";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { motion, AnimatePresence } from "framer-motion";
+import MotionPage from "../components/layout/MotionPage";
 
 export default function FeedPage() {
   usePageTitle("Feed");
@@ -61,7 +63,7 @@ export default function FeedPage() {
   return (
     <MainLayout>
       <div className="max-w-[680px] mx-auto space-y-4">
-        <CreatePost />
+          <CreatePost />
 
         {profileViews >= 3 && (
           <Card className="p-4 flex items-center justify-between border border-[#2A0012] bg-[#0F0008] rounded-xl">
@@ -109,9 +111,18 @@ export default function FeedPage() {
           </Card>
         ) : (
           <>
-            {allPosts.map((post) => (
-              <PostCard key={post._id} post={post} />
-            ))}
+            <AnimatePresence>
+              {allPosts.map((post, i) => (
+                <motion.div
+                  key={post._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: (i % 10) * 0.05, duration: 0.2 }}
+                >
+                  <PostCard post={post} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
             {/* Infinite scroll sentinel */}
             <div ref={sentinelRef} className="h-4" />
@@ -157,9 +168,8 @@ export default function FeedPage() {
             </div>
           </Card>
         )}
-
         {suggestions.length > 0 && <NetworkSuggestions suggestions={suggestions} />}
-      </div>
+        </div>
     </MainLayout>
   );
 }

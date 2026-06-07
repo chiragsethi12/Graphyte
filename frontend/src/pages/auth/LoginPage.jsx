@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import toast from "react-hot-toast";
+import MotionPage from "../../components/layout/MotionPage";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -31,7 +32,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <MotionPage>
+      <div className="min-h-screen flex">
       {/* Left — Brand panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-muted via-bg-base to-bg-elevated border-r border-border flex-col justify-between p-12 text-text-primary">
         <div>
@@ -126,5 +128,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  </MotionPage>
+);
 }

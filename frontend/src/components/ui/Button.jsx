@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import clsx from "clsx";
 
 const variants = {
@@ -25,11 +26,12 @@ export default function Button({
   ...props
 }) {
   return (
-    <button
+    <motion.button
       disabled={disabled || loading}
+      whileTap={{ scale: 0.97 }}
       className={clsx(
         "inline-flex items-center justify-center gap-2 font-semibold rounded-md",
-        "active:scale-[0.98] transition-all duration-150 cursor-pointer",
+        "transition-colors duration-150 cursor-pointer",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         variants[variant],
         sizes[size],
@@ -45,6 +47,6 @@ export default function Button({
         </svg>
       )}
       {children}
-    </button>
+    </motion.button>
   );
 }

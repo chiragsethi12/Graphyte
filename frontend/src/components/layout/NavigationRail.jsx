@@ -21,6 +21,11 @@ export default function NavigationRail() {
   const pendingCount = pendingData?.requests?.length || 0;
 
   useEffect(() => {
+    const handleOpenSearch = () => {
+      setSearchOpen(true);
+    };
+    window.addEventListener("open-search", handleOpenSearch);
+
     const handleKeyDown = (e) => {
       // Listen for Cmd+K (Mac) or Ctrl+K (Windows/Linux)
       if ((e.metaKey || e.ctrlKey) && e.key?.toLowerCase() === "k") {
@@ -29,7 +34,11 @@ export default function NavigationRail() {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("open-search", handleOpenSearch);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const navItems = [

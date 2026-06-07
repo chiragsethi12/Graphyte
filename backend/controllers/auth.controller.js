@@ -106,6 +106,7 @@ export const register = asyncHandler(async (req, res) => {
             email:      user.email,
             profilePic: user.profilePic,
             headline:   user.headline,
+            isNewUser:  user.isNewUser,
         },
     });
 });
@@ -138,6 +139,7 @@ export const login = asyncHandler(async (req, res) => {
             email:      user.email,
             profilePic: user.profilePic,
             headline:   user.headline,
+            isNewUser:  user.isNewUser,
         },
     });
 });

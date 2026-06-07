@@ -9,7 +9,7 @@ export default function NetworkSuggestions({ suggestions = [] }) {
   const queryClient = useQueryClient();
 
   const connectMutation = useMutation({
-    mutationFn: (id) => api.post(`/connections/send/${id}`),
+    mutationFn: (id) => api.post(`/connections/request/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["suggestions"] });
       toast.success("Connection request sent!");

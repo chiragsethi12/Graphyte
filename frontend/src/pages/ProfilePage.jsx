@@ -7,6 +7,7 @@ import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import useConnectionStatus from '../hooks/useConnectionStatus';
 import MainLayout from '../components/layout/MainLayout';
+import MotionPage from '../components/layout/MotionPage';
 
 // Profile components
 import ProfileHeader from '../components/profile/ProfileHeader';
@@ -293,6 +294,28 @@ export default function ProfilePage() {
   // Connection status for endorsement feature
   const { status: connectionStatus } = useConnectionStatus(profile?._id);
   const isConnected = connectionStatus === 'connected';
+
+  // OG Meta tags update
+  useEffect(() => {
+    if (!profile) return;
+    const setMeta = (property, content) => {
+      let el = document.querySelector(`meta[property="${property}"]`);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute("property", property);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
+    document.title = `${profile.name} | Graphyte`;
+    setMeta("og:title", `${profile.name} | Graphyte`);
+    setMeta("og:description", profile.headline || "Professional on Graphyte");
+    setMeta("og:image", profile.profilePic || "/og-default.png");
+    setMeta("og:url", window.location.href);
+    return () => {
+      document.title = "Graphyte";
+    };
+  }, [profile]);
 
   // Redirect ObjectId URLs to username
   useEffect(() => {

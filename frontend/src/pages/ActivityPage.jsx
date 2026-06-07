@@ -68,12 +68,12 @@ function TopPostCard({ post, index }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-bg-elevated rounded-xl border border-border p-4 animate-pulse">
+    <div className="bg-bg-elevated rounded-xl border border-border p-4">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 bg-bg-hover rounded-xl" />
+        <div className="w-10 h-10 skeleton rounded-xl" />
         <div className="flex-1 space-y-2">
-          <div className="h-6 bg-bg-hover rounded w-16" />
-          <div className="h-3 bg-bg-hover rounded w-28" />
+          <div className="h-6 skeleton w-16" />
+          <div className="h-3 skeleton w-28" />
         </div>
       </div>
     </div>

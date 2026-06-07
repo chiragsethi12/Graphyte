@@ -523,10 +523,10 @@ function PrivacyTab() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 animate-pulse">
-        <div className="h-6 bg-bg-hover rounded w-1/3" />
-        <div className="h-12 bg-bg-hover rounded w-full" />
-        <div className="h-12 bg-bg-hover rounded w-full" />
+      <div className="space-y-4">
+        <div className="h-6 skeleton w-1/3" />
+        <div className="h-12 skeleton w-full" />
+        <div className="h-12 skeleton w-full" />
       </div>
     );
   }

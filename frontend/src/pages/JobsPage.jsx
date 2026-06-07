@@ -15,18 +15,18 @@ function JobsSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="bg-bg-elevated rounded-xl border border-border p-5 animate-pulse flex flex-col gap-3">
+        <div key={i} className="bg-bg-elevated rounded-xl border border-border p-5 flex flex-col gap-3">
           <div className="flex gap-4">
-            <div className="w-10 h-10 bg-bg-hover rounded-md flex-shrink-0" />
+            <div className="w-10 h-10 skeleton rounded-md flex-shrink-0" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-bg-hover rounded w-2/3" />
-              <div className="h-3 bg-bg-hover rounded w-1/3" />
+              <div className="h-4 skeleton w-2/3" />
+              <div className="h-3 skeleton w-1/3" />
             </div>
           </div>
-          <div className="h-12 bg-bg-hover/50 rounded w-full mt-2" />
+          <div className="h-12 skeleton w-full mt-2" />
           <div className="flex gap-2 mt-auto">
-            <div className="h-6 bg-bg-hover rounded w-16" />
-            <div className="h-6 bg-bg-hover rounded w-20" />
+            <div className="h-6 skeleton w-16" />
+            <div className="h-6 skeleton w-20" />
           </div>
         </div>
       ))}

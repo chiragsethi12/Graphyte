@@ -1,5 +1,6 @@
 import NavigationRail from "./NavigationRail";
 import MobileBottomNav from "./MobileBottomNav";
+import MotionPage from "./MotionPage";
 
 export default function MainLayout({ children }) {
   return (
@@ -7,7 +8,9 @@ export default function MainLayout({ children }) {
       <NavigationRail />
       <main className="flex-1 min-w-0 overflow-y-auto pb-16 lg:pb-0">
         <div className="max-w-[720px] mx-auto px-4 py-6">
-          {children}
+          <MotionPage>
+            {children}
+          </MotionPage>
         </div>
       </main>
       <MobileBottomNav />

@@ -5,6 +5,7 @@ import { Lock, Eye, EyeOff, ArrowLeft, CheckCircle, AlertTriangle } from "lucide
 import api from "../../lib/axios";
 import Button from "../../components/ui/Button";
 import toast from "react-hot-toast";
+import MotionPage from "../../components/layout/MotionPage";
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -56,7 +57,8 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <MotionPage>
+      <div className="min-h-screen flex">
       {/* Left — Brand panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-muted via-bg-base to-bg-elevated border-r border-border flex-col justify-between p-12 text-text-primary">
         <div>
@@ -207,5 +209,6 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
-  );
+  </MotionPage>
+);
 }

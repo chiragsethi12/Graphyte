@@ -29,8 +29,17 @@ function formatSalary(salary) {
   return `Up to ${fmt(max)} / ${period}`;
 }
 
-export default function JobCard({ job }) {
+export default function JobCard({ job, currentUserSkills }) {
   const { user } = useAuth();
+  const userSkills = currentUserSkills || user?.skills || [];
+
+  // Calculate skill match
+  const matchingSkills = (job.skills || []).filter((s) =>
+    userSkills.some((us) => us.toLowerCase() === s.toLowerCase())
+  );
+  const matchPercent = job.skills?.length > 0
+    ? Math.round((matchingSkills.length / job.skills.length) * 100)
+    : null;
 
   // Query myApplications to determine applied status
   const { data: appsData } = useQuery({
@@ -72,6 +81,27 @@ export default function JobCard({ job }) {
       <div>
         <h3 className="font-bold text-text-primary text-base leading-tight truncate">{job.title}</h3>
         <p className="text-sm font-semibold text-accent mt-0.5 truncate">{job.company}</p>
+
+        {/* Skill Match Bar */}
+        {matchPercent !== null && (
+          <div className="flex items-center gap-2 mt-2">
+            <div className="flex-1 h-1.5 bg-[#1E1E2E] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${matchPercent}%`,
+                  background: matchPercent >= 70 ? '#059669' : matchPercent >= 40 ? '#F59E0B' : '#6B7280',
+                }}
+              />
+            </div>
+            <span className={`text-[11px] font-semibold whitespace-nowrap tabular-nums ${
+              matchPercent >= 70 ? 'text-[#059669]' : matchPercent >= 40 ? 'text-[#F59E0B]' : 'text-text-faint'
+            }`}>
+              {matchPercent}% match
+            </span>
+          </div>
+        )}
+
         <p className="text-xs text-text-muted mt-2 line-clamp-3 leading-relaxed min-h-[4.5em]">{job.description}</p>
       </div>
 

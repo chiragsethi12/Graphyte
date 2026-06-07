@@ -6,21 +6,7 @@
 /* ─── Shimmer base ────────────────────────────────────────────────────────── */
 
 function Shimmer({ className = "" }) {
-  return (
-    <div
-      className={`relative overflow-hidden bg-bg-hover rounded ${className}`}
-      style={{ isolation: "isolate" }}
-    >
-      <div
-        className="absolute inset-0 -translate-x-full"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
-          animation: "shimmer 1.8s ease-in-out infinite",
-        }}
-      />
-    </div>
-  );
+  return <div className={`skeleton ${className}`} />;
 }
 
 /* ─── Post Card Skeleton ──────────────────────────────────────────────────── */
@@ -206,16 +192,4 @@ export function NotificationSkeleton({ count = 4 }) {
   );
 }
 
-/* ─── Global shimmer keyframe (injected once) ─────────────────────────────── */
 
-const styleId = "graphite-shimmer-style";
-if (typeof document !== "undefined" && !document.getElementById(styleId)) {
-  const style = document.createElement("style");
-  style.id = styleId;
-  style.textContent = `
-    @keyframes shimmer {
-      100% { transform: translateX(100%); }
-    }
-  `;
-  document.head.appendChild(style);
-}

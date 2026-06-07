@@ -310,10 +310,11 @@ export const updatePrivacy = asyncHandler(async (req, res) => {
 
 // ─── PATCH /api/users/me ──────────────────────────────────────────────────────
 export const updateMe = asyncHandler(async (req, res) => {
-    const { isPublic, emailNotifications } = req.body;
+    const { isPublic, emailNotifications, isNewUser } = req.body;
     const updates = {};
     if (isPublic !== undefined) updates.isPublic = Boolean(isPublic);
     if (emailNotifications !== undefined) updates.emailNotifications = Boolean(emailNotifications);
+    if (isNewUser !== undefined) updates.isNewUser = Boolean(isNewUser);
 
     const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true }).select("-password");
     res.json({ success: true, user });

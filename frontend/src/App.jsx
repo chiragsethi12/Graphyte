@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -19,6 +20,7 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const ActivityPage = lazy(() => import("./pages/ActivityPage"));
 const SavedPostsPage = lazy(() => import("./pages/SavedPostsPage"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const queryClient = new QueryClient({
@@ -31,7 +33,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, allowNewUser = false }) {
   const { user, loading } = useAuth();
   if (loading) {
     return (
@@ -40,13 +42,23 @@ function ProtectedRoute({ children }) {
       </div>
     );
   }
-  return user ? children : <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.isNewUser && !allowNewUser) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  if (!user.isNewUser && allowNewUser) {
+    return <Navigate to="/feed" replace />;
+  }
+  return children;
 }
 
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
-  return user ? <Navigate to="/feed" replace /> : children;
+  if (user) {
+    return <Navigate to={user.isNewUser ? "/onboarding" : "/feed"} replace />;
+  }
+  return children;
 }
 
 function LoadingSpinner() {
@@ -60,10 +72,15 @@ function LoadingSpinner() {
 function RootRoute() {
   const { user, loading } = useAuth();
   if (loading) return <LoadingSpinner />;
-  return user ? <Navigate to="/feed" replace /> : <LandingPage />;
+  if (user) {
+    return <Navigate to={user.isNewUser ? "/onboarding" : "/feed"} replace />;
+  }
+  return <LandingPage />;
 }
 
 function AppRoutes() {
+  useKeyboardShortcuts();
+
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
@@ -77,6 +94,7 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
         <Route path="/reset-password/:token" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
 
+        <Route path="/onboarding" element={<ProtectedRoute allowNewUser={true}><OnboardingPage /></ProtectedRoute>} />
         <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
         <Route path="/profile/:id" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/jobs" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} />

@@ -19,11 +19,11 @@ function timeLabel(dateStr) {
 
 function ConversationSkeleton() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3.5 animate-pulse">
-      <div className="w-10 h-10 bg-bg-hover rounded-full flex-shrink-0" />
+    <div className="flex items-center gap-3 px-4 py-3.5">
+      <div className="w-10 h-10 skeleton rounded-full flex-shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-3 bg-bg-hover rounded w-1/2" />
-        <div className="h-2 bg-bg-hover rounded w-3/4" />
+        <div className="h-3 skeleton w-1/2" />
+        <div className="h-2 skeleton w-3/4" />
       </div>
     </div>
   );

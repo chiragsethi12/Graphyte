@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema(
         // Privacy & settings
         isPublic:        { type: Boolean, default: true },
         emailNotifications: { type: Boolean, default: true },
+        isNewUser:       { type: Boolean, default: true },
 
         // Password reset
         resetPasswordToken:   { type: String },

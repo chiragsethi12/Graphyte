@@ -5,6 +5,7 @@ import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import api from "../../lib/axios";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import MotionPage from "../../components/layout/MotionPage";
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
@@ -29,7 +30,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <MotionPage>
+      <div className="min-h-screen flex">
       {/* Left — Brand panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-muted via-bg-base to-bg-elevated border-r border-border flex-col justify-between p-12 text-text-primary">
         <div>
@@ -123,5 +125,6 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
     </div>
-  );
+  </MotionPage>
+);
 }

@@ -10,15 +10,15 @@ function SavedPostsSkeleton() {
   return (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-bg-elevated rounded-xl border border-border p-5 animate-pulse space-y-3">
+        <div key={i} className="bg-bg-elevated rounded-xl border border-border p-5 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-bg-hover rounded-full" />
+            <div className="w-10 h-10 skeleton rounded-full" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-bg-hover rounded w-1/3" />
-              <div className="h-3 bg-bg-hover rounded w-1/4" />
+              <div className="h-4 skeleton w-1/3" />
+              <div className="h-3 skeleton w-1/4" />
             </div>
           </div>
-          <div className="h-20 bg-bg-hover rounded w-full" />
+          <div className="h-20 skeleton w-full" />
         </div>
       ))}
     </div>

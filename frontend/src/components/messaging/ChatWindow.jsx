@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Send, Smile, Paperclip, MoreVertical, ArrowLeft, Image, X, FileText, Check, CheckCheck } from "lucide-react";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
@@ -10,6 +10,20 @@ import {
   useMarkConversationRead,
 } from "../../hooks/useMessages";
 import Avatar from "../ui/Avatar";
+
+/* ─── Quick Reply Constants ──────────────────────────────────────────────── */
+const QUICK_REPLIES = [
+  "Sounds good!",
+  "Thanks for reaching out!",
+  "Let's connect!",
+  "I'll get back to you.",
+  "Happy to chat!",
+];
+
+function getRandomReplies(arr, count = 3) {
+  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
 
 /* ─── Single message bubble ──────────────────────────────────────────────── */
 function MessageBubble({ msg, isMine }) {
@@ -28,10 +42,10 @@ function MessageBubble({ msg, isMine }) {
         />
       )}
       <div
-        className={`max-w-[70%] rounded-2xl text-sm leading-relaxed ${
+        className={`max-w-[70%] text-sm leading-relaxed ${
           isMine
-            ? "bg-accent text-white rounded-br-sm"
-            : "bg-bg-hover border border-border text-text-primary rounded-bl-sm shadow-sm"
+            ? "bg-[#3A0018] border border-[#5A0025] text-white rounded-2xl rounded-br-sm"
+            : "bg-[#141414] border border-[#2A2A2A] text-white rounded-2xl rounded-bl-sm"
         }`}
       >
         {/* Attachment image */}
@@ -54,7 +68,7 @@ function MessageBubble({ msg, isMine }) {
           </div>
         )}
         {/* Timestamp + read receipt */}
-        <div className={`px-4 pb-2 ${!msg.content && msg.attachment?.url ? "pt-1" : ""} text-[10px] flex items-center justify-end gap-1 ${isMine ? "text-white/60" : "text-text-faint"}`}>
+        <div className={`px-4 pb-2 ${!msg.content && msg.attachment?.url ? "pt-1" : ""} text-[10px] flex items-center justify-end gap-1 ${isMine ? "text-white/60" : "text-[#666]"}`}>
           {timeStr}
           {isMine && (
             msg.read
@@ -76,12 +90,12 @@ function TypingIndicator({ participant }) {
         name={participant?.name}
         size="xs"
       />
-      <div className="bg-bg-hover border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 shadow-sm">
+      <div className="bg-[#141414] border border-[#2A2A2A] rounded-2xl rounded-bl-sm px-4 py-2.5">
         <div className="flex gap-1 items-center h-4">
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="w-1.5 h-1.5 bg-text-faint rounded-full animate-bounce"
+              className="w-1.5 h-1.5 bg-[#666] rounded-full animate-bounce"
               style={{ animationDelay: `${i * 0.15}s` }}
             />
           ))}
@@ -116,6 +130,14 @@ export default function ChatWindow({ conversation, onBack }) {
 
   // Flatten pages of messages (oldest first)
   const allMessages = msgData?.pages?.flatMap((p) => p.messages) || [];
+
+  // Determine if last message was received (not sent by current user)
+  const lastMessage = allMessages.length > 0 ? allMessages[allMessages.length - 1] : null;
+  const lastMessageIsReceived = lastMessage
+    && (lastMessage.sender?._id || lastMessage.sender) !== user?._id;
+
+  // Get random quick replies (memoize to avoid reshuffling on every render)
+  const quickReplies = useMemo(() => getRandomReplies(QUICK_REPLIES, 3), [lastMessage?._id]);
 
   // Join/leave conversation room for efficient socket broadcasting
   useEffect(() => {
@@ -238,6 +260,11 @@ export default function ChatWindow({ conversation, onBack }) {
     }
   }, [input, imageFile, sendMessage, recipientId, conversationId, removeFile]);
 
+  const handleQuickReply = useCallback((reply) => {
+    if (sendMessage.isPending) return;
+    sendMessage.mutate(reply);
+  }, [sendMessage]);
+
   const handleInputChange = useCallback((e) => {
     setInput(e.target.value);
 
@@ -265,9 +292,9 @@ export default function ChatWindow({ conversation, onBack }) {
   /* ─── Empty state (no conversation selected) ───────────────────── */
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center text-text-muted">
+      <div className="flex-1 flex items-center justify-center bg-[#0A0A0A]">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-3">
+          <div className="w-16 h-16 rounded-full bg-[#1A0008] flex items-center justify-center mx-auto mb-3 border border-[#3A0018]">
             <Send size={24} className="text-accent" />
           </div>
           <p className="font-medium text-text-primary">Select a conversation</p>
@@ -278,9 +305,9 @@ export default function ChatWindow({ conversation, onBack }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-bg-elevated">
+    <div className="flex-1 flex flex-col h-full bg-[#0A0A0A]">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-bg-elevated">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-[#1E1E1E] bg-[#111111]">
         <div className="flex items-center gap-3">
           {/* Back button — visible on mobile */}
           {onBack && (
@@ -298,7 +325,7 @@ export default function ChatWindow({ conversation, onBack }) {
               size="md"
             />
             {isOnline && (
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-bg-elevated rounded-full" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-[#111111] rounded-full" />
             )}
           </div>
           <div>
@@ -322,7 +349,7 @@ export default function ChatWindow({ conversation, onBack }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-bg-base">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-[#0A0A0A]">
         {/* Load older messages */}
         {hasNextPage && (
           <div className="text-center">
@@ -358,24 +385,40 @@ export default function ChatWindow({ conversation, onBack }) {
         <div ref={bottomRef} />
       </div>
 
+      {/* Quick Reply Chips */}
+      {lastMessageIsReceived && !input.trim() && (
+        <div className="flex gap-2 px-4 pb-2 pt-1 flex-wrap border-t border-[#1E1E1E] bg-[#0A0A0A]">
+          {quickReplies.map((reply) => (
+            <button
+              key={reply}
+              onClick={() => handleQuickReply(reply)}
+              disabled={sendMessage.isPending}
+              className="px-3 py-1.5 text-xs font-medium bg-[#1A0008] border border-[#3A0018] text-[#FF4D6D] rounded-full hover:bg-[#2A0015] transition-colors disabled:opacity-50"
+            >
+              {reply}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* File / image preview bar */}
       {(imagePreview || (imageFile && !imagePreview)) && (
-        <div className="border-t border-border bg-bg-elevated px-4 py-2.5 flex items-center gap-3">
+        <div className="border-t border-[#1E1E1E] bg-[#111111] px-4 py-2.5 flex items-center gap-3">
           <div className="relative">
             {imagePreview ? (
               <img
                 src={imagePreview}
                 alt="Preview"
-                className="w-16 h-16 object-cover rounded-lg border border-border"
+                className="w-16 h-16 object-cover rounded-lg border border-[#2A2A2A]"
               />
             ) : (
-              <div className="w-16 h-16 rounded-lg border border-border bg-bg-base flex items-center justify-center">
-                <FileText size={20} className="text-text-faint" />
+              <div className="w-16 h-16 rounded-lg border border-[#2A2A2A] bg-[#141414] flex items-center justify-center">
+                <FileText size={20} className="text-[#666]" />
               </div>
             )}
             <button
               onClick={removeFile}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-bg-hover border border-border text-text-primary rounded-full flex items-center justify-center hover:bg-bg-active transition-colors"
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#1A1A1A] border border-[#2A2A2A] text-text-primary rounded-full flex items-center justify-center hover:bg-[#2A2A2A] transition-colors"
             >
               <X size={12} />
             </button>
@@ -390,7 +433,7 @@ export default function ChatWindow({ conversation, onBack }) {
       )}
 
       {/* Message input */}
-      <div className="border-t border-border bg-bg-elevated px-4 py-3">
+      <div className="border-t border-[#1E1E1E] bg-[#111111] px-4 py-3">
         <div className="relative">
           {/* Emoji picker popup */}
           {showEmojiPicker && (
@@ -406,10 +449,10 @@ export default function ChatWindow({ conversation, onBack }) {
             </div>
           )}
 
-          <div className="flex items-center gap-2 bg-bg-base border border-border rounded-xl px-3 py-2">
+          <div className="flex items-center gap-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl px-3 py-2">
             <button
               onClick={() => imageInputRef.current?.click()}
-              className="text-text-muted hover:text-accent transition-colors flex-shrink-0"
+              className="text-[#666] hover:text-accent transition-colors flex-shrink-0"
               title="Send Image"
             >
               <Image size={17} />
@@ -426,11 +469,11 @@ export default function ChatWindow({ conversation, onBack }) {
               onChange={handleInputChange}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
               placeholder="Write a message..."
-              className="flex-1 bg-transparent text-text-primary text-sm focus:outline-none placeholder-text-faint"
+              className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-[#555]"
             />
             <button
               onClick={() => setShowEmojiPicker((p) => !p)}
-              className={`transition-colors flex-shrink-0 ${showEmojiPicker ? "text-accent" : "text-text-muted hover:text-accent"}`}
+              className={`transition-colors flex-shrink-0 ${showEmojiPicker ? "text-accent" : "text-[#666] hover:text-accent"}`}
               title="Emoji"
             >
               <Smile size={17} />
@@ -449,7 +492,7 @@ export default function ChatWindow({ conversation, onBack }) {
         <div className="flex items-center gap-2 mt-2 pl-1">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 text-xs text-text-muted hover:text-accent hover:bg-accent/10 px-2.5 py-1.5 rounded-lg transition-colors min-h-[36px]"
+            className="flex items-center gap-1.5 text-xs text-[#666] hover:text-accent hover:bg-accent/10 px-2.5 py-1.5 rounded-lg transition-colors min-h-[36px]"
           >
             <Paperclip size={13} />
             Attach File
@@ -462,7 +505,7 @@ export default function ChatWindow({ conversation, onBack }) {
           />
           <button
             onClick={() => imageInputRef.current?.click()}
-            className="flex items-center gap-1.5 text-xs text-text-muted hover:text-accent hover:bg-accent/10 px-2.5 py-1.5 rounded-lg transition-colors min-h-[36px]"
+            className="flex items-center gap-1.5 text-xs text-[#666] hover:text-accent hover:bg-accent/10 px-2.5 py-1.5 rounded-lg transition-colors min-h-[36px]"
           >
             <Image size={13} />
             Send Image

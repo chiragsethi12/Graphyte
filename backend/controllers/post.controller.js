@@ -9,7 +9,7 @@ import { getReceiverSocketId, io } from "../socket/socket.js";
 
 export const createPost = asyncHandler(async (req, res) => {
 
-    const { content, tags, type } = req.body;
+    const { content, tags, type, postType } = req.body;
     const image = req.file?.path || "";
 
     if (!content && !image) {
@@ -17,14 +17,15 @@ export const createPost = asyncHandler(async (req, res) => {
     }
 
     const parsedTags = tags ? (typeof tags === "string" ? JSON.parse(tags) : tags) : [];
-    const postType = image ? "image" : (type || "text");
+    const contentType = image ? "image" : (type || "text");
 
     const post = await Post.create({
         author: req.user._id,
         content: content || "",
         image,
         tags: parsedTags,
-        type: postType,
+        type: contentType,
+        postType: postType || "standard",
     });
 
     await post.populate("author", "name profilePic headline username");
@@ -207,6 +208,20 @@ export const likePost = asyncHandler(async (req, res) => {
             const socketId = getReceiverSocketId(post.author.toString());
             if (socketId) io.to(socketId).emit("newNotification", notification);
             await User.findByIdAndUpdate(post.author, { $inc: { skillScore: 1 } });
+        }
+
+        // Traction notification — milestone like counts
+        const likeCount = updated.likesCount;
+        if ([10, 25, 50, 100].includes(likeCount)) {
+            const tractionNotif = await Notification.create({
+                recipient: post.author,
+                sender: userId,
+                type: "traction",
+                relatedPost: postId,
+                message: `Your post reached ${likeCount} likes!`,
+            });
+            const authorSocket = getReceiverSocketId(post.author.toString());
+            if (authorSocket) io.to(authorSocket).emit("newNotification", tractionNotif);
         }
     }
 

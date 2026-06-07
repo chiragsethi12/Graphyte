@@ -108,7 +108,7 @@ export default function ActivitySection({ userId, isOwner, userName }) {
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-bg-base border border-border rounded-xl h-48 animate-pulse" />
+            <div key={i} className="skeleton h-48 rounded-xl" />
           ))}
         </div>
       ) : displayPosts.length === 0 ? (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, X, CheckCheck } from "lucide-react";
+import { Bell, X, CheckCheck, Trophy, PenLine } from "lucide-react";
 import api from "../lib/axios";
 import { useAuth } from "../context/AuthContext";
 import MainLayout from "../components/layout/MainLayout";
@@ -63,14 +63,23 @@ function NotificationItem({ notification, onMarkRead, onDelete }) {
   const getNotificationText = () => {
     const name = <span className="font-bold text-text-primary">{notification.sender?.name}</span>;
     switch (notification.type) {
-      case "like": return <>{name} liked your post</>;
-      case "comment": return <>{name} commented on your post</>;
+      case "like": {
+        if (notification.groupCount > 1)
+          return <>{name} and {notification.groupCount - 1} other{notification.groupCount - 1 !== 1 ? 's' : ''} liked your post</>;
+        return <>{name} liked your post</>;
+      }
+      case "comment": {
+        if (notification.groupCount > 1)
+          return <>{name} and {notification.groupCount - 1} other{notification.groupCount - 1 !== 1 ? 's' : ''} commented on your post</>;
+        return <>{name} commented on your post</>;
+      }
       case "connectionRequest": return <>{name} sent you a connection request</>;
       case "connectionAccepted": return <>{name} accepted your connection request</>;
       case "postShare": return <>{name} shared your post</>;
       case "jobUpdate": return <>{name} posted a new job</>;
       case "commentLike": return <>{name} liked your comment</>;
       case "mention": return <>{name} mentioned you in a post</>;
+      case "traction": return <><Trophy size={14} className="inline text-[#F59E0B] mr-1" />{notification.message || "Your post is gaining traction!"}</>;
       default: return notification.message ? <>{notification.message}</> : <>{name} interacted with you</>;
     }
   };
@@ -190,7 +199,7 @@ export default function NotificationsPage() {
   const filteredNotifications = notifications.filter((n) => {
     if (filter === "unread") return !n.read;
     if (filter === "connections") return ["connectionRequest", "connectionAccepted"].includes(n.type);
-    if (filter === "posts") return ["like", "comment", "postShare", "commentLike", "mention"].includes(n.type);
+    if (filter === "posts") return ["like", "comment", "postShare", "commentLike", "mention", "traction"].includes(n.type);
     return true;
   });
 
@@ -250,11 +259,17 @@ export default function NotificationsPage() {
                   <Bell size={28} className="text-accent" />
                 </div>
                 <p className="text-lg font-bold font-display text-text-primary mb-1">You're all caught up! 🎉</p>
-                <p className="text-sm text-text-muted">
+                <p className="text-sm text-text-muted mb-4">
                   {filter === "all"
                     ? "No notifications to show right now."
                     : `No ${filter} notifications.`}
                 </p>
+                <Link
+                  to="/feed"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent text-white text-sm font-semibold hover:bg-accent-hover transition-colors min-h-[44px]"
+                >
+                  <PenLine size={15} /> Share something to get started
+                </Link>
               </div>
             )}
 

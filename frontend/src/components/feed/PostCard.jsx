@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Heart, MessageCircle, Share2, Trash2, MoreHorizontal,
-  ChevronDown, ChevronUp, Send, X, Bookmark, Pencil,
+  ChevronDown, ChevronUp, Send, X, Bookmark, Pencil, Trophy,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../lib/axios";
@@ -321,10 +321,11 @@ export default function PostCard({ post: initialPost }) {
 
   // ── Shared post preview ───────────────────────────────────────────────────
   const isShare = post.type === "share" && post.sharedPost;
+  const isMilestone = post.postType === "milestone";
 
   return (
     <>
-      <div className="bg-bg-elevated rounded-xl border border-border shadow-md overflow-hidden">
+      <div className={`bg-bg-elevated rounded-xl border shadow-md overflow-hidden ${isMilestone ? 'border-l-2 border-l-[#F59E0B] border-[#F59E0B]/20' : 'border-border'}`}>
         {/* Author row */}
         <div className="flex items-start justify-between p-4 pb-3">
           <Link
@@ -333,11 +334,18 @@ export default function PostCard({ post: initialPost }) {
           >
             <Avatar src={post.author?.profilePic} name={post.author?.name} size="md" />
             <div>
-              <p className="font-semibold text-sm text-text-primary group-hover:text-accent transition-colors">
+              <p className="text-sm font-semibold text-text-primary group-hover:text-accent transition-colors">
                 {post.author?.name}
               </p>
-              <p className="text-xs text-text-muted line-clamp-1">{post.author?.headline}</p>
+              {post.author?.headline && (
+                <p className="text-[11px] text-text-muted truncate max-w-[200px]">{post.author.headline}</p>
+              )}
               <p className="text-[10px] text-text-faint mt-0.5">{formatRelativeTime(post.createdAt)}</p>
+              {isMilestone && (
+                <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold text-[#F59E0B] bg-[#F59E0B]/10 px-2 py-0.5 rounded-full border border-[#F59E0B]/20">
+                  <Trophy size={10} /> Career Milestone
+                </span>
+              )}
             </div>
           </Link>
 

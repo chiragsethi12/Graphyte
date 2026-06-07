@@ -110,11 +110,11 @@ export default function NewMessageModal({ open, onClose, onSelect, existingConve
           {isLoading && (
             <div className="flex flex-col gap-3 px-5 py-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-10 h-10 bg-bg-hover rounded-full flex-shrink-0" />
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-10 h-10 skeleton rounded-full flex-shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3 bg-bg-hover rounded w-1/2" />
-                    <div className="h-2 bg-bg-hover rounded w-3/4" />
+                    <div className="h-3 skeleton w-1/2" />
+                    <div className="h-2 skeleton w-3/4" />
                   </div>
                 </div>
               ))}

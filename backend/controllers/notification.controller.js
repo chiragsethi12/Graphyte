@@ -14,9 +14,31 @@ export const getNotifications = asyncHandler(async (req, res) => {
         .populate("relatedPost", "content image")
         .populate("relatedJob",  "title company");
 
+    // Group like/comment notifications by relatedPost
+    const grouped = [];
+    const seen = new Map();
+
+    for (const notif of notifications) {
+        const notifObj = notif.toObject ? notif.toObject() : { ...notif };
+        if (["like", "comment"].includes(notifObj.type) && notifObj.relatedPost) {
+            const key = `${notifObj.type}_${notifObj.relatedPost._id || notifObj.relatedPost}`;
+            if (seen.has(key)) {
+                seen.get(key).groupCount++;
+                continue;
+            } else {
+                notifObj.groupCount = 1;
+                seen.set(key, notifObj);
+                grouped.push(notifObj);
+            }
+        } else {
+            notifObj.groupCount = 1;
+            grouped.push(notifObj);
+        }
+    }
+
     const total = await Notification.countDocuments({ recipient: req.user._id });
 
-    res.json({ success: true, notifications, total, page, pages: Math.ceil(total / limit) });
+    res.json({ success: true, notifications: grouped, total, page, pages: Math.ceil(total / limit) });
 });
 
 // GET /api/notifications/unread-count

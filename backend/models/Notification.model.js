@@ -16,6 +16,7 @@ const notificationSchema = new mongoose.Schema(
                 "jobUpdate",
                 "postShare",
                 "mention",
+                "traction",
             ],
             required: true,
         },
