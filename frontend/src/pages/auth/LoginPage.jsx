@@ -8,11 +8,38 @@ import Button from "../../components/ui/Button";
 import toast from "react-hot-toast";
 import MotionPage from "../../components/layout/MotionPage";
 
+const MOTIVATIONAL_QUOTES = [
+  { q: "Opportunities don't happen. You create them.", a: "Chris Grosser" },
+  { q: "Networking is not about just connecting people. It's about connecting people with people, people with ideas, and people with opportunities.", a: "Michele Jennae" },
+  { q: "Your network is your net worth.", a: "Porter Gale" },
+  { q: "The only way to do great work is to love what you do.", a: "Steve Jobs" },
+  { q: "Success is not final; failure is not fatal: It is the courage to continue that counts.", a: "Winston S. Churchill" },
+  { q: "Don't watch the clock; do what it does. Keep going.", a: "Sam Levenson" },
+  { q: "A real entrepreneur is somebody who has no safety net of any kind under them.", a: "Henry Kravis" },
+  { q: "In the middle of difficulty lies opportunity.", a: "Albert Einstein" },
+  { q: "If you are offered a seat on a rocket ship, don't ask what seat! Just get on.", a: "Sheryl Sandberg" },
+  { q: "Courage is grace under pressure.", a: "Ernest Hemingway" },
+  { q: "The secret of getting ahead is getting started.", a: "Mark Twain" },
+  { q: "You miss 100% of the shots you don't take.", a: "Wayne Gretzky" },
+  { q: "Call it synergy, or connection, or mutual assistance; networking is essential for career success.", a: "Sallie Krawcheck" },
+  { q: "The best way to predict the future is to create it.", a: "Peter Drucker" },
+  { q: "It is not the strongest of the species that survives, nor the most intelligent, but the one most responsive to change.", a: "Charles Darwin" },
+  { q: "Opportunities are like sunrises. If you wait too long, you miss them.", a: "William Arthur Ward" },
+  { q: "Great things in business are never done by one person. They're done by a team of people.", a: "Steve Jobs" },
+  { q: "Alone we can do so little; together we can do so much.", a: "Helen Keller" },
+  { q: "The way to get started is to quit talking and begin doing.", a: "Walt Disney" },
+  { q: "I find that the harder I work, the more luck I seem to have.", a: "Thomas Jefferson" }
+];
+
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showPass, setShowPass] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [quote] = useState(() => {
+    const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+    return MOTIVATIONAL_QUOTES[randomIndex];
+  });
 
   const {
     register,
@@ -37,14 +64,22 @@ export default function LoginPage() {
       {/* Left — Brand panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-muted via-bg-base to-bg-elevated border-r border-border flex-col justify-between p-12 text-text-primary">
         <div>
-          <h1 className="text-3xl font-display font-extrabold tracking-tight mb-2 text-accent">Graphyte</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <img src="/logo.png" alt="Graphyte Logo" className="w-9 h-9 object-contain rounded-lg animate-in fade-in" />
+            <h1 className="text-2xl font-cinzel font-extrabold tracking-widest text-accent mt-0.5">GRAPHYTE</h1>
+          </div>
           <p className="text-text-muted text-sm">Professional Networking Platform</p>
         </div>
         <div>
-          <blockquote className="border-l-4 border-accent pl-4 mb-8">
-            <p className="text-lg font-medium text-text-primary/90 leading-relaxed">
-              "True value isn't found in the number of connections you have, but in the deliberate silence between meaningful interactions."
+          <blockquote className="border-l-4 border-accent pl-4 mb-8 animate-in fade-in duration-300">
+            <p className="text-lg font-medium text-text-primary/90 leading-relaxed italic">
+              "{quote.q}"
             </p>
+            {quote.a && (
+              <cite className="block text-sm text-text-muted mt-2 not-italic font-semibold">
+                — {quote.a}
+              </cite>
+            )}
           </blockquote>
           <div className="grid grid-cols-2 gap-4">
             {[["1M+", "Elite Professionals"], ["180+", "Countries"], ["50K+", "Opportunities"], ["4.9★", "App Rating"]].map(([val, label]) => (
@@ -61,8 +96,9 @@ export default function LoginPage() {
       {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-bg-base">
         <div className="w-full max-w-[400px]">
-          <div className="lg:hidden mb-8">
-            <h1 className="text-2xl font-display font-extrabold text-accent">Graphyte</h1>
+          <div className="lg:hidden mb-8 flex items-center gap-2.5">
+            <img src="/logo.png" alt="Graphyte Logo" className="w-7 h-7 object-contain rounded-lg" />
+            <h1 className="text-xl font-cinzel font-extrabold tracking-widest text-accent mt-0.5">GRAPHYTE</h1>
           </div>
           <div className="bg-bg-elevated rounded-2xl shadow-lg border border-border p-8">
             <h2 className="text-2xl font-display font-bold text-text-primary mb-1">Welcome back</h2>

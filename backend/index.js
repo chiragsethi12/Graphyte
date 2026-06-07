@@ -56,6 +56,25 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/saved", savedRoutes);
 
+// ─── Quote route (CORS proxy for ZenQuotes API) ──────────────────────────────
+app.get("/api/quote", async (req, res) => {
+    try {
+        const response = await fetch("https://zenquotes.io/api/random");
+        if (!response.ok) {
+            throw new Error(`ZenQuotes API responded with status ${response.status}`);
+        }
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error("Error fetching random quote from ZenQuotes:", error.message);
+        // Fallback quote
+        res.json([{
+            q: "True value isn't found in the number of connections you have, but in the deliberate silence between meaningful interactions.",
+            a: "Graphyte"
+        }]);
+    }
+});
+
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });

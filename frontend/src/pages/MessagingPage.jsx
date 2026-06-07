@@ -83,7 +83,7 @@ export default function MessagingPage() {
 
   return (
     <MainLayout>
-      <div className="max-w-[1100px] mx-auto -mt-6 -mx-4 lg:-mx-6">
+      <div className="-mt-6 -mx-4 lg:-mx-6">
         <div className="flex h-[calc(100vh-60px)] bg-bg-elevated rounded-xl border border-border overflow-hidden">
           {/* Conversation panel — hidden on mobile when chat is open */}
           <div className={`w-full lg:w-80 flex-shrink-0 border-r border-border ${showChat ? "hidden lg:block" : "block"}`}>

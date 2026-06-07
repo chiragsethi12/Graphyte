@@ -47,6 +47,7 @@ export default {
         display: ["Geist", "Inter", "system-ui", "sans-serif"],
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["Geist Mono", "monospace"],
+        cinzel: ["Cinzel", "serif"],
       },
       borderRadius: {
         sm: "4px", DEFAULT: "6px", md: "8px",

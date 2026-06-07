@@ -62,7 +62,10 @@ export default function ResetPasswordPage() {
       {/* Left — Brand panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-muted via-bg-base to-bg-elevated border-r border-border flex-col justify-between p-12 text-text-primary">
         <div>
-          <h1 className="text-3xl font-display font-extrabold tracking-tight mb-2 text-accent">Graphyte</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <img src="/logo.png" alt="Graphyte Logo" className="w-9 h-9 object-contain rounded-lg animate-in fade-in" />
+            <h1 className="text-2xl font-cinzel font-extrabold tracking-widest text-accent mt-0.5">GRAPHYTE</h1>
+          </div>
           <p className="text-text-muted text-sm">Professional Networking Platform</p>
         </div>
         <div>
@@ -91,8 +94,9 @@ export default function ResetPasswordPage() {
       {/* Right — Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-bg-base">
         <div className="w-full max-w-[400px]">
-          <div className="lg:hidden mb-8">
-            <h1 className="text-2xl font-display font-extrabold text-accent">Graphyte</h1>
+          <div className="lg:hidden mb-8 flex items-center gap-2.5">
+            <img src="/logo.png" alt="Graphyte Logo" className="w-7 h-7 object-contain rounded-lg" />
+            <h1 className="text-xl font-cinzel font-extrabold tracking-widest text-accent mt-0.5">GRAPHYTE</h1>
           </div>
           <div className="bg-bg-elevated rounded-2xl shadow-lg border border-border p-8">
             {success ? (

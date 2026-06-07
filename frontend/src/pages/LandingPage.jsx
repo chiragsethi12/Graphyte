@@ -30,9 +30,10 @@ export default function LandingPage() {
         {/* Navigation Header */}
         <header className="bg-[#0A0A0A]/80 backdrop-blur-md border-b border-border/40 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="font-extrabold text-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-accent to-[#FF4D6D]">
-                Graphyte
+            <div className="flex items-center gap-2.5">
+              <img src="/logo.png" alt="Graphyte Logo" className="w-8 h-8 object-contain rounded-lg animate-in fade-in" />
+              <span className="font-extrabold text-xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent to-[#FF4D6D] font-cinzel">
+                GRAPHYTE
               </span>
             </div>
             <div className="flex items-center gap-4">

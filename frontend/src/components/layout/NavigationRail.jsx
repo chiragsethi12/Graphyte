@@ -54,10 +54,8 @@ export default function NavigationRail() {
       <aside className="w-[220px] flex-shrink-0 hidden lg:flex flex-col h-screen sticky top-0 bg-[#0D0D0D] border-r border-[#1E1E1E] z-30">
         {/* Logo area */}
         <div className="px-4 py-5 flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-[#7A0022] rounded-lg flex items-center justify-center">
-            <span className="text-white font-black text-sm">G</span>
-          </div>
-          <span className="font-bold text-white text-sm tracking-tight">Graphyte</span>
+          <img src="/logo.png" alt="Graphyte Logo" className="w-7 h-7 object-contain rounded-lg" />
+          <span className="font-bold text-white text-xs tracking-widest font-cinzel">GRAPHYTE</span>
         </div>
 
         {/* Search button */}
