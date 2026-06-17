@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Users, Briefcase, MessageSquare, Bell, Search } from "lucide-react";
+import { Home, Users, Briefcase, MessageSquare, Bell, Search, LogOut } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../lib/axios";
@@ -9,7 +9,7 @@ import SearchOverlay from "../search/SearchOverlay";
 
 export default function NavigationRail() {
   const navigate = useNavigate();
-  const { user, unreadNotifications, unreadMessages } = useAuth();
+  const { user, unreadNotifications, unreadMessages, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
 
   // Fetch pending connection invitations for badge
@@ -122,6 +122,13 @@ export default function NavigationRail() {
           >
             Settings
           </NavLink>
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-[#6B7280] hover:text-[#FF4D6D] hover:bg-[#1A0008] transition-all focus:outline-none text-left"
+          >
+            <LogOut size={12} />
+            Sign Out
+          </button>
           <button
             onClick={() => navigate(`/profile/${user?.username || user?._id}`)}
             className="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-[#141414] transition-all mt-2 focus:outline-none"

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { User, Lock, Shield, Camera, Save, Eye, EyeOff, X, Image as ImageIcon, Bookmark } from 'lucide-react';
+import { User, Lock, Shield, Camera, Save, Eye, EyeOff, X, Image as ImageIcon, Bookmark, LogOut } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import MainLayout from '../components/layout/MainLayout';
@@ -582,11 +582,21 @@ function PrivacyTab() {
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
+  const { logout } = useAuth();
 
   return (
     <MainLayout>
       <div className="max-w-[760px] mx-auto">
-        <h1 className="text-2xl font-extrabold font-display text-text-primary mb-5">Settings</h1>
+        <div className="flex justify-between items-center mb-5">
+          <h1 className="text-2xl font-extrabold font-display text-text-primary">Settings</h1>
+          <button
+            onClick={logout}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[#1A0008] text-[#FF4D6D] border border-[#7A0022] hover:bg-[#7A0022] hover:text-white rounded-lg transition-all focus:outline-none"
+          >
+            <LogOut size={14} />
+            Sign Out
+          </button>
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Tab sidebar */}
