@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Globe, Edit2, Plus, Sparkles, BarChart2, Copy,
   Briefcase, GraduationCap, Mail, UserPlus, UserMinus, Clock, CheckCircle,
+  Ban, ShieldAlert, MoreHorizontal
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import useConnectionStatus from '../../hooks/useConnectionStatus';
@@ -11,6 +12,9 @@ import Button from '../ui/Button';
 import ConfirmAction from '../ui/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../../lib/axios';
+import ReportModal from '../ui/ReportModal';
 
 /* ─── Connection Action Buttons ────────────────────────────────── */
 
@@ -75,6 +79,51 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
   const navigate = useNavigate();
   const [bannerError, setBannerError] = useState(false);
   const connectionCount = stats?.connectionCount ?? profile?.connections?.length ?? 0;
+
+  const queryClient = useQueryClient();
+  const { user, setUser } = useAuth();
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const isBlocked = user?.blockedUsers?.some(
+    (id) => id === profile._id || id.toString() === profile._id.toString()
+  );
+
+  const blockMutation = useMutation({
+    mutationFn: () => api.post(`/users/${profile._id}/block`),
+    onSuccess: () => {
+      toast.success("User blocked successfully");
+      setUser((prev) => ({
+        ...prev,
+        blockedUsers: [...(prev.blockedUsers || []), profile._id],
+      }));
+      queryClient.invalidateQueries({ queryKey: ["connectionStatus", profile._id] });
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to block user");
+    },
+  });
+
+  const unblockMutation = useMutation({
+    mutationFn: () => api.delete(`/users/${profile._id}/block`),
+    onSuccess: () => {
+      toast.success("User unblocked successfully");
+      setUser((prev) => ({
+        ...prev,
+        blockedUsers: (prev.blockedUsers || []).filter(
+          (id) => id !== profile._id && id.toString() !== profile._id.toString()
+        ),
+      }));
+      queryClient.invalidateQueries({ queryKey: ["connectionStatus", profile._id] });
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to unblock user");
+    },
+  });
 
   // Derive the first current experience and education for the right summary
   const currentRole = profile.experience?.find((e) => e.current || !e.endDate || e.endDate === 'Present');
@@ -253,17 +302,82 @@ export default function ProfileHeader({ profile, stats, isOwner, mutuals = [], m
                 </>
               ) : (
                 <>
-                  <ConnectionActions userId={profile._id} />
+                  {isBlocked ? (
+                    <button
+                      onClick={() => unblockMutation.mutate()}
+                      disabled={unblockMutation.isPending}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-semantic-destructive text-white text-sm font-semibold hover:bg-red-600 transition-all min-h-[40px]"
+                    >
+                      <Ban size={14} /> Unblock User
+                    </button>
+                  ) : (
+                    <ConnectionActions userId={profile._id} />
+                  )}
                   <button
                     onClick={handleShareProfile}
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-border text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all min-h-[40px]"
                   >
                     <Copy size={14} /> Share
                   </button>
+
+                  {/* Dropdown for Block and Report */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="inline-flex items-center justify-center p-2.5 rounded-md border border-border text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all min-h-[40px] min-w-[40px] relative z-30"
+                      title="More Options"
+                    >
+                      <MoreHorizontal size={16} />
+                    </button>
+                    {showDropdown && (
+                      <>
+                        <div className="fixed inset-0 z-20" onClick={() => setShowDropdown(false)} />
+                        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-bg-overlay border border-border z-30 py-1">
+                          {isBlocked ? (
+                            <button
+                              onClick={() => {
+                                setShowDropdown(false);
+                                unblockMutation.mutate();
+                              }}
+                              className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs font-semibold text-text-primary hover:bg-bg-hover hover:text-accent transition-colors"
+                            >
+                              <Ban size={14} /> Unblock User
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setShowDropdown(false);
+                                  blockMutation.mutate();
+                                }}
+                                className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs font-semibold text-semantic-destructive hover:bg-bg-hover hover:text-red-500 transition-colors"
+                              >
+                                <Ban size={14} /> Block User
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowDropdown(false);
+                                  setReportModalOpen(true);
+                                }}
+                                className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs font-semibold text-[#FF4D6D] hover:bg-bg-hover hover:text-red-500 transition-colors"
+                              >
+                                <ShieldAlert size={14} /> Report Profile
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </>
               )}
         </div>
       </div>
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        reportedUser={profile._id}
+      />
     </div>
   );
 }

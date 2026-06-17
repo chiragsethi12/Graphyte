@@ -140,10 +140,19 @@ export const sendMessage = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: "Message content or image is required" });
     }
 
-    // Verify recipient exists
-    const recipient = await User.findById(userId).select("_id");
+    // Verify recipient exists and check for block relationships
+    const [me, recipient] = await Promise.all([
+        User.findById(req.user._id).select("blockedUsers"),
+        User.findById(userId).select("blockedUsers")
+    ]);
     if (!recipient) {
         return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const isBlocked = (me.blockedUsers || []).some(id => id.toString() === userId) ||
+                      (recipient.blockedUsers || []).some(id => id.toString() === req.user._id.toString());
+    if (isBlocked) {
+        return res.status(403).json({ success: false, message: "Action blocked" });
     }
 
     const conversationId = Message.getConversationId(req.user._id, userId);

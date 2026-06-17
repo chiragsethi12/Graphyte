@@ -107,6 +107,7 @@ export const register = asyncHandler(async (req, res) => {
             profilePic: user.profilePic,
             headline:   user.headline,
             isNewUser:  user.isNewUser,
+            blockedUsers: user.blockedUsers || [],
         },
     });
 });
@@ -124,8 +125,27 @@ export const login = asyncHandler(async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
 
     const user = await User.findOne({ email: cleanEmail });
-    if (!user || !(await user.matchPassword(password)))
+
+    if (user && user.lockUntil && user.lockUntil > Date.now()) {
+        return res.status(429).json({ success: false, message: "Too many login attempts. Please try again later." });
+    }
+
+    const isMatch = user ? await user.matchPassword(password) : false;
+    if (!user || !isMatch) {
+        if (user) {
+            user.failedLoginAttempts += 1;
+            if (user.failedLoginAttempts >= 5) {
+                user.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 mins lock
+            }
+            await user.save();
+        }
         return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    // Reset attempts on successful login
+    user.failedLoginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
 
     const token = generateToken(user._id);
 
@@ -140,6 +160,7 @@ export const login = asyncHandler(async (req, res) => {
             profilePic: user.profilePic,
             headline:   user.headline,
             isNewUser:  user.isNewUser,
+            blockedUsers: user.blockedUsers || [],
         },
     });
 });

@@ -7,6 +7,7 @@ import Connection from "../models/Connection.model.js";
 import Message from "../models/Message.model.js";
 import Notification from "../models/Notification.model.js";
 import SavedPost from "../models/SavedPost.model.js";
+import escapeRegex from "../utils/escapeRegex.js";
 
 // ─── GET /api/users/:identifier ─────────────────────────────────────────────
 export const getUserProfile = asyncHandler(async (req, res) => {
@@ -66,6 +67,19 @@ export const getUserPosts = asyncHandler(async (req, res) => {
     const page  = parseInt(req.query.page) || 1;
     const limit = 12;
 
+    const targetUser = await User.findById(userId).select("isPublic connections");
+    if (!targetUser) return res.status(404).json({ success: false, message: "User not found" });
+
+    const isOwner = req.user._id.toString() === targetUser._id.toString();
+    if (!isOwner && targetUser.isPublic === false) {
+        const isConnected = targetUser.connections.some(
+            (conn) => conn.toString() === req.user._id.toString()
+        );
+        if (!isConnected) {
+            return res.status(403).json({ success: false, message: "This profile is private", isPrivate: true });
+        }
+    }
+
     const posts = await Post.find({ author: userId })
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
@@ -80,10 +94,20 @@ export const getUserPosts = asyncHandler(async (req, res) => {
 export const getUserStats = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const [user, postCount] = await Promise.all([
-        User.findById(userId).select("connections profileViews skillScore"),
+        User.findById(userId).select("connections profileViews skillScore isPublic"),
         Post.countDocuments({ author: userId }),
     ]);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const isOwner = req.user._id.toString() === user._id.toString();
+    if (!isOwner && user.isPublic === false) {
+        const isConnected = user.connections.some(
+            (conn) => conn.toString() === req.user._id.toString()
+        );
+        if (!isConnected) {
+            return res.status(403).json({ success: false, message: "This profile is private", isPrivate: true });
+        }
+    }
 
     res.json({
         success: true,
@@ -102,14 +126,29 @@ export const searchUsers = asyncHandler(async (req, res) => {
     const page  = parseInt(req.query.page) || 1;
     const limit = 12;
 
-    const baseFilter = { _id: { $ne: req.user._id }, isPublic: { $ne: false } };
+    if (q && q.length > 100) return res.status(400).json({ success: false, message: "Search query is too long" });
+    if (skills && skills.length > 100) return res.status(400).json({ success: false, message: "Skills filter is too long" });
+    if (location && location.length > 100) return res.status(400).json({ success: false, message: "Location filter is too long" });
+    if (company && company.length > 100) return res.status(400).json({ success: false, message: "Company filter is too long" });
+
+    const blockedUsers = req.user.blockedUsers || [];
+    const usersWhoBlockedMe = await User.find({ blockedUsers: req.user._id }).select("_id");
+    const allBlockedIds = [...blockedUsers, ...usersWhoBlockedMe.map(u => u._id)];
+
+    const baseFilter = {
+        _id: { $ne: req.user._id, $nin: allBlockedIds },
+        $or: [
+            { isPublic: { $ne: false } },
+            { _id: { $in: req.user.connections || [] } }
+        ]
+    };
 
     if (skills) {
         const skillArr = skills.split(",").map((s) => s.trim()).filter(Boolean);
-        if (skillArr.length) baseFilter.skills = { $in: skillArr.map((s) => new RegExp(s, "i")) };
+        if (skillArr.length) baseFilter.skills = { $in: skillArr.map((s) => new RegExp(escapeRegex(s), "i")) };
     }
-    if (location) baseFilter.location = { $regex: location.trim(), $options: "i" };
-    if (company)  baseFilter["experience.company"] = { $regex: company.trim(), $options: "i" };
+    if (location) baseFilter.location = { $regex: escapeRegex(location.trim()), $options: "i" };
+    if (company)  baseFilter["experience.company"] = { $regex: escapeRegex(company.trim()), $options: "i" };
 
     let users = [];
     let total = 0;
@@ -121,8 +160,8 @@ export const searchUsers = asyncHandler(async (req, res) => {
         const regexFilter = {
             ...baseFilter,
             $or: [
-                { username: { $regex: trimmed, $options: "i" } },
-                { name: { $regex: trimmed, $options: "i" } },
+                { username: { $regex: escapeRegex(trimmed), $options: "i" } },
+                { name: { $regex: escapeRegex(trimmed), $options: "i" } },
             ],
         };
 
@@ -183,7 +222,7 @@ export const getRecommendedUsers = asyncHandler(async (req, res) => {
     // 1. Users sharing 2+ skills
     let group1 = [];
     if (mySkills.length > 0) {
-        const skillRegexes = mySkills.map((s) => new RegExp("^" + s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&") + "$", "i"));
+        const skillRegexes = mySkills.map((s) => new RegExp("^" + escapeRegex(s) + "$", "i"));
         const candidates = await User.find({
             _id: { $nin: excludeIds },
             isPublic: { $ne: false },
@@ -346,4 +385,49 @@ export const deleteAccount = asyncHandler(async (req, res) => {
     ]);
 
     res.json({ success: true, message: "Account deleted successfully" });
+});
+
+// ─── POST /api/users/:id/block ────────────────────────────────────────────────
+export const blockUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    if (req.user._id.toString() === id) {
+        return res.status(400).json({ success: false, message: "You cannot block yourself" });
+    }
+    const targetUser = await User.findById(id);
+    if (!targetUser) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Add to blockedUsers if not already there
+    await User.findByIdAndUpdate(req.user._id, {
+        $addToSet: { blockedUsers: id }
+    });
+
+    // Automatically remove connection if they are connected and delete Connection records
+    await Promise.all([
+        User.findByIdAndUpdate(req.user._id, { $pull: { connections: id } }),
+        User.findByIdAndUpdate(id, { $pull: { connections: req.user._id } }),
+        Connection.deleteMany({
+            $or: [
+                { sender: req.user._id, recipient: id },
+                { sender: id, recipient: req.user._id }
+            ]
+        })
+    ]);
+
+    res.json({ success: true, message: "User blocked successfully" });
+});
+
+// ─── DELETE /api/users/:id/block ──────────────────────────────────────────────
+export const unblockUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    await User.findByIdAndUpdate(req.user._id, {
+        $pull: { blockedUsers: id }
+    });
+    res.json({ success: true, message: "User unblocked successfully" });
+});
+
+// ─── GET /api/users/blocked ───────────────────────────────────────────────────
+export const getBlockedUsers = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id)
+        .populate("blockedUsers", "name username profilePic headline");
+    res.json({ success: true, blockedUsers: user.blockedUsers || [] });
 });

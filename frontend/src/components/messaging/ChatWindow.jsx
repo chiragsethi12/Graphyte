@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Send, Smile, Paperclip, MoreVertical, ArrowLeft, Image, X, FileText, Check, CheckCheck } from "lucide-react";
+import { Send, Smile, Paperclip, MoreVertical, ArrowLeft, Image, X, FileText, Check, CheckCheck, ShieldAlert, Ban } from "lucide-react";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { useAuth } from "../../context/AuthContext";
@@ -10,6 +10,10 @@ import {
   useMarkConversationRead,
 } from "../../hooks/useMessages";
 import Avatar from "../ui/Avatar";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "../../lib/axios";
+import toast from "react-hot-toast";
+import ReportModal from "../ui/ReportModal";
 
 /* ─── Quick Reply Constants ──────────────────────────────────────────────── */
 const QUICK_REPLIES = [
@@ -26,14 +30,14 @@ function getRandomReplies(arr, count = 3) {
 }
 
 /* ─── Single message bubble ──────────────────────────────────────────────── */
-function MessageBubble({ msg, isMine }) {
+function MessageBubble({ msg, isMine, onReport }) {
   const timeStr = new Date(msg.createdAt || Date.now()).toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   });
 
   return (
-    <div className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : "flex-row"}`}>
+    <div className={`flex items-end gap-2 group relative ${isMine ? "flex-row-reverse" : "flex-row"}`}>
       {!isMine && (
         <Avatar
           src={msg.sender?.profilePic}
@@ -77,6 +81,15 @@ function MessageBubble({ msg, isMine }) {
           )}
         </div>
       </div>
+      {!isMine && (
+        <button
+          onClick={() => onReport(msg)}
+          className="opacity-0 group-hover:opacity-100 text-[#666] hover:text-[#FF4D6D] transition-opacity p-1.5 rounded-lg hover:bg-[#141414]"
+          title="Report message"
+        >
+          <ShieldAlert size={14} />
+        </button>
+      )}
     </div>
   );
 }
@@ -120,9 +133,69 @@ export default function ChatWindow({ conversation, onBack }) {
   const imageInputRef = useRef(null);
   const emojiRef = useRef(null);
 
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [reportTarget, setReportTarget] = useState({
+    reportedUser: null,
+    reportedPost: null,
+    reportedComment: null,
+  });
+
   const recipientId = conversation?.participant?._id;
   const conversationId = conversation?._id;
   const isOnline = recipientId && onlineUsers.includes(recipientId);
+
+  const queryClient = useQueryClient();
+  const { setUser } = useAuth();
+
+  const isBlocked = user?.blockedUsers?.some(
+    (id) => id === recipientId || id.toString() === recipientId?.toString()
+  );
+
+  const blockMutation = useMutation({
+    mutationFn: () => api.post(`/users/${recipientId}/block`),
+    onSuccess: () => {
+      toast.success("User blocked successfully");
+      setUser((prev) => ({
+        ...prev,
+        blockedUsers: [...(prev.blockedUsers || []), recipientId],
+      }));
+      queryClient.invalidateQueries({ queryKey: ["connectionStatus", recipientId] });
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to block user");
+    },
+  });
+
+  const unblockMutation = useMutation({
+    mutationFn: () => api.delete(`/users/${recipientId}/block`),
+    onSuccess: () => {
+      toast.success("User unblocked successfully");
+      setUser((prev) => ({
+        ...prev,
+        blockedUsers: (prev.blockedUsers || []).filter(
+          (id) => id !== recipientId && id.toString() !== recipientId?.toString()
+        ),
+      }));
+      queryClient.invalidateQueries({ queryKey: ["connectionStatus", recipientId] });
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to unblock user");
+    },
+  });
+
+  const handleReportMessage = (msg) => {
+    setReportTarget({
+      reportedUser: msg.sender?._id || msg.sender,
+      reportedPost: null,
+      reportedComment: null,
+    });
+    setReportModalOpen(true);
+  };
 
   const { data: msgData, isLoading, fetchNextPage, hasNextPage } = useMessageThread(recipientId);
   const sendMessage = useSendMessage(recipientId);
@@ -341,10 +414,57 @@ export default function ChatWindow({ conversation, onBack }) {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <button className="p-2 rounded-lg text-text-muted hover:bg-bg-hover transition-colors">
+        <div className="flex items-center gap-1 relative">
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="p-2 rounded-lg text-text-muted hover:bg-bg-hover transition-colors relative z-30"
+          >
             <MoreVertical size={18} />
           </button>
+          {showDropdown && (
+            <>
+              <div className="fixed inset-0 z-20" onClick={() => setShowDropdown(false)} />
+              <div className="absolute right-0 mt-8 w-48 rounded-md shadow-lg bg-bg-overlay border border-border z-30 py-1">
+                {isBlocked ? (
+                  <button
+                    onClick={() => {
+                      setShowDropdown(false);
+                      unblockMutation.mutate();
+                    }}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs font-semibold text-text-primary hover:bg-bg-hover hover:text-accent transition-colors"
+                  >
+                    <Ban size={14} /> Unblock User
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        blockMutation.mutate();
+                      }}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs font-semibold text-semantic-destructive hover:bg-bg-hover hover:text-red-500 transition-colors"
+                    >
+                      <Ban size={14} /> Block User
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setReportTarget({
+                          reportedUser: recipientId,
+                          reportedPost: null,
+                          reportedComment: null,
+                        });
+                        setReportModalOpen(true);
+                      }}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs font-semibold text-[#FF4D6D] hover:bg-bg-hover hover:text-red-500 transition-colors"
+                    >
+                      <ShieldAlert size={14} /> Report User
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -377,7 +497,14 @@ export default function ChatWindow({ conversation, onBack }) {
         {allMessages.map((msg) => {
           const senderId = msg.sender?._id || msg.sender;
           const isMine = senderId === user?._id;
-          return <MessageBubble key={msg._id} msg={msg} isMine={isMine} />;
+          return (
+            <MessageBubble
+              key={msg._id}
+              msg={msg}
+              isMine={isMine}
+              onReport={handleReportMessage}
+            />
+          );
         })}
 
         {isTyping && <TypingIndicator participant={conversation.participant} />}
@@ -512,6 +639,13 @@ export default function ChatWindow({ conversation, onBack }) {
           </button>
         </div>
       </div>
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        reportedUser={reportTarget.reportedUser}
+        reportedPost={reportTarget.reportedPost}
+        reportedComment={reportTarget.reportedComment}
+      />
     </div>
   );
 }

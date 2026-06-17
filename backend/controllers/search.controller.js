@@ -2,6 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/User.model.js";
 import Post from "../models/Post.model.js";
 import Job from "../models/Job.model.js";
+import escapeRegex from "../utils/escapeRegex.js";
 
 /**
  * GET /api/search?q=&type=all|users|jobs|posts&skills=&location=&company=&page=
@@ -12,6 +13,11 @@ export const search = asyncHandler(async (req, res) => {
     const page  = parseInt(req.query.page) || 1;
     const limit = 10;
 
+    if (q && q.length > 100) return res.status(400).json({ success: false, message: "Search query is too long" });
+    if (skills && skills.length > 100) return res.status(400).json({ success: false, message: "Skills filter is too long" });
+    if (location && location.length > 100) return res.status(400).json({ success: false, message: "Location filter is too long" });
+    if (company && company.length > 100) return res.status(400).json({ success: false, message: "Company filter is too long" });
+
     if (!q || !q.trim())
         return res.status(400).json({ success: false, message: "Search query is required" });
 
@@ -20,11 +26,21 @@ export const search = asyncHandler(async (req, res) => {
 
     // ── Users ────────────────────────────────────────────────────
     if (type === "all" || type === "users") {
+        const blockedUsers = req.user.blockedUsers || [];
+        const usersWhoBlockedMe = await User.find({ blockedUsers: req.user._id }).select("_id");
+        const allBlockedIds = [...blockedUsers, ...usersWhoBlockedMe.map(u => u._id)];
+
         // Build shared filters for skills / location / company
-        const extraFilter = { _id: { $ne: req.user._id }, isPublic: { $ne: false } };
-        if (skills)   extraFilter.skills   = { $in: skills.split(",").map((s) => new RegExp(s.trim(), "i")) };
-        if (location) extraFilter.location = { $regex: location.trim(), $options: "i" };
-        if (company)  extraFilter["experience.company"] = { $regex: company.trim(), $options: "i" };
+        const extraFilter = { 
+            _id: { $ne: req.user._id, $nin: allBlockedIds },
+            $or: [
+                { isPublic: { $ne: false } },
+                { _id: { $in: req.user.connections || [] } }
+            ]
+        };
+        if (skills)   extraFilter.skills   = { $in: skills.split(",").map((s) => new RegExp(escapeRegex(s.trim()), "i")) };
+        if (location) extraFilter.location = { $regex: escapeRegex(location.trim()), $options: "i" };
+        if (company)  extraFilter["experience.company"] = { $regex: escapeRegex(company.trim()), $options: "i" };
 
         // Query 1: Full-text search (scored)
         const textFilter = { ...extraFilter, $text: { $search: trimmed } };
@@ -37,8 +53,8 @@ export const search = asyncHandler(async (req, res) => {
         const regexFilter = {
             ...extraFilter,
             $or: [
-                { username: { $regex: trimmed, $options: "i" } },
-                { name: { $regex: trimmed, $options: "i" } },
+                { username: { $regex: escapeRegex(trimmed), $options: "i" } },
+                { name: { $regex: escapeRegex(trimmed), $options: "i" } },
             ],
         };
         const regexResultsPromise = User.find(regexFilter)
@@ -87,7 +103,16 @@ export const search = asyncHandler(async (req, res) => {
 
     // ── Posts ─────────────────────────────────────────────────────
     if (type === "all" || type === "posts") {
-        const postFilter = { $text: { $search: trimmed } };
+        const privateNonConnections = await User.find({
+            _id: { $ne: req.user._id, $nin: req.user.connections || [] },
+            isPublic: false
+        }).select("_id");
+        const excludeIds = privateNonConnections.map(u => u._id);
+
+        const postFilter = { 
+            $text: { $search: trimmed },
+            author: { $nin: excludeIds }
+        };
         result.posts = await Post.find(postFilter)
             .sort({ score: { $meta: "textScore" } })
             .skip((page - 1) * limit)

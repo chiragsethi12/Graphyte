@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await api.get("/auth/me");
       setUser(data.user);
-      connectSocket(data.user._id);
+      connectSocket(token);
       fetchUnreadCount();
       fetchUnreadMessageCount();
     } catch {
@@ -91,7 +91,7 @@ export function AuthProvider({ children }) {
     const { data } = await api.post("/auth/login", { email, password });
     localStorage.setItem("graphyte_token", data.token);
     setUser(data.user);
-    connectSocket(data.user._id);
+    connectSocket(data.token);
     fetchUnreadCount();
     fetchUnreadMessageCount();
     return data.user;
@@ -101,7 +101,7 @@ export function AuthProvider({ children }) {
     const { data } = await api.post("/auth/register", { name, email, password, username });
     localStorage.setItem("graphyte_token", data.token);
     setUser(data.user);
-    connectSocket(data.user._id);
+    connectSocket(data.token);
     return data.user;
   };
 

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   Heart, MessageCircle, Share2, Trash2, MoreHorizontal,
   ChevronDown, ChevronUp, Send, X, Bookmark, Pencil, Trophy,
+  ShieldAlert
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../lib/axios";
@@ -13,6 +14,7 @@ import ConfirmAction from "../ui/ConfirmDialog";
 import ImageLightbox from "../ui/ImageLightbox";
 import formatRelativeTime from "../../utils/formatRelativeTime";
 import toast from "react-hot-toast";
+import ReportModal from "../ui/ReportModal";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -34,7 +36,7 @@ function formatText(text) {
 
 // ─── Comment Component ────────────────────────────────────────────────────────
 
-function Comment({ comment, postId, onReply }) {
+function Comment({ comment, postId, onReply, onReport }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const isOwner = user?._id === comment.user?._id;
@@ -72,6 +74,14 @@ function Comment({ comment, postId, onReply }) {
           >
             Reply
           </button>
+          {!isOwner && (
+            <button
+              onClick={() => onReport(comment)}
+              className="text-[10px] font-semibold text-text-muted hover:text-[#FF4D6D] transition-colors"
+            >
+              Report
+            </button>
+          )}
           {isOwner && (
             <ConfirmAction
               onConfirm={() => deleteMutation.mutate()}
@@ -94,7 +104,13 @@ function Comment({ comment, postId, onReply }) {
         {comment.replies?.length > 0 && (
           <div className="mt-2 space-y-2 pl-3 border-l-2 border-border">
             {comment.replies.map((reply) => (
-              <Comment key={reply._id} comment={reply} postId={postId} onReply={onReply} />
+              <Comment
+                key={reply._id}
+                comment={reply}
+                postId={postId}
+                onReply={onReply}
+                onReport={onReport}
+              />
             ))}
           </div>
         )}
@@ -230,8 +246,32 @@ export default function PostCard({ post: initialPost }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState({
+    reportedUser: null,
+    reportedPost: null,
+    reportedComment: null,
+  });
 
   const isOwner = user?._id === post.author?._id;
+
+  const handleReportPost = () => {
+    setReportTarget({
+      reportedUser: post.author?._id,
+      reportedPost: post._id,
+      reportedComment: null,
+    });
+    setReportModalOpen(true);
+  };
+
+  const handleReportComment = (comment) => {
+    setReportTarget({
+      reportedUser: comment.user?._id,
+      reportedPost: null,
+      reportedComment: comment._id,
+    });
+    setReportModalOpen(true);
+  };
   const canEdit = isOwner && (Date.now() - new Date(post.createdAt).getTime() < 10 * 60 * 1000);
 
   // ── Like ─────────────────────────────────────────────────────────────────
@@ -374,6 +414,15 @@ export default function PostCard({ post: initialPost }) {
                   </button>
                 )}
               </ConfirmAction>
+            )}
+            {!isOwner && (
+              <button
+                onClick={handleReportPost}
+                className="p-2 rounded-md text-text-muted hover:bg-bg-hover hover:text-[#FF4D6D] transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+                title="Report post"
+              >
+                <ShieldAlert size={15} />
+              </button>
             )}
           </div>
         </div>
@@ -573,6 +622,7 @@ export default function PostCard({ post: initialPost }) {
                   comment={comment}
                   postId={post._id}
                   onReply={setReplyingTo}
+                  onReport={handleReportComment}
                 />
               ))}
             </div>
@@ -599,6 +649,14 @@ export default function PostCard({ post: initialPost }) {
           onClose={() => setLightboxOpen(false)}
         />
       )}
+
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        reportedUser={reportTarget.reportedUser}
+        reportedPost={reportTarget.reportedPost}
+        reportedComment={reportTarget.reportedComment}
+      />
     </>
   );
 }

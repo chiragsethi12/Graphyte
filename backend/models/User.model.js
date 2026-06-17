@@ -56,6 +56,9 @@ const userSchema = new mongoose.Schema(
         isPublic:        { type: Boolean, default: true },
         emailNotifications: { type: Boolean, default: true },
         isNewUser:       { type: Boolean, default: true },
+        blockedUsers:    [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+        failedLoginAttempts: { type: Number, default: 0 },
+        lockUntil:       { type: Date, default: null },
 
         // Password reset
         resetPasswordToken:   { type: String },

@@ -3,6 +3,7 @@ import User from "../models/User.model.js";
 import Post from "../models/Post.model.js";
 import Connection from "../models/Connection.model.js";
 import Notification from "../models/Notification.model.js";
+import escapeRegex from "../utils/escapeRegex.js";
 
 /**
  * GET /api/analytics/me
@@ -65,7 +66,7 @@ export const getMyAnalytics = asyncHandler(async (req, res) => {
     if (user.skills.length > 0) {
         for (const skill of user.skills.slice(0, 10)) {
             const count = await User.countDocuments({
-                skills: { $regex: new RegExp(`^${skill}$`, "i") },
+                skills: { $regex: new RegExp(`^${escapeRegex(skill)}$`, "i") },
             });
             skillStats.push({ skill, usersWithSkill: count });
         }

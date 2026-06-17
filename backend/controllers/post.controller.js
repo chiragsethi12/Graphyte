@@ -81,22 +81,34 @@ export const getFeed = asyncHandler(async (req, res) => {
 
     // 1. Build author set: self + 1st degree + 2nd degree
     const currentUser = await User.findById(req.user._id)
+        .select("blockedUsers connections")
         .populate("connections", "connections")
         .lean();
+
+    const blockedUsers = currentUser.blockedUsers || [];
+    const usersWhoBlockedMe = await User.find({ blockedUsers: req.user._id }).select("_id");
+    const usersWhoBlockedMeIds = usersWhoBlockedMe.map(u => u._id.toString());
+    const ignoreAuthorIds = new Set([...blockedUsers.map(id => id.toString()), ...usersWhoBlockedMeIds]);
 
     const authorIds = new Set([currentUser._id.toString()]);
 
     for (const conn of currentUser.connections) {
-        authorIds.add(conn._id.toString());
+        const connId = conn._id.toString();
+        if (!ignoreAuthorIds.has(connId)) {
+            authorIds.add(connId);
+        }
         if (conn.connections) {
             for (const c2 of conn.connections) {
-                authorIds.add(c2.toString());
+                const c2Id = c2.toString();
+                if (!ignoreAuthorIds.has(c2Id)) {
+                    authorIds.add(c2Id);
+                }
             }
         }
     }
 
     // 2. Build filter
-    const filter = { author: { $in: Array.from(authorIds) } };
+    const filter = { author: { $in: Array.from(authorIds), $nin: Array.from(ignoreAuthorIds) } };
     if (cursor) filter._id = { $lt: cursor };
 
     // 3. Query

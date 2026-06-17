@@ -13,10 +13,14 @@ export const getSocket = () => {
   return socket;
 };
 
-export const connectSocket = (userId) => {
+export const connectSocket = (token) => {
   const s = getSocket();
-  if (userId) {
-    s.io.opts.query = { userId };
+  const jwtToken = token || localStorage.getItem("graphyte_token");
+  if (jwtToken) {
+    s.auth = { token: jwtToken };
+    if (s.io.opts.query) {
+      delete s.io.opts.query.userId;
+    }
   }
   if (!s.connected) s.connect();
   return s;

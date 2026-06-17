@@ -10,8 +10,17 @@ export const sendRequest = asyncHandler(async (req, res) => {
     if (recipientId === req.user._id.toString())
         return res.status(400).json({ success: false, message: "Cannot connect with yourself" });
 
-    const recipient = await User.findById(recipientId);
+    const [me, recipient] = await Promise.all([
+        User.findById(req.user._id).select("blockedUsers"),
+        User.findById(recipientId)
+    ]);
     if (!recipient) return res.status(404).json({ success: false, message: "User not found" });
+
+    const isBlocked = (me.blockedUsers || []).some(id => id.toString() === recipientId) ||
+                      (recipient.blockedUsers || []).some(id => id.toString() === req.user._id.toString());
+    if (isBlocked) {
+        return res.status(403).json({ success: false, message: "Action blocked" });
+    }
 
     const existing = await Connection.findOne({
         $or: [

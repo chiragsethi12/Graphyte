@@ -20,6 +20,7 @@ import searchRoutes from "./routes/search.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import messageRoutes from "./routes/message.routes.js";
 import savedRoutes from "./routes/saved.routes.js";
+import reportRoutes from "./routes/report.routes.js";
 
 connectDB();
 
@@ -55,6 +56,7 @@ app.use("/api/search", searchRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/saved", savedRoutes);
+app.use("/api/reports", reportRoutes);
 
 // ─── Quote route (CORS proxy for ZenQuotes API) ──────────────────────────────
 app.get("/api/quote", async (req, res) => {

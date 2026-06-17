@@ -10,6 +10,9 @@ import {
   updatePrivacy,
   updateMe,
   deleteAccount,
+  blockUser,
+  unblockUser,
+  getBlockedUsers,
 } from '../controllers/user.controller.js';
 import protect from '../middleware/auth.middleware.js';
 import { upload, handleMulterError } from '../config/cloudinary.js';
@@ -17,6 +20,9 @@ import { upload, handleMulterError } from '../config/cloudinary.js';
 const router = express.Router();
 
 // ── Specific routes FIRST (before :identifier param) ─────────────────────────
+router.get('/blocked', protect, getBlockedUsers);
+router.post('/:id/block', protect, blockUser);
+router.delete('/:id/block', protect, unblockUser);
 router.get('/search', protect, searchUsers);
 router.get('/suggestions', protect, getRecommendedUsers);
 router.put(
