@@ -2,7 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import crypto from "crypto";
 import User from "../models/User.model.js";
 import generateToken from "../utils/generateToken.js";
-import sendEmail, { buildResetEmail } from "../utils/sendEmail.js";
+import sendEmail, { buildResetEmail, buildVerificationEmail } from "../utils/sendEmail.js";
 
 /**
  * Generate a URL-safe username from a display name.
@@ -93,8 +93,34 @@ export const register = asyncHandler(async (req, res) => {
         finalUsername = await generateUsername(cleanName);
     }
 
-    const user = await User.create({ name: cleanName, email: cleanEmail, password, username: finalUsername });
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const verificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+
+    const user = await User.create({
+        name: cleanName,
+        email: cleanEmail,
+        password,
+        username: finalUsername,
+        verificationToken: hashedToken,
+        verificationExpires,
+        isVerified: false
+    });
+
     const token = generateToken(user._id, user.tokenVersion);
+
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
+
+    try {
+        await sendEmail({
+            to: user.email,
+            subject: "Verify your Graphyte account",
+            html: buildVerificationEmail(user.name, verifyUrl),
+        });
+    } catch (err) {
+        console.error("Email send error during registration:", err);
+    }
 
     res.status(201).json({
         success: true,
@@ -108,6 +134,7 @@ export const register = asyncHandler(async (req, res) => {
             headline:   user.headline,
             isNewUser:  user.isNewUser,
             blockedUsers: user.blockedUsers || [],
+            isVerified: false,
         },
     });
 });
@@ -161,6 +188,7 @@ export const login = asyncHandler(async (req, res) => {
             headline:   user.headline,
             isNewUser:  user.isNewUser,
             blockedUsers: user.blockedUsers || [],
+            isVerified: user.isVerified || false,
         },
     });
 });
@@ -252,4 +280,256 @@ export const resetPassword = asyncHandler(async (req, res) => {
     await user.save();
 
     res.json({ success: true, message: "Password reset successful. You can now sign in." });
+});
+
+// GET /api/auth/verify-email/:token
+export const verifyEmail = asyncHandler(async (req, res) => {
+    const { token } = req.params;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+        verificationToken: hashedToken,
+        verificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        return res.status(400).json({ success: false, message: "Invalid or expired verification link" });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Email verified successfully" });
+});
+
+// POST /api/auth/resend-verification
+export const resendVerification = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if (user.isVerified) {
+        return res.status(400).json({ success: false, message: "Email is already verified" });
+    }
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    user.verificationToken = hashedToken;
+    user.verificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await user.save();
+
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
+
+    await sendEmail({
+        to: user.email,
+        subject: "Verify your Graphyte account",
+        html: buildVerificationEmail(user.name, verifyUrl),
+    });
+
+    res.json({ success: true, message: "Verification link sent successfully" });
+});
+
+// POST /api/auth/google/callback
+export const googleCallback = asyncHandler(async (req, res) => {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ success: false, message: "Code is required" });
+
+    // Exchange code for Google access token
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+            code,
+            client_id: process.env.GOOGLE_CLIENT_ID,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET,
+            redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+            grant_type: "authorization_code",
+        }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (!tokenResponse.ok) {
+        return res.status(400).json({ success: false, message: tokenData.error_description || "Google token exchange failed" });
+    }
+
+    const { access_token } = tokenData;
+
+    // Fetch Google profile details
+    const userResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${access_token}` },
+    });
+
+    const userData = await userResponse.json();
+    if (!userResponse.ok) {
+        return res.status(400).json({ success: false, message: "Failed to fetch Google user info" });
+    }
+
+    const { sub: googleId, email, name, picture } = userData;
+    if (!email) {
+        return res.status(400).json({ success: false, message: "No email address returned from Google" });
+    }
+
+    const cleanEmail = email.toLowerCase();
+
+    // Check if user already exists with googleId
+    let user = await User.findOne({ googleId });
+
+    if (!user) {
+        // If not, see if email matches an existing user
+        user = await User.findOne({ email: cleanEmail });
+        if (user) {
+            // Link account
+            user.googleId = googleId;
+            user.isVerified = true;
+            await user.save();
+        } else {
+            // Register new passwordless user
+            const username = await generateUsername(name);
+            const randomPassword = crypto.randomBytes(16).toString("hex");
+            user = await User.create({
+                name,
+                email: cleanEmail,
+                password: randomPassword,
+                username,
+                googleId,
+                profilePic: picture || "",
+                isVerified: true,
+            });
+        }
+    }
+
+    const token = generateToken(user._id, user.tokenVersion);
+
+    res.json({
+        success: true,
+        token,
+        user: {
+            _id:        user._id,
+            name:       user.name,
+            username:   user.username,
+            email:      user.email,
+            profilePic: user.profilePic,
+            headline:   user.headline,
+            isNewUser:  user.isNewUser,
+            blockedUsers: user.blockedUsers || [],
+            isVerified: user.isVerified || false,
+        },
+    });
+});
+
+// POST /api/auth/github/callback
+export const githubCallback = asyncHandler(async (req, res) => {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ success: false, message: "Code is required" });
+
+    // Exchange code for GitHub access token
+    const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+        },
+        body: new URLSearchParams({
+            code,
+            client_id: process.env.GITHUB_CLIENT_ID,
+            client_secret: process.env.GITHUB_CLIENT_SECRET,
+            redirect_uri: process.env.GITHUB_REDIRECT_URI,
+        }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (!tokenResponse.ok || tokenData.error) {
+        return res.status(400).json({ success: false, message: tokenData.error_description || "GitHub token exchange failed" });
+    }
+
+    const { access_token } = tokenData;
+
+    // Fetch GitHub user profile
+    const userResponse = await fetch("https://api.github.com/user", {
+        headers: {
+            Authorization: `Bearer ${access_token}`,
+            "User-Agent": "Graphyte-OAuth",
+        },
+    });
+
+    const userData = await userResponse.json();
+    if (!userResponse.ok) {
+        return res.status(400).json({ success: false, message: "Failed to fetch GitHub user info" });
+    }
+
+    const githubId = userData.id.toString();
+    const name = userData.name || userData.login;
+    const picture = userData.avatar_url;
+    let email = userData.email;
+
+    // Fetch private email addresses if public email is not shared
+    if (!email) {
+        const emailsResponse = await fetch("https://api.github.com/user/emails", {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+                "User-Agent": "Graphyte-OAuth",
+            },
+        });
+        const emailsData = await emailsResponse.json();
+        if (emailsResponse.ok && Array.isArray(emailsData)) {
+            const primaryEmailObj = emailsData.find(e => e.primary && e.verified) ||
+                                    emailsData.find(e => e.verified) ||
+                                    emailsData[0];
+            email = primaryEmailObj?.email;
+        }
+    }
+
+    if (!email) {
+        return res.status(400).json({ success: false, message: "Could not retrieve email from GitHub account" });
+    }
+
+    const cleanEmail = email.toLowerCase();
+
+    // Check if user already exists with githubId
+    let user = await User.findOne({ githubId });
+
+    if (!user) {
+        // If not, see if email matches an existing user
+        user = await User.findOne({ email: cleanEmail });
+        if (user) {
+            // Link account
+            user.githubId = githubId;
+            user.isVerified = true;
+            await user.save();
+        } else {
+            // Register new passwordless user
+            const username = await generateUsername(name);
+            const randomPassword = crypto.randomBytes(16).toString("hex");
+            user = await User.create({
+                name,
+                email: cleanEmail,
+                password: randomPassword,
+                username,
+                githubId,
+                profilePic: picture || "",
+                isVerified: true,
+            });
+        }
+    }
+
+    const token = generateToken(user._id, user.tokenVersion);
+
+    res.json({
+        success: true,
+        token,
+        user: {
+            _id:        user._id,
+            name:       user.name,
+            username:   user.username,
+            email:      user.email,
+            profilePic: user.profilePic,
+            headline:   user.headline,
+            isNewUser:  user.isNewUser,
+            blockedUsers: user.blockedUsers || [],
+            isVerified: user.isVerified || false,
+        },
+    });
 });

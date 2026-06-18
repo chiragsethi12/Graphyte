@@ -60,6 +60,11 @@ const userSchema = new mongoose.Schema(
         failedLoginAttempts: { type: Number, default: 0 },
         lockUntil:       { type: Date, default: null },
         tokenVersion:    { type: Number, default: 0 },
+        isVerified:      { type: Boolean, default: false },
+        verificationToken: { type: String },
+        verificationExpires: { type: Date },
+        googleId:        { type: String, unique: true, sparse: true },
+        githubId:        { type: String, unique: true, sparse: true },
 
         // Password reset
         resetPasswordToken:   { type: String },

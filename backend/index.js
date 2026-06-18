@@ -44,6 +44,19 @@ app.use(cors({
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// ─── OAuth Redirect Bridges (Google/GitHub redirect browser to backend port 5000) ────
+app.get("/auth/google/callback", (req, res) => {
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const queryString = new URLSearchParams(req.query).toString();
+    res.redirect(`${clientUrl}/auth/google/callback?${queryString}`);
+});
+
+app.get("/auth/github/callback", (req, res) => {
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const queryString = new URLSearchParams(req.query).toString();
+    res.redirect(`${clientUrl}/auth/github/callback?${queryString}`);
+});
+
 // ─── API Routes ──────────────────────────────────────────────────────────────
 app.use(apiLimiter);
 app.use("/api/auth", authLimiter, authRoutes);

@@ -9,6 +9,8 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
+import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
 const FeedPage = lazy(() => import("./pages/FeedPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
@@ -93,6 +95,8 @@ function AppRoutes() {
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
         <Route path="/reset-password/:token" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
+        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+        <Route path="/auth/:provider/callback" element={<OAuthCallbackPage />} />
 
         <Route path="/onboarding" element={<ProtectedRoute allowNewUser={true}><OnboardingPage /></ProtectedRoute>} />
         <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />

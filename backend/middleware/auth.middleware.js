@@ -25,4 +25,11 @@ const protect = async (req, res, next) => {
     }
 };
 
+export const requireVerification = (req, res, next) => {
+    if (!req.user || !req.user.isVerified) {
+        return res.status(403).json({ success: false, message: "Your email must be verified to perform this action." });
+    }
+    next();
+};
+
 export default protect;

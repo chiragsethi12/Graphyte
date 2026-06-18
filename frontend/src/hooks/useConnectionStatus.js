@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../lib/axios";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 /**
  * Hook for connection status between current user and another user.
  * Returns { status, connectionId, isLoading, sendRequest, withdraw, respond, remove }
  */
 export default function useConnectionStatus(userId) {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const queryKey = ["connectionStatus", userId];
 
@@ -18,8 +21,16 @@ export default function useConnectionStatus(userId) {
   const invalidate = () => queryClient.invalidateQueries({ queryKey });
 
   const sendRequest = useMutation({
-    mutationFn: () => api.post(`/connections/request/${userId}`),
+    mutationFn: () => {
+      if (user && !user.isVerified) {
+        throw new Error("Please verify your email address to send connection requests.");
+      }
+      return api.post(`/connections/request/${userId}`);
+    },
     onSuccess: invalidate,
+    onError: (err) => {
+      toast.error(err.message || err.response?.data?.message || "Failed to send connection request");
+    },
   });
 
   const withdraw = useMutation({

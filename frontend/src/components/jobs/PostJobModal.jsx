@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, ShieldAlert } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../lib/axios";
 import toast from "react-hot-toast";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
+import { useAuth } from "../../context/AuthContext";
 
 const JOB_TYPES = [
     { value: "full-time", label: "Full-Time" },
@@ -23,6 +24,7 @@ const EXP_LEVELS = [
 ];
 
 export default function PostJobModal({ onClose }) {
+    const { user } = useAuth();
     const queryClient = useQueryClient();
     const [form, setForm] = useState({
         title: "",
@@ -94,6 +96,28 @@ export default function PostJobModal({ onClose }) {
         }
         mutation.mutate();
     };
+
+    if (user && !user.isVerified) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+                <div className="bg-bg-overlay rounded-xl border border-border shadow-lg w-full max-w-[480px] p-6 text-center relative animate-in fade-in zoom-in-95 duration-200">
+                    <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-md text-text-muted hover:bg-bg-hover hover:text-text-primary">
+                        <X size={18} />
+                    </button>
+                    <div className="w-16 h-16 bg-[#FF4D6D]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#FF4D6D]/20 text-[#FF4D6D]">
+                        <ShieldAlert size={28} />
+                    </div>
+                    <h2 className="text-xl font-bold text-text-primary mb-2">Verification Required</h2>
+                    <p className="text-sm text-text-muted leading-relaxed mb-6">
+                        You must verify your email address before you can post job listings. Please check your inbox for the verification link.
+                    </p>
+                    <div className="flex justify-center gap-3">
+                        <Button variant="ghost" onClick={onClose}>Close</Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">

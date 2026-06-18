@@ -10,7 +10,7 @@ import {
     getMutualConnections,
     removeConnection,
 } from "../controllers/connection.controller.js";
-import protect from "../middleware/auth.middleware.js";
+import protect, { requireVerification } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.get("/pending",             protect, getPendingRequests);
 router.get("/sent",                protect, getSentRequests);
 router.get("/status/:userId",      protect, getConnectionStatus);
 router.get("/mutual/:userId",      protect, getMutualConnections);
-router.post("/request/:recipientId", protect, sendRequest);
+router.post("/request/:recipientId", protect, requireVerification, sendRequest);
 router.put("/respond/:connectionId", protect, respondToRequest);
 router.delete("/withdraw/:recipientId", protect, withdrawRequest);
 router.delete("/:userId",          protect, removeConnection);
