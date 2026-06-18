@@ -94,7 +94,7 @@ export const register = asyncHandler(async (req, res) => {
     }
 
     const user = await User.create({ name: cleanName, email: cleanEmail, password, username: finalUsername });
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.tokenVersion);
 
     res.status(201).json({
         success: true,
@@ -147,7 +147,7 @@ export const login = asyncHandler(async (req, res) => {
     user.lockUntil = null;
     await user.save();
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.tokenVersion);
 
     res.json({
         success: true,
@@ -248,6 +248,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
     user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
 
     res.json({ success: true, message: "Password reset successful. You can now sign in." });

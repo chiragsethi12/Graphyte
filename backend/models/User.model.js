@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema(
         blockedUsers:    [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
         failedLoginAttempts: { type: Number, default: 0 },
         lockUntil:       { type: Date, default: null },
+        tokenVersion:    { type: Number, default: 0 },
 
         // Password reset
         resetPasswordToken:   { type: String },

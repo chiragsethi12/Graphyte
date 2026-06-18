@@ -332,6 +332,7 @@ export const changePassword = asyncHandler(async (req, res) => {
     if (!valid) return res.status(400).json({ success: false, message: "Current password is incorrect" });
 
     user.password = newPassword;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
     res.json({ success: true, message: "Password updated successfully" });
 });
@@ -373,6 +374,10 @@ export const deleteAccount = asyncHandler(async (req, res) => {
     }
 
     const id = req.user._id;
+
+    // Increment tokenVersion (for any in-flight/cache consistency) before deletion
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
+    await user.save();
 
     await Promise.all([
         User.deleteOne({ _id: id }),

@@ -14,6 +14,11 @@ const protect = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = await User.findById(decoded.id).select("-password");
         if (!req.user) return res.status(401).json({ success: false, message: "User not found" });
+
+        if (decoded.tokenVersion === undefined || decoded.tokenVersion !== req.user.tokenVersion) {
+            return res.status(401).json({ success: false, message: "Session expired, please login again" });
+        }
+
         next();
     } catch {
         res.status(401).json({ success: false, message: "Invalid token" });
