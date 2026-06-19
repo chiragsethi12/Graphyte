@@ -71,22 +71,32 @@ export const getUserPosts = asyncHandler(async (req, res) => {
     if (!targetUser) return res.status(404).json({ success: false, message: "User not found" });
 
     const isOwner = req.user._id.toString() === targetUser._id.toString();
+    const isConnected = targetUser.connections.some(
+        (conn) => conn.toString() === req.user._id.toString()
+    );
+
     if (!isOwner && targetUser.isPublic === false) {
-        const isConnected = targetUser.connections.some(
-            (conn) => conn.toString() === req.user._id.toString()
-        );
         if (!isConnected) {
             return res.status(403).json({ success: false, message: "This profile is private", isPrivate: true });
         }
     }
 
-    const posts = await Post.find({ author: userId })
+    let visibilityFilter = {};
+    if (!isOwner) {
+        if (isConnected) {
+            visibilityFilter = { visibility: { $in: ["public", "connections"] } };
+        } else {
+            visibilityFilter = { visibility: "public" };
+        }
+    }
+
+    const posts = await Post.find({ author: userId, ...visibilityFilter })
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .populate("author", "name profilePic headline username");
 
-    const total = await Post.countDocuments({ author: userId });
+    const total = await Post.countDocuments({ author: userId, ...visibilityFilter });
     res.json({ success: true, posts, total, page, pages: Math.ceil(total / limit) });
 });
 

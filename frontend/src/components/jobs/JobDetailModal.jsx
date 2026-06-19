@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { X, MapPin, Briefcase, Clock, DollarSign, Users, ChevronRight, ExternalLink, Layers } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import api from "../../lib/axios";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../ui/Avatar";
 import Button from "../ui/Button";
 import toast from "react-hot-toast";
+import ApplyJobModal from "./ApplyJobModal";
 
 function formatSalary(salary) {
     if (!salary?.min && !salary?.max) return null;
@@ -35,6 +37,7 @@ const EXP_LABELS = {
 export default function JobDetailModal({ jobId, onClose }) {
     const { user } = useAuth();
     const queryClient = useQueryClient();
+    const [showApplyModal, setShowApplyModal] = useState(false);
 
     const { data, isLoading } = useQuery({
         queryKey: ["job", jobId],
@@ -50,15 +53,6 @@ export default function JobDetailModal({ jobId, onClose }) {
     const job = data?.job;
     const myApplications = appsData?.applications || [];
     const hasApplied = myApplications.some((a) => a.job?._id === jobId || a.job === jobId);
-
-    const applyMutation = useMutation({
-        mutationFn: () => api.post(`/jobs/${jobId}/apply`),
-        onSuccess: () => {
-            toast.success("Application submitted!");
-            queryClient.invalidateQueries({ queryKey: ["myApplications"] });
-        },
-        onError: (err) => toast.error(err.response?.data?.message || "Failed to apply"),
-    });
 
     const isOwner = job?.postedBy?._id === user?._id;
 
@@ -121,7 +115,7 @@ export default function JobDetailModal({ jobId, onClose }) {
                             <div className="mt-5">
                                 {isOwner ? (
                                     <Button variant="outline" fullWidth disabled>You posted this job</Button>
-                                ) : (hasApplied || applyMutation.isSuccess) ? (
+                                ) : hasApplied ? (
                                     <Button variant="outline" fullWidth disabled>
                                         Applied ✓
                                     </Button>
@@ -129,8 +123,7 @@ export default function JobDetailModal({ jobId, onClose }) {
                                     <Button
                                         variant="primary"
                                         fullWidth
-                                        onClick={() => applyMutation.mutate()}
-                                        loading={applyMutation.isPending}
+                                        onClick={() => setShowApplyModal(true)}
                                         disabled={!job.isActive}
                                     >
                                         {job.isActive ? "Apply Now" : "Job Closed"}
@@ -203,6 +196,14 @@ export default function JobDetailModal({ jobId, onClose }) {
                     </div>
                 )}
             </div>
+            {showApplyModal && (
+                <ApplyJobModal
+                    jobId={jobId}
+                    jobTitle={job?.title}
+                    companyName={job?.company}
+                    onClose={() => setShowApplyModal(false)}
+                />
+            )}
         </div>
     );
 }

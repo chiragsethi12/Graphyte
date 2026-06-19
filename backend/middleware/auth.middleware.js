@@ -15,6 +15,10 @@ const protect = async (req, res, next) => {
         req.user = await User.findById(decoded.id).select("-password");
         if (!req.user) return res.status(401).json({ success: false, message: "User not found" });
 
+        if (req.user.isSuspended) {
+            return res.status(403).json({ success: false, message: "Your account has been suspended" });
+        }
+
         if (decoded.tokenVersion === undefined || decoded.tokenVersion !== req.user.tokenVersion) {
             return res.status(401).json({ success: false, message: "Session expired, please login again" });
         }
@@ -28,6 +32,13 @@ const protect = async (req, res, next) => {
 export const requireVerification = (req, res, next) => {
     if (!req.user || !req.user.isVerified) {
         return res.status(403).json({ success: false, message: "Your email must be verified to perform this action." });
+    }
+    next();
+};
+
+export const isAdmin = (req, res, next) => {
+    if (!req.user || (req.user.role !== "admin" && req.user.role !== "moderator")) {
+        return res.status(403).json({ success: false, message: "Access denied. Admins or moderators only." });
     }
     next();
 };

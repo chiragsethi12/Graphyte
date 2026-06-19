@@ -33,11 +33,20 @@ const postSchema = new mongoose.Schema(
 
         // Share / repost
         sharedPost: { type: mongoose.Schema.Types.ObjectId, ref: "Post", default: null },
+
+        visibility: {
+            type: String,
+            enum: ["public", "connections", "private"],
+            default: "public",
+        },
     },
     { timestamps: true }
 );
 
 // ─── Indexes ─────────────────────────────────────────────────────────────────
+
+// Compound index for feed / profile queries filtering by visibility
+postSchema.index({ author: 1, visibility: 1, createdAt: -1 });
 
 // Feed: filter by author set + sort by recency
 postSchema.index({ author: 1, createdAt: -1 });

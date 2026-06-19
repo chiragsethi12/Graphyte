@@ -10,6 +10,7 @@ import {
     getRecommendedJobs,
 } from "../controllers/job.controller.js";
 import protect, { requireVerification } from "../middleware/auth.middleware.js";
+import { uploadResume, handleMulterError } from "../config/cloudinary.js";
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get("/my-listings",     protect, getMyListings);
 router.get("/recommended",     protect, getRecommendedJobs);
 router.get("/:id",             protect, getJobById);
 router.post("/",               protect, requireVerification, createJob);
-router.post("/:id/apply",      protect, applyForJob);
+router.post("/:id/apply",      protect, uploadResume.single("resume"), handleMulterError, applyForJob);
 router.put("/:id/toggle-active", protect, toggleJobActive);
 
 export default router;

@@ -61,6 +61,8 @@ const userSchema = new mongoose.Schema(
         lockUntil:       { type: Date, default: null },
         tokenVersion:    { type: Number, default: 0 },
         isVerified:      { type: Boolean, default: false },
+        role:            { type: String, enum: ["user", "moderator", "admin"], default: "user" },
+        isSuspended:     { type: Boolean, default: false },
         verificationToken: { type: String },
         verificationExpires: { type: Date },
         googleId:        { type: String, unique: true, sparse: true },

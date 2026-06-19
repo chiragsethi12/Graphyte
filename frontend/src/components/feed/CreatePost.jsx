@@ -29,6 +29,7 @@ export default function CreatePost() {
   const [isDragging, setIsDragging] = useState(false);
   const [postType, setPostType] = useState("standard");
   const [showTemplates, setShowTemplates] = useState(false);
+  const [visibility, setVisibility] = useState("public");
   const fileInputRef = useRef(null);
 
   const charCount = content.length;
@@ -45,6 +46,7 @@ export default function CreatePost() {
       if (content.trim()) fd.append("content", content.trim());
       if (image) fd.append("image", image);
       if (postType !== "standard") fd.append("postType", postType);
+      fd.append("visibility", visibility);
       return api.post("/posts/create", fd);
     },
     onSuccess: () => {
@@ -55,6 +57,7 @@ export default function CreatePost() {
       setUploadError(null);
       setPostType("standard");
       setShowTemplates(false);
+      setVisibility("public");
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["userPosts"] });
       toast.success(postType === "milestone" ? "Milestone published! 🏆" : "Post published!");
@@ -302,6 +305,16 @@ export default function CreatePost() {
                     <Trophy size={14} />
                     Milestone
                   </button>
+                  
+                  <select
+                    value={visibility}
+                    onChange={(e) => setVisibility(e.target.value)}
+                    className="bg-bg-elevated border border-border rounded-md text-xs px-2.5 py-1 text-text-muted hover:text-text-primary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent min-h-[36px] font-medium"
+                  >
+                    <option value="public">🌐 Public</option>
+                    <option value="connections">👥 Connections</option>
+                    <option value="private">🔒 Private</option>
+                  </select>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -314,6 +327,7 @@ export default function CreatePost() {
                       setUploadError(null);
                       setPostType("standard");
                       setShowTemplates(false);
+                      setVisibility("public");
                     }}
                     className="text-xs text-text-muted hover:text-text-primary transition-colors px-3 py-1.5 rounded-md hover:bg-bg-hover min-h-[36px]"
                   >

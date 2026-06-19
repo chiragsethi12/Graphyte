@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import pkg from "multer-storage-cloudinary";
-const { CloudinaryStorage } = pkg;
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 
 cloudinary.config({
@@ -26,6 +25,33 @@ export const upload = multer({
             cb(null, true);
         } else {
             cb(new Error("Only JPEG, PNG, WebP, and GIF images are allowed"), false);
+        }
+    },
+});
+
+const resumeStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "graphite_resumes",
+        resource_type: "auto",
+    }
+});
+
+export const uploadResume = multer({
+    storage: resumeStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },  // 10MB max
+    fileFilter: (req, file, cb) => {
+        const allowedExtensions = [".pdf", ".doc", ".docx"];
+        const allowedMimeTypes = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ];
+        const ext = file.originalname.substring(file.originalname.lastIndexOf(".")).toLowerCase();
+        if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only PDF, DOC, and DOCX files are allowed"), false);
         }
     },
 });

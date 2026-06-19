@@ -21,8 +21,11 @@ import analyticsRoutes from "./routes/analytics.routes.js";
 import messageRoutes from "./routes/message.routes.js";
 import savedRoutes from "./routes/saved.routes.js";
 import reportRoutes from "./routes/report.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
-connectDB();
+if (process.env.NODE_ENV !== "test") {
+    connectDB();
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -70,6 +73,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/admin", adminRoutes);
 
 // ─── Quote route (CORS proxy for ZenQuotes API) ──────────────────────────────
 app.get("/api/quote", async (req, res) => {
@@ -126,5 +130,9 @@ app.use((err, req, res, next) => {
     });
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}!`));
+if (process.env.NODE_ENV !== "test") {
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}!`));
+}
+
+export { app, server };

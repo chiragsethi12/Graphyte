@@ -11,6 +11,7 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
+import AdminPage from "./pages/AdminPage";
 const FeedPage = lazy(() => import("./pages/FeedPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
@@ -63,6 +64,22 @@ function PublicRoute({ children }) {
   return children;
 }
 
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "admin" && user.role !== "moderator") {
+    return <Navigate to="/feed" replace />;
+  }
+  return children;
+}
+
 function LoadingSpinner() {
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -97,6 +114,7 @@ function AppRoutes() {
         <Route path="/reset-password/:token" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
         <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
         <Route path="/auth/:provider/callback" element={<OAuthCallbackPage />} />
+        <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
 
         <Route path="/onboarding" element={<ProtectedRoute allowNewUser={true}><OnboardingPage /></ProtectedRoute>} />
         <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />

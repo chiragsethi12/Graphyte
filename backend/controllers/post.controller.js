@@ -9,7 +9,7 @@ import { getReceiverSocketId, io } from "../socket/socket.js";
 
 export const createPost = asyncHandler(async (req, res) => {
 
-    const { content, tags, type, postType } = req.body;
+    const { content, tags, type, postType, visibility } = req.body;
     const image = req.file?.path || "";
 
     if (!content && !image) {
@@ -18,6 +18,7 @@ export const createPost = asyncHandler(async (req, res) => {
 
     const parsedTags = tags ? (typeof tags === "string" ? JSON.parse(tags) : tags) : [];
     const contentType = image ? "image" : (type || "text");
+    const validVisibility = ["public", "connections", "private"].includes(visibility) ? visibility : "public";
 
     const post = await Post.create({
         author: req.user._id,
@@ -26,6 +27,7 @@ export const createPost = asyncHandler(async (req, res) => {
         tags: parsedTags,
         type: contentType,
         postType: postType || "standard",
+        visibility: validVisibility,
     });
 
     await post.populate("author", "name profilePic headline username");
@@ -107,8 +109,31 @@ export const getFeed = asyncHandler(async (req, res) => {
         }
     }
 
+    const myConnectionIds = (currentUser.connections || []).map(conn => conn._id.toString());
+    const privateNonConnections = await User.find({
+        _id: { $ne: req.user._id, $nin: myConnectionIds },
+        isPublic: false
+    }).select("_id");
+    const excludeIds = privateNonConnections.map(u => u._id.toString());
+
     // 2. Build filter
-    const filter = { author: { $in: Array.from(authorIds), $nin: Array.from(ignoreAuthorIds) } };
+    const filter = { 
+        author: { $in: Array.from(authorIds), $nin: [...Array.from(ignoreAuthorIds), ...excludeIds] },
+        $or: [
+            // 1. My own posts
+            { author: req.user._id },
+            // 2. Connections' posts (can see public & connections posts)
+            {
+                author: { $in: myConnectionIds },
+                visibility: { $in: ["public", "connections"] }
+            },
+            // 3. Anyone else (2nd degree connections) - public posts only
+            {
+                author: { $nin: [req.user._id, ...myConnectionIds] },
+                visibility: "public"
+            }
+        ]
+    };
     if (cursor) filter._id = { $lt: cursor };
 
     // 3. Query

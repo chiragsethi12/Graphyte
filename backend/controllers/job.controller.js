@@ -68,7 +68,37 @@ export const applyForJob = asyncHandler(async (req, res) => {
     const existing = await Application.findOne({ job: req.params.id, applicant: req.user._id });
     if (existing) return res.status(400).json({ success: false, message: "Already applied" });
 
-    const application = await Application.create({ job: req.params.id, applicant: req.user._id });
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: "Resume file (PDF, DOC, or DOCX) is required" });
+    }
+
+    const { coverLetter, portfolioLinks } = req.body;
+
+    if (coverLetter && coverLetter.length > 2000) {
+        return res.status(400).json({ success: false, message: "Cover letter cannot exceed 2000 characters" });
+    }
+
+    let parsedLinks = [];
+    if (portfolioLinks) {
+        if (typeof portfolioLinks === "string") {
+            try {
+                parsedLinks = JSON.parse(portfolioLinks);
+            } catch {
+                parsedLinks = [portfolioLinks];
+            }
+        } else if (Array.isArray(portfolioLinks)) {
+            parsedLinks = portfolioLinks;
+        }
+    }
+
+    const application = await Application.create({
+        job: req.params.id,
+        applicant: req.user._id,
+        resumeUrl: req.file.path,
+        coverLetter: coverLetter || "",
+        portfolioLinks: parsedLinks,
+    });
+
     await Job.findByIdAndUpdate(req.params.id, { $addToSet: { applicants: req.user._id } });
 
     res.status(201).json({ success: true, application });

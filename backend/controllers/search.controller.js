@@ -103,15 +103,30 @@ export const search = asyncHandler(async (req, res) => {
 
     // ── Posts ─────────────────────────────────────────────────────
     if (type === "all" || type === "posts") {
+        const myConnectionIds = (req.user.connections || []).map(c => c.toString());
         const privateNonConnections = await User.find({
             _id: { $ne: req.user._id, $nin: req.user.connections || [] },
             isPublic: false
         }).select("_id");
-        const excludeIds = privateNonConnections.map(u => u._id);
+        const excludeIds = privateNonConnections.map(u => u._id.toString());
 
         const postFilter = { 
             $text: { $search: trimmed },
-            author: { $nin: excludeIds }
+            author: { $nin: excludeIds },
+            $or: [
+                // 1. Self posts
+                { author: req.user._id },
+                // 2. Connections' posts
+                {
+                    author: { $in: myConnectionIds },
+                    visibility: { $in: ["public", "connections"] }
+                },
+                // 3. Anyone else's posts (not self, not connections, and not private non-connections because of nin excludeIds)
+                {
+                    author: { $nin: [req.user._id, ...myConnectionIds] },
+                    visibility: "public"
+                }
+            ]
         };
         result.posts = await Post.find(postFilter)
             .sort({ score: { $meta: "textScore" } })
