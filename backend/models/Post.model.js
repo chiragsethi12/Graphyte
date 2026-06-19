@@ -48,6 +48,9 @@ const postSchema = new mongoose.Schema(
 // Compound index for feed / profile queries filtering by visibility
 postSchema.index({ author: 1, visibility: 1, createdAt: -1 });
 
+// Multi-author feed index matching author $in + visibility + engagementScore + createdAt sort pattern
+postSchema.index({ author: 1, visibility: 1, engagementScore: -1, createdAt: -1 });
+
 // Feed: filter by author set + sort by recency
 postSchema.index({ author: 1, createdAt: -1 });
 

@@ -62,14 +62,27 @@ export const getMyAnalytics = asyncHandler(async (req, res) => {
     topPosts.sort((a, b) => b.engagementScore - a.engagementScore);
 
     // ── Skill leaders (how many users share each of your skills) ──
-    const skillStats = [];
-    if (user.skills.length > 0) {
-        for (const skill of user.skills.slice(0, 10)) {
-            const count = await User.countDocuments({
-                skills: { $regex: new RegExp(`^${escapeRegex(skill)}$`, "i") },
-            });
-            skillStats.push({ skill, usersWithSkill: count });
-        }
+    let skillStats = [];
+    if (user.skills && user.skills.length > 0) {
+        const skillsToQuery = user.skills.slice(0, 10);
+        const facetStages = {};
+        skillsToQuery.forEach((skill, index) => {
+            facetStages[`skill_${index}`] = [
+                {
+                    $match: {
+                        skills: { $regex: new RegExp(`^${escapeRegex(skill)}$`, "i") }
+                    }
+                },
+                { $count: "count" }
+            ];
+        });
+
+        const [facetResults] = await User.aggregate([{ $facet: facetStages }]);
+        skillStats = skillsToQuery.map((skill, index) => {
+            const res = facetResults[`skill_${index}`];
+            const count = res && res[0] ? res[0].count : 0;
+            return { skill, usersWithSkill: count };
+        });
     }
 
     res.json({
