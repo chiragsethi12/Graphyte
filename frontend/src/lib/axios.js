@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Sentry } from "./sentry.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
@@ -22,6 +23,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    // Track server errors in Sentry
+    if (err.response?.status >= 500 && Sentry) {
+      Sentry.captureException(err);
+    }
     if (err.response?.status === 401) {
       localStorage.removeItem("graphyte_token");
       if (!window.location.pathname.includes("/login")) {
@@ -33,3 +38,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+

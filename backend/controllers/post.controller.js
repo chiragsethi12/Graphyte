@@ -4,6 +4,7 @@ import Comment from "../models/Comment.model.js";
 import Notification from "../models/Notification.model.js";
 import User from "../models/User.model.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
+import { trendingCache, invalidateTrending } from "../config/cache.js";
 
 // ─── Create Post ─────────────────────────────────────────────────────────────
 
@@ -42,6 +43,8 @@ export const createPost = asyncHandler(async (req, res) => {
     // Reward posting
     await User.findByIdAndUpdate(req.user._id, { $inc: { skillScore: 1 } });
 
+    invalidateTrending();
+
     res.status(201).json({ success: true, post });
 });
 
@@ -70,6 +73,8 @@ export const editPost = asyncHandler(async (req, res) => {
     await post.save();
 
     await post.populate("author", "name profilePic headline username");
+
+    invalidateTrending();
 
     res.json({ success: true, post });
 });
@@ -165,6 +170,11 @@ export const getFeed = asyncHandler(async (req, res) => {
 
 export const getTrendingPosts = asyncHandler(async (req, res) => {
 
+    const cached = trendingCache.get("trending");
+    if (cached) {
+        return res.json({ success: true, posts: cached });
+    }
+
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const posts = await Post.find({ createdAt: { $gte: sevenDaysAgo } })
         .sort({ engagementScore: -1 })
@@ -172,6 +182,8 @@ export const getTrendingPosts = asyncHandler(async (req, res) => {
         .populate("author", "name profilePic headline username")
         .select("content image author likesCount commentsCount engagementScore createdAt tags")
         .lean();
+
+    trendingCache.set("trending", posts);
 
     res.json({ success: true, posts });
 });
@@ -268,6 +280,9 @@ export const likePost = asyncHandler(async (req, res) => {
         isLiked: !alreadyLiked,
         engagementScore: updated.engagementScore,
     });
+
+    // Invalidate trending cache since engagement score changed
+    invalidateTrending();
 });
 
 // ─── Comments ────────────────────────────────────────────────────────────────
@@ -468,6 +483,8 @@ export const deletePost = asyncHandler(async (req, res) => {
         Post.findByIdAndDelete(req.params.id),
         Comment.deleteMany({ post: req.params.id }),
     ]);
+
+    invalidateTrending();
 
     res.json({ success: true, message: "Post deleted" });
 });

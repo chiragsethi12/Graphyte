@@ -3,12 +3,15 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
+import pinoHttp from "pino-http";
 import compression from "compression";
 
 import connectDB from "./config/db.js";
+import logger from "./config/logger.js";
+import { setupSentry, setupSentryErrorHandler, Sentry } from "./config/sentry.js";
 import { initSocket } from "./socket/socket.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimiter.js";
+import requestId from "./middleware/requestId.middleware.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -30,15 +33,17 @@ if (process.env.NODE_ENV !== "test") {
 const app = express();
 const server = http.createServer(app);
 
+setupSentry(app);
 initSocket(server);
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(helmet());
-app.use(morgan("dev"));
+app.use(requestId);
+app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === "/api/health" } }));
 app.use(compression());
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
-console.log(`[CORS] Allowing requests from: ${CLIENT_URL}`);
+logger.info({ clientUrl: CLIENT_URL }, "CORS origins configured");
 
 app.use(cors({
     origin: [CLIENT_URL, "http://localhost:5173", "http://localhost:3000"],
@@ -85,7 +90,7 @@ app.get("/api/quote", async (req, res) => {
         const data = await response.json();
         res.json(data);
     } catch (error) {
-        console.error("Error fetching random quote from ZenQuotes:", error.message);
+        (req.log || logger).warn({ err: error }, "Error fetching random quote from ZenQuotes");
         // Fallback quote
         res.json([{
             q: "True value isn't found in the number of connections you have, but in the deliberate silence between meaningful interactions.",
@@ -109,17 +114,26 @@ app.get("/api/health/db", async (req, res) => {
     }
 });
 
+// ─── Sentry error handler (must be before custom error handler) ──────────────
+setupSentryErrorHandler(app);
+
 // ─── Global error handler ────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
 
 app.use((err, req, res, next) => {
-    console.error("Unhandled Error:", err.stack || err.message);
+    const reqLog = req.log || logger;
+    reqLog.error({ err, reqId: req.id }, "Unhandled Error");
+
+    // Capture 5xx errors in Sentry (non-operational / unexpected)
+    const status = err.statusCode || 500;
+    if (status >= 500 && process.env.SENTRY_DSN) {
+        Sentry.captureException(err);
+    }
 
     if (err.name === 'ValidationError') {
         return res.status(400).json({ success: false, message: err.message });
     }
 
-    const status = err.statusCode || 500;
     const message = err.isOperational || process.env.NODE_ENV !== "production" 
         ? err.message 
         : "Internal server error";
@@ -132,7 +146,7 @@ app.use((err, req, res, next) => {
 
 if (process.env.NODE_ENV !== "test") {
     const PORT = process.env.PORT || 5000;
-    server.listen(PORT, () => console.log(`Server running on port ${PORT}!`));
+    server.listen(PORT, () => logger.info({ port: PORT }, `Server running on port ${PORT}`));
 }
 
 export { app, server };

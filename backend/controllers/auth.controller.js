@@ -119,7 +119,7 @@ export const register = asyncHandler(async (req, res) => {
             html: buildVerificationEmail(user.name, verifyUrl),
         });
     } catch (err) {
-        console.error("Email send error during registration:", err);
+        req.log.error({ err }, "Email send error during registration");
     }
 
     res.status(201).json({
@@ -240,7 +240,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save({ validateModifiedOnly: true });
-        console.error("Email send error:", err);
+        req.log.error({ err }, "Email send error");
         return res.status(500).json({ success: false, message: "Failed to send reset email. Please try again." });
     }
 

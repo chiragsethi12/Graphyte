@@ -1,8 +1,14 @@
 import React from "react";
+import { Sentry } from "../../lib/sentry.js";
 
 class ErrorBoundary extends React.Component {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error, errorInfo) {
+    if (Sentry) {
+      Sentry.captureException(error, { extra: { componentStack: errorInfo?.componentStack } });
+    }
+  }
   render() {
     if (this.state.hasError) {
       return (
@@ -20,3 +26,4 @@ class ErrorBoundary extends React.Component {
 }
 
 export default ErrorBoundary;
+
