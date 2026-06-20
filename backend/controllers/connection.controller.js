@@ -40,8 +40,7 @@ export const sendRequest = asyncHandler(async (req, res) => {
         recipient: recipientId, sender: req.user._id, type: "connectionRequest",
         message: `${req.user.name} sent you a connection request`,
     });
-    const socketId = getReceiverSocketId(recipientId);
-    if (socketId) io.to(socketId).emit("newNotification", notification);
+    io.to(`user:${recipientId}`).emit("newNotification", notification);
 
     res.status(201).json({ success: true, connection });
 });
@@ -69,8 +68,7 @@ export const respondToRequest = asyncHandler(async (req, res) => {
             recipient: connection.sender, sender: req.user._id, type: "connectionAccepted",
             message: `${req.user.name} accepted your connection request`,
         });
-        const socketId = getReceiverSocketId(connection.sender.toString());
-        if (socketId) io.to(socketId).emit("newNotification", notification);
+        io.to(`user:${connection.sender.toString()}`).emit("newNotification", notification);
     } else {
         connection.status = "rejected";
         await connection.save();

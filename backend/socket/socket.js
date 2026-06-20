@@ -1,9 +1,11 @@
 import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
 import jwt from "jsonwebtoken";
 import User from "../models/User.model.js";
+import { pubClient, subClient, redisClient } from "../config/redis.js";
+import logger from "../config/logger.js";
 
 let io;
-const userSocketMap = {};  // userId -> socketId
 
 export const initSocket = (server) => {
     io = new Server(server, {
@@ -13,6 +15,12 @@ export const initSocket = (server) => {
         },
         pingTimeout: 60000,
     });
+
+    const isTest = process.env.NODE_ENV === "test";
+
+    if (!isTest) {
+        io.adapter(createAdapter(pubClient, subClient));
+    }
 
     // JWT verification middleware for Socket.IO handshake
     io.use(async (socket, next) => {
@@ -33,24 +41,39 @@ export const initSocket = (server) => {
         }
     });
 
-    io.on("connection", (socket) => {
+    io.on("connection", async (socket) => {
         const userId = socket.user._id.toString();
-        userSocketMap[userId] = socket.id;
         socket.join(`user:${userId}`);
 
-        // Broadcast online users list to everyone
-        io.emit("onlineUsers", Object.keys(userSocketMap));
+        if (!isTest) {
+            try {
+                // Add socket to user's active connections set
+                await redisClient.sAdd(`user:connections:${userId}`, socket.id);
+                // Mark user as online globally
+                await redisClient.sAdd("online_users", userId);
+                // Get updated global online users list
+                const onlineUsers = await redisClient.sMembers("online_users");
+                io.emit("onlineUsers", onlineUsers);
+            } catch (err) {
+                logger.error({ err, userId }, "Failed to update online presence in Redis on connection");
+            }
+        } else {
+            // Fallback for tests if Redis is not running/mocked
+            if (!global.userSocketMap) {
+                global.userSocketMap = {};
+            }
+            global.userSocketMap[userId] = socket.id;
+            io.emit("onlineUsers", Object.keys(global.userSocketMap));
+        }
 
         // ── Conversation rooms ───────────────────────────────────
-        // Clients join a conversation room when viewing it for efficient
-        // broadcasting of messages, typing, and read receipts.
         socket.on("joinConversation", (conversationId) => {
             if (!conversationId) return;
             const parts = conversationId.split("_");
             if (parts.length === 2 && parts.includes(userId)) {
                 socket.join(`conv:${conversationId}`);
             } else {
-                console.warn(`Unauthorized joinConversation attempt by user ${userId} for conversation ${conversationId}`);
+                logger.warn({ userId, conversationId }, "Unauthorized joinConversation attempt");
             }
         });
 
@@ -67,58 +90,42 @@ export const initSocket = (server) => {
             const parts = conversationId ? conversationId.split("_") : [];
             const isParticipant = parts.length === 2 && parts.includes(userId) && parts.includes(recipientId);
             if (!isParticipant) {
-                console.warn(`Unauthorized typing indicator attempt by user ${userId}`);
+                logger.warn({ userId }, "Unauthorized typing indicator attempt");
                 return;
             }
-            // Emit to conversation room if available
             if (conversationId) {
                 socket.to(`conv:${conversationId}`).emit("userTyping", { userId, conversationId });
             }
-            // Also emit directly to recipient for fallback
-            const recipientSocket = userSocketMap[recipientId];
-            if (recipientSocket) {
-                io.to(recipientSocket).emit("userTyping", { userId, conversationId });
-            }
+            // Emit to recipient's user room
+            io.to(`user:${recipientId}`).emit("userTyping", { userId, conversationId });
         });
 
         socket.on("stopTyping", ({ recipientId, conversationId }) => {
             const parts = conversationId ? conversationId.split("_") : [];
             const isParticipant = parts.length === 2 && parts.includes(userId) && parts.includes(recipientId);
             if (!isParticipant) {
-                console.warn(`Unauthorized stopTyping indicator attempt by user ${userId}`);
+                logger.warn({ userId }, "Unauthorized stopTyping indicator attempt");
                 return;
             }
             if (conversationId) {
                 socket.to(`conv:${conversationId}`).emit("userStopTyping", { userId, conversationId });
             }
-            const recipientSocket = userSocketMap[recipientId];
-            if (recipientSocket) {
-                io.to(recipientSocket).emit("userStopTyping", { userId, conversationId });
-            }
+            io.to(`user:${recipientId}`).emit("userStopTyping", { userId, conversationId });
         });
 
         // ── Real-time message delivery ────────────────────────────
-        // This is a fallback for when the REST API send succeeds but the
-        // HTTP response is enough — the controller handles DB write and
-        // emits `newMessage` via getReceiverSocketId(). This socket event
-        // allows the client to also broadcast for optimistic UI sync.
         socket.on("messageSent", ({ recipientId, message, conversationId }) => {
             const parts = conversationId ? conversationId.split("_") : [];
             const isSender = (message.sender?._id || message.sender) === userId;
             const isParticipant = parts.length === 2 && parts.includes(userId) && parts.includes(recipientId);
             if (!isSender || !isParticipant) {
-                console.warn(`Unauthorized messageSent by user ${userId}`);
+                logger.warn({ userId }, "Unauthorized messageSent");
                 return;
             }
-            // Broadcast to conversation room
             if (conversationId) {
                 socket.to(`conv:${conversationId}`).emit("newMessage", message);
             }
-            // Also emit directly to recipient
-            const recipientSocket = userSocketMap[recipientId];
-            if (recipientSocket) {
-                io.to(recipientSocket).emit("newMessage", message);
-            }
+            io.to(`user:${recipientId}`).emit("newMessage", message);
         });
 
         // ── Mark messages as read notification ────────────────────
@@ -126,29 +133,46 @@ export const initSocket = (server) => {
             const parts = conversationId ? conversationId.split("_") : [];
             const isParticipant = parts.length === 2 && parts.includes(userId) && parts.includes(senderId);
             if (!isParticipant) {
-                console.warn(`Unauthorized markRead by user ${userId}`);
+                logger.warn({ userId }, "Unauthorized markRead");
                 return;
             }
-            // Notify via conversation room
             if (conversationId) {
                 socket.to(`conv:${conversationId}`).emit("messagesRead", { byUserId: userId, conversationId });
             }
-            // Also notify directly
-            const senderSocket = userSocketMap[senderId];
-            if (senderSocket) {
-                io.to(senderSocket).emit("messagesRead", { byUserId: userId, conversationId });
-            }
+            io.to(`user:${senderId}`).emit("messagesRead", { byUserId: userId, conversationId });
         });
 
         // ── Disconnect ───────────────────────────────────────────
-        socket.on("disconnect", () => {
+        socket.on("disconnect", async () => {
             if (userId) {
-                delete userSocketMap[userId];
-                io.emit("onlineUsers", Object.keys(userSocketMap));
+                if (!isTest) {
+                    try {
+                        await redisClient.sRem(`user:connections:${userId}`, socket.id);
+                        const count = await redisClient.sCard(`user:connections:${userId}`);
+                        if (count === 0) {
+                            await redisClient.sRem("online_users", userId);
+                        }
+                        const onlineUsers = await redisClient.sMembers("online_users");
+                        io.emit("onlineUsers", onlineUsers);
+                    } catch (err) {
+                        logger.error({ err, userId }, "Failed to update online presence in Redis on disconnect");
+                    }
+                } else {
+                    if (global.userSocketMap) {
+                        delete global.userSocketMap[userId];
+                        io.emit("onlineUsers", Object.keys(global.userSocketMap));
+                    }
+                }
             }
         });
     });
 };
 
-export const getReceiverSocketId = (userId) => userSocketMap[userId];
+export const getReceiverSocketId = (userId) => {
+    if (process.env.NODE_ENV === "test") {
+        return global.userSocketMap ? global.userSocketMap[userId] : undefined;
+    }
+    return undefined;
+};
+
 export { io };

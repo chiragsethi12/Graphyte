@@ -7,6 +7,7 @@ import pinoHttp from "pino-http";
 import compression from "compression";
 
 import connectDB from "./config/db.js";
+import { connectRedis } from "./config/redis.js";
 import logger from "./config/logger.js";
 import { setupSentry, setupSentryErrorHandler, Sentry } from "./config/sentry.js";
 import { initSocket } from "./socket/socket.js";
@@ -28,6 +29,7 @@ import adminRoutes from "./routes/admin.routes.js";
 
 if (process.env.NODE_ENV !== "test") {
     connectDB();
+    connectRedis();
 }
 
 const app = express();

@@ -179,10 +179,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
     await message.populate("recipient", "name username profilePic");
 
     // Emit real-time event to recipient
-    const recipientSocketId = getReceiverSocketId(userId);
-    if (recipientSocketId) {
-        io.to(recipientSocketId).emit("newMessage", message);
-    }
+    io.to(`user:${userId}`).emit("newMessage", message);
 
     res.status(201).json({ success: true, message });
 });
@@ -202,10 +199,7 @@ export const markConversationRead = asyncHandler(async (req, res) => {
 
     // Notify sender their messages were read
     if (result.modifiedCount > 0) {
-        const senderSocketId = getReceiverSocketId(userId);
-        if (senderSocketId) {
-            io.to(senderSocketId).emit("messagesRead", { byUserId: req.user._id.toString(), conversationId });
-        }
+        io.to(`user:${userId}`).emit("messagesRead", { byUserId: req.user._id.toString(), conversationId });
     }
 
     res.json({ success: true, message: "Marked as read" });

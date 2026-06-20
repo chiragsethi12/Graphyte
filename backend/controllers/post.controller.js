@@ -36,8 +36,7 @@ export const createPost = asyncHandler(async (req, res) => {
     // Notify first-degree connections of new post (live feed update)
     const currentUserForBroadcast = await User.findById(req.user._id).select("connections").lean();
     for (const connId of currentUserForBroadcast.connections) {
-        const socketId = getReceiverSocketId(connId.toString());
-        if (socketId) io.to(socketId).emit("newPost", { authorId: req.user._id });
+        io.to(`user:${connId.toString()}`).emit("newPost", { authorId: req.user._id });
     }
 
     // Reward posting
@@ -254,8 +253,7 @@ export const likePost = asyncHandler(async (req, res) => {
                 relatedPost: postId,
                 message: `${req.user.name} liked your post`,
             });
-            const socketId = getReceiverSocketId(post.author.toString());
-            if (socketId) io.to(socketId).emit("newNotification", notification);
+            io.to(`user:${post.author.toString()}`).emit("newNotification", notification);
             await User.findByIdAndUpdate(post.author, { $inc: { skillScore: 1 } });
         }
 
@@ -269,8 +267,7 @@ export const likePost = asyncHandler(async (req, res) => {
                 relatedPost: postId,
                 message: `Your post reached ${likeCount} likes!`,
             });
-            const authorSocket = getReceiverSocketId(post.author.toString());
-            if (authorSocket) io.to(authorSocket).emit("newNotification", tractionNotif);
+            io.to(`user:${post.author.toString()}`).emit("newNotification", tractionNotif);
         }
     }
 
@@ -323,8 +320,7 @@ export const commentOnPost = asyncHandler(async (req, res) => {
             relatedPost: req.params.id,
             message: `${req.user.name} commented on your post`,
         });
-        const socketId = getReceiverSocketId(post.author.toString());
-        if (socketId) io.to(socketId).emit("newNotification", notification);
+        io.to(`user:${post.author.toString()}`).emit("newNotification", notification);
         await User.findByIdAndUpdate(post.author, { $inc: { skillScore: 1 } });
     }
 
@@ -339,8 +335,7 @@ export const commentOnPost = asyncHandler(async (req, res) => {
                 relatedPost: req.params.id,
                 message: `${req.user.name} replied to your comment`,
             });
-            const socketId = getReceiverSocketId(parent.user.toString());
-            if (socketId) io.to(socketId).emit("newNotification", notification);
+            io.to(`user:${parent.user.toString()}`).emit("newNotification", notification);
         }
     }
 
@@ -461,8 +456,7 @@ export const sharePost = asyncHandler(async (req, res) => {
             relatedPost: req.params.id,
             message: `${req.user.name} shared your post`,
         });
-        const socketId = getReceiverSocketId(originalPost.author.toString());
-        if (socketId) io.to(socketId).emit("newNotification", notification);
+        io.to(`user:${originalPost.author.toString()}`).emit("newNotification", notification);
     }
 
     res.status(201).json({ success: true, post: sharePostDoc });
