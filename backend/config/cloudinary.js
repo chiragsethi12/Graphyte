@@ -56,6 +56,28 @@ export const uploadResume = multer({
     },
 });
 
+// ─── Project images upload ───────────────────────────────────────────────────
+const projectStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "graphite_projects",
+        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    }
+});
+
+export const uploadProjectImages = multer({
+    storage: projectStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },  // 10MB per image
+    fileFilter: (req, file, cb) => {
+        const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+        if (allowed.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only JPEG, PNG, and WebP images are allowed"), false);
+        }
+    },
+});
+
 export const handleMulterError = (err, req, res, next) => {
     if (err && err.code === "LIMIT_FILE_SIZE") {
         return res.status(400).json({ success: false, message: "Image must be under 10MB" });

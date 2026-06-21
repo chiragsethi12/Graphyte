@@ -14,6 +14,7 @@ const notificationSchema = new mongoose.Schema(
                 "connectionRequest",
                 "connectionAccepted",
                 "jobUpdate",
+                "jobAlert",
                 "postShare",
                 "mention",
                 "traction",

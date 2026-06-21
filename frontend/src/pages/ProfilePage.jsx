@@ -17,6 +17,7 @@ import ActivitySection from '../components/profile/ActivitySection';
 import ExperienceSection from '../components/profile/ExperienceSection';
 import EducationSection from '../components/profile/EducationSection';
 import SkillsSection from '../components/profile/SkillsSection';
+import ProjectsSection from '../components/profile/ProjectsSection';
 import ProfileSidebar from '../components/profile/ProfileSidebar';
 
 // UI
@@ -284,12 +285,19 @@ export default function ProfilePage() {
     enabled: !!data?.user?._id && data?.user?._id !== me?._id,
   });
 
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects', data?.user?._id],
+    queryFn: () => api.get(`/projects/user/${data.user._id}`).then((r) => r.data),
+    enabled: !!data?.user?._id,
+  });
+
   const profile = data?.user;
   usePageTitle(profile?.name || "Profile");
   const stats = statsData?.stats;
   const mutuals = mutualData?.mutuals || [];
   const isOwner = me?._id === profile?._id;
   const connectionCount = stats?.connectionCount ?? profile?.connections?.length ?? 0;
+  const projects = projectsData?.projects || [];
 
   // Connection status for endorsement feature
   const { status: connectionStatus } = useConnectionStatus(profile?._id);
@@ -353,6 +361,7 @@ export default function ProfilePage() {
 
   const tabs = [
     { key: 'about', label: 'About' },
+    { key: 'projects', label: 'Projects', count: projects.length || undefined },
     { key: 'activity', label: 'Activity' },
     { key: 'connections', label: 'Connections', count: connectionCount },
   ];
@@ -416,6 +425,11 @@ export default function ProfilePage() {
             {/* Activity tab */}
             {activeTab === 'activity' && (
               <ActivitySection userId={profile._id} isOwner={isOwner} userName={profile.name} />
+            )}
+
+            {/* Projects tab */}
+            {activeTab === 'projects' && (
+              <ProjectsSection projects={projects} isOwner={isOwner} userId={profile._id} />
             )}
 
             {/* Connections tab */}

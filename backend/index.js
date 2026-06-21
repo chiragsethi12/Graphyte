@@ -26,10 +26,14 @@ import messageRoutes from "./routes/message.routes.js";
 import savedRoutes from "./routes/saved.routes.js";
 import reportRoutes from "./routes/report.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import projectRoutes from "./routes/project.routes.js";
+import jobAlertRoutes from "./routes/jobAlert.routes.js";
+import { startJobAlertWorker } from "./jobs/jobAlertWorker.js";
 
 if (process.env.NODE_ENV !== "test") {
     connectDB();
     connectRedis();
+    startJobAlertWorker();
 }
 
 const app = express();
@@ -81,6 +85,8 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/job-alerts", jobAlertRoutes);
 
 // ─── Quote route (CORS proxy for ZenQuotes API) ──────────────────────────────
 app.get("/api/quote", async (req, res) => {

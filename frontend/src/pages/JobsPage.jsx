@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, MapPin, Filter, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, MapPin, Filter, Plus, ChevronLeft, ChevronRight, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import api from "../lib/axios";
@@ -10,6 +10,7 @@ import JobDetailModal from "../components/jobs/JobDetailModal";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import { usePageTitle } from "../hooks/usePageTitle";
+import JobAlertsModal from "../components/jobs/JobAlertsModal";
 
 function JobsSkeleton() {
   return (
@@ -48,6 +49,7 @@ export default function JobsPage() {
   const [activeTab, setActiveTab] = useState("all"); // "all" | "applied" | "listings"
   const [showPostModal, setShowPostModal] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState(null);
+  const [showAlertsModal, setShowAlertsModal] = useState(false);
 
   // Sync search input with URL search param "?q" debounced 300ms
   useEffect(() => {
@@ -151,9 +153,18 @@ export default function JobsPage() {
               Professional placements curated for the Graphyte network.
             </p>
           </div>
-          <Button size="sm" className="flex items-center gap-2 self-start" onClick={() => setShowPostModal(true)}>
-            <Plus size={14} /> Post a Job
-          </Button>
+          <div className="flex items-center gap-2 self-start">
+            <button
+              onClick={() => setShowAlertsModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-text-muted border border-border hover:text-accent hover:border-accent/40 hover:bg-accent-muted transition-all min-h-[36px]"
+              title="Job Alerts"
+            >
+              <Bell size={13} /> Alerts
+            </button>
+            <Button size="sm" className="flex items-center gap-2" onClick={() => setShowPostModal(true)}>
+              <Plus size={14} /> Post a Job
+            </Button>
+          </div>
         </div>
 
         {/* 2-Column Responsive Layout */}
@@ -335,6 +346,17 @@ export default function JobsPage() {
       {showPostModal && <PostJobModal onClose={() => setShowPostModal(false)} />}
       {selectedJobId && (
         <JobDetailModal jobId={selectedJobId} onClose={() => setSelectedJobId(null)} />
+      )}
+      {showAlertsModal && (
+        <JobAlertsModal
+          onClose={() => setShowAlertsModal(false)}
+          searchDefaults={{
+            query: q,
+            type: typeFilter,
+            location: locationInput,
+            experienceLevel: expFilter,
+          }}
+        />
       )}
     </MainLayout>
   );
