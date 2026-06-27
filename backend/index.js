@@ -43,14 +43,6 @@ setupSentry(app);
 initSocket(server);
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
-app.use(helmet());
-app.use(requestId);
-app.use(pinoHttp({ 
-    logger, 
-    autoLogging: process.env.NODE_ENV === "production" ? { ignore: (req) => req.url === "/api/health" } : false 
-}));
-app.use(compression());
-
 const rawClientUrl = process.env.CLIENT_URL || "http://localhost:3000";
 const CLIENT_URL = rawClientUrl.replace(/\/$/, "");
 logger.info({ clientUrl: CLIENT_URL }, "CORS origins configured");
@@ -61,7 +53,6 @@ const allowedOrigins = process.env.NODE_ENV === "production"
 
 app.use(cors({
     origin: function(origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith("https://graphyte.netlify.app")) {
             callback(null, true);
@@ -72,6 +63,14 @@ app.use(cors({
     },
     credentials: true,
 }));
+
+app.use(helmet());
+app.use(requestId);
+app.use(pinoHttp({ 
+    logger, 
+    autoLogging: process.env.NODE_ENV === "production" ? { ignore: (req) => req.url === "/api/health" } : false 
+}));
+app.use(compression());
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true }));
 
