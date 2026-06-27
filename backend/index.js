@@ -45,14 +45,21 @@ initSocket(server);
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(helmet());
 app.use(requestId);
-app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === "/api/health" } }));
+app.use(pinoHttp({ 
+    logger, 
+    autoLogging: process.env.NODE_ENV === "production" ? { ignore: (req) => req.url === "/api/health" } : false 
+}));
 app.use(compression());
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 logger.info({ clientUrl: CLIENT_URL }, "CORS origins configured");
 
+const allowedOrigins = process.env.NODE_ENV === "production" 
+    ? [CLIENT_URL] 
+    : [CLIENT_URL, "http://localhost:5173", "http://localhost:3000"];
+
 app.use(cors({
-    origin: [CLIENT_URL, "http://localhost:5173", "http://localhost:3000"],
+    origin: allowedOrigins,
     credentials: true,
 }));
 app.use(express.json({ limit: "5mb" }));
@@ -114,8 +121,9 @@ app.get("/api/health", (req, res) => {
 
 app.get("/api/health/db", async (req, res) => {
     try {
-        const { connection } = await import("mongoose");
-        const state = ["disconnected", "connected", "connecting", "disconnecting"][connection.readyState] || "unknown";
+        const mongoose = await import("mongoose");
+        const conn = mongoose.default?.connection || mongoose.connection;
+        const state = ["disconnected", "connected", "connecting", "disconnecting"][conn.readyState] || "unknown";
         res.json({ status: state === "connected" ? "ok" : "degraded", db: state });
     } catch {
         res.status(500).json({ status: "error" });

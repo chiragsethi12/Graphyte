@@ -2,23 +2,29 @@ import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import jwt from "jsonwebtoken";
 import User from "../models/User.model.js";
-import { pubClient, subClient, redisClient } from "../config/redis.js";
+import { pubClient, subClient, redisClient, isRedisConnected } from "../config/redis.js";
 import logger from "../config/logger.js";
 
 let io;
 
 export const initSocket = (server) => {
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const allowedOrigins = process.env.NODE_ENV === "production"
+        ? [clientUrl]
+        : [clientUrl, "http://localhost:5173", "http://localhost:3000"];
+
     io = new Server(server, {
         cors: {
-            origin: [process.env.CLIENT_URL || "http://localhost:3000", "http://localhost:5173", "http://localhost:3000"],
+            origin: allowedOrigins,
             methods: ["GET", "POST"],
         },
         pingTimeout: 60000,
     });
 
     const isTest = process.env.NODE_ENV === "test";
+    const useRedis = !isTest && isRedisConnected();
 
-    if (!isTest) {
+    if (useRedis) {
         io.adapter(createAdapter(pubClient, subClient));
     }
 
@@ -45,7 +51,7 @@ export const initSocket = (server) => {
         const userId = socket.user._id.toString();
         socket.join(`user:${userId}`);
 
-        if (!isTest) {
+        if (useRedis) {
             try {
                 // Add socket to user's active connections set
                 await redisClient.sAdd(`user:connections:${userId}`, socket.id);
@@ -58,7 +64,7 @@ export const initSocket = (server) => {
                 logger.error({ err, userId }, "Failed to update online presence in Redis on connection");
             }
         } else {
-            // Fallback for tests if Redis is not running/mocked
+            // Fallback: in-memory tracking when Redis is not available
             if (!global.userSocketMap) {
                 global.userSocketMap = {};
             }
@@ -145,7 +151,7 @@ export const initSocket = (server) => {
         // ── Disconnect ───────────────────────────────────────────
         socket.on("disconnect", async () => {
             if (userId) {
-                if (!isTest) {
+                if (useRedis) {
                     try {
                         await redisClient.sRem(`user:connections:${userId}`, socket.id);
                         const count = await redisClient.sCard(`user:connections:${userId}`);

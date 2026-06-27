@@ -7,9 +7,17 @@ const redisClient = createClient({ url: redisUrl });
 const pubClient = createClient({ url: redisUrl });
 const subClient = pubClient.duplicate();
 
-redisClient.on("error", (err) => logger.error({ err }, "Redis Client Error"));
-pubClient.on("error", (err) => logger.error({ err }, "Redis Pub Client Error"));
-subClient.on("error", (err) => logger.error({ err }, "Redis Sub Client Error"));
+let redisConnected = false;
+
+redisClient.on("error", (err) => {
+    if (redisConnected) logger.error({ err }, "Redis Client Error");
+});
+pubClient.on("error", (err) => {
+    if (redisConnected) logger.error({ err }, "Redis Pub Client Error");
+});
+subClient.on("error", (err) => {
+    if (redisConnected) logger.error({ err }, "Redis Sub Client Error");
+});
 
 export const connectRedis = async () => {
     try {
@@ -18,10 +26,14 @@ export const connectRedis = async () => {
             pubClient.connect(),
             subClient.connect()
         ]);
+        redisConnected = true;
         logger.info("Redis connected successfully for presence and Pub/Sub adapter");
     } catch (err) {
-        logger.error({ err }, "Failed to connect to Redis");
+        redisConnected = false;
+        logger.warn("Redis not available — running without Redis (online presence disabled)");
     }
 };
+
+export const isRedisConnected = () => redisConnected;
 
 export { redisClient, pubClient, subClient };
