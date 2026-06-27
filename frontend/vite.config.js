@@ -11,11 +11,7 @@ export default defineConfig({
   base: "/",
   plugins: [react()],
   resolve: {
-    alias: {
-      "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime"),
-      "react": path.resolve(__dirname, "node_modules/react"),
-      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
-    }
+    preserveSymlinks: true
   },
   build: {
     rollupOptions: {
