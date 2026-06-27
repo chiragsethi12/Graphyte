@@ -51,7 +51,8 @@ app.use(pinoHttp({
 }));
 app.use(compression());
 
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+const rawClientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+const CLIENT_URL = rawClientUrl.replace(/\/$/, "");
 logger.info({ clientUrl: CLIENT_URL }, "CORS origins configured");
 
 const allowedOrigins = process.env.NODE_ENV === "production" 
@@ -59,7 +60,16 @@ const allowedOrigins = process.env.NODE_ENV === "production"
     : [CLIENT_URL, "http://localhost:5173", "http://localhost:3000"];
 
 app.use(cors({
-    origin: allowedOrigins,
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith("https://graphyte.netlify.app")) {
+            callback(null, true);
+        } else {
+            logger.warn({ origin }, "Blocked by CORS");
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true,
 }));
 app.use(express.json({ limit: "5mb" }));
