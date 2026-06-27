@@ -112,15 +112,14 @@ export const register = asyncHandler(async (req, res) => {
     const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
     const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
 
-    try {
-        await sendEmail({
-            to: user.email,
-            subject: "Verify your Graphyte account",
-            html: buildVerificationEmail(user.name, verifyUrl),
-        });
-    } catch (err) {
+    // Send email asynchronously in the background so it does not block registration response
+    sendEmail({
+        to: user.email,
+        subject: "Verify your Graphyte account",
+        html: buildVerificationEmail(user.name, verifyUrl),
+    }).catch((err) => {
         req.log.error({ err }, "Email send error during registration");
-    }
+    });
 
     res.status(201).json({
         success: true,
